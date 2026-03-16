@@ -439,6 +439,117 @@ def get_slam_input_functions(ssp_space, lm_space, velocity_data, vec_to_landmark
 
 
 
+def get_slam_input_functions_from_features(
+        ssp_space, feature_encoder, velocity_data,
+        vec_to_landmarks_data, feature_vectors_data, view_rad, dt=0.001):
+    r"""Helper that builds SLAM input functions from continuous image feature vectors.
+
+    Instead of a discrete ``SPSpace`` with one random vector per landmark, this
+    function uses an :class:`~sspslam.perception.ImageFeatureEncoder` to map
+    each landmark's appearance feature vector (e.g. SIFT, HOG, ORB, CNN
+    embedding) to a Semantic Pointer.  Similar-looking landmarks therefore
+    get similar SP keys, which is more realistic than arbitrary random IDs.
+
+    Parameters
+    ----------
+    ssp_space : SSPSpace
+        Specifies the SSP representation used for position encoding.
+    feature_encoder : ImageFeatureEncoder
+        Encoder that maps ``(feat_dim,)`` feature vectors → ``(ssp_dim,)``
+        unitary SPs.  Must have ``ssp_dim == ssp_space.ssp_dim``.
+    velocity_data : np.ndarray
+        Shape ``(T, domain_dim)``.  Agent velocity at each timestep.
+    vec_to_landmarks_data : np.ndarray
+        Shape ``(T, N_landmarks, domain_dim)``.
+        Vector from agent to each landmark at each timestep.
+    feature_vectors_data : np.ndarray
+        Shape ``(T, N_landmarks, feat_dim)``.
+        Feature vector describing each landmark's appearance at each timestep.
+        Typically constant (landmark appearance doesn't change), but a
+        time-varying array is supported to handle partial/noisy observations.
+    view_rad : float
+        Agent's view radius.
+    dt : float
+        Simulation timestep (seconds).  Default is 0.001 (Nengo default).
+
+    Returns
+    -------
+    velocity_func : callable
+        ``t → (domain_dim,)`` velocity at time *t*.
+    vel_scaling_factor : float
+        Scale factor needed by :class:`~sspslam.networks.PathIntegration`.
+    is_landmark_in_view : callable
+        ``t → 0`` (landmark visible) or ``10`` (none visible).
+    landmark_id_func : callable
+        ``t → int`` index of closest visible landmark, or ``-1``.
+    landmark_sp_func : callable
+        ``t → (ssp_dim,)`` SP of visible landmark, or zeros.
+    landmark_vec_func : callable
+        ``t → (domain_dim,)`` vector to visible landmark, or zeros.
+    landmark_vecssp_func : callable
+        ``t → (ssp_dim,)`` SSP-encoded vector to visible landmark, or zeros.
+    """
+    T_steps, n_landmarks, domain_dim = vec_to_landmarks_data.shape
+    pathlen = T_steps
+    d = ssp_space.ssp_dim
+
+    if feature_encoder.ssp_dim != d:
+        raise ValueError(
+            f"feature_encoder.ssp_dim ({feature_encoder.ssp_dim}) must equal "
+            f"ssp_space.ssp_dim ({d})"
+        )
+
+    # Pre-compute one SP per landmark by averaging feature vectors over all
+    # timesteps where the landmark would be in view (or just all timesteps).
+    # This gives a stable SP even if per-frame features are noisy.
+    mean_features = feature_vectors_data.mean(axis=0)   # (N_landmarks, feat_dim)
+    landmark_sps = feature_encoder.encode(mean_features)  # (N_landmarks, ssp_dim)
+    if landmark_sps.ndim == 1:
+        landmark_sps = landmark_sps[np.newaxis, :]
+
+    vel_scaling_factor = 1.0 / np.max(
+        np.abs(ssp_space.phase_matrix @ velocity_data.T)
+    )
+    vels_scaled = velocity_data * vel_scaling_factor
+    velocity_func = lambda t: vels_scaled[int((t - dt) / dt)]
+
+    def landmark_id_func(t):
+        current_vecs = vec_to_landmarks_data[int((t - dt) / dt), :, :]
+        dists = np.linalg.norm(current_vecs, axis=1)
+        if np.all(dists > view_rad):
+            return -1
+        return int(np.argmin(dists))
+
+    def landmark_vec_func(t):
+        cur_id = landmark_id_func(t)
+        if cur_id < 0:
+            return np.zeros(domain_dim)
+        return vec_to_landmarks_data[int((t - dt) / dt), cur_id, :]
+
+    def landmark_sp_func(t):
+        cur_id = landmark_id_func(t)
+        if cur_id < 0:
+            return np.zeros(d)
+        return landmark_sps[cur_id]
+
+    def landmark_vecssp_func(t):
+        cur_id = landmark_id_func(t)
+        if cur_id < 0:
+            return np.zeros(d)
+        idx = int(np.minimum(np.floor(t / dt), pathlen - 2))
+        return ssp_space.encode(
+            vec_to_landmarks_data[idx, cur_id, :]
+        ).flatten()
+
+    def is_landmark_in_view(t):
+        cur_id = landmark_id_func(t)
+        return 0 if cur_id >= 0 else 10
+
+    return (velocity_func, vel_scaling_factor, is_landmark_in_view,
+            landmark_id_func, landmark_sp_func,
+            landmark_vec_func, landmark_vecssp_func)
+
+
 def get_slam_input_functions2(ssp_space, lm_space, velocity_data, vec_to_landmarks_data, view_rad, dt=0.001):
   
     n_landmarks = vec_to_landmarks_data.shape[1]
