@@ -12,13 +12,21 @@ import sspslam.utils as utils
 import matplotlib.gridspec as gridspec
 
 seed=0
-# Create SSP space
+# ==========================================
+# 1. SETUP: Define Spatial Representations
+# ==========================================
+# Create an SSP space. This object is responsible for translating continuous 2D 
+# (x, y) coordinates into high-dimensional, unit-length Spatial Semantic Pointers.
 domain_dim = 2 # 2d x space
 radius = 1 # radius of x space (need for path generation and decoding)
 bounds = radius*np.tile([-1,1],(domain_dim,1))
+
+# HexagonalSSPSpace creates a mathematically structured vector space based on grid-cell 
+# like hexagonal periodic patterns.
 ssp_space = sspslam.HexagonalSSPSpace(domain_dim,n_scales=8,n_rotates=5,
                  domain_bounds=1.2*bounds, length_scale=0.3)
 
+# 'd' is the final high-dimensional size of our vectors (e.g., 151 dimensions)
 d = ssp_space.ssp_dim
 
 # Generate test path
@@ -37,26 +45,40 @@ real_ssp = ssp_space.encode(path)
 real_inv_ssp = ssp_space.invert(real_ssp)
 
 
-# Generate radnom object locations
+# ==========================================
+# 3. SETUP: Environment Landmarks & Memory
+# ==========================================
 n_items = 4#5
-view_rad = 0.3
+view_rad = 0.3 # How close the agent must be to 'see' a landmark
+
+# Define the absolute (x,y) locations of our 4 discrete landmarks
 #item_locations = 0.75*2*(sspslam.utils.Rd_sampling(n_items, domain_dim,seed=0) - 0.5)
 item_locations = np.array([[-0.8,-0.5],
                            [ 0.0, -0.6],
                            [-0.2 ,  0.2], [ 0.6,  0.2]])
+
+# Encode these explicit positions into SSPs for evaluation purposes
 item_ssps = ssp_space.encode(item_locations)
+
+# Calculate the precise relative vector from the agent to each landmark at every timestep 
+# (This acts as our "Perfect Vision Sensor" data for the simulation)
 vec_to_landmarks = item_locations[None,:,:] - path[:,None,:]
 
+# Define Semantic features (Shape and Color) for our items
 item_shapes = ['^','^','s','s']
 shape_values, shape_counts = np.unique(item_shapes, return_counts=True)
 n_shapes = len(shape_counts)
+
 item_cols = [utils.blues[1],utils.oranges[1],utils.blues[1],utils.oranges[1]]
 col_values, col_counts = np.unique(item_cols, return_counts=True)
 n_cols = len(col_counts)
 
+# Generate completely random high-dimensional vectors to represent these discrete concepts
 shape_sps = nengo.dists.UniformHypersphere(surface=True).sample(n_shapes, d, rng=np.random.RandomState(seed=0))
 col_sps = nengo.dists.UniformHypersphere(surface=True).sample(n_cols, d, rng=np.random.RandomState(seed=10))
 
+# Combine the Shape Vector and Color Vector using 'Binding' (circular convolution).
+# The result is a single Vector (Semantic Pointer) representing both shape and color.
 shape_idx = [np.where(shape_values==v)[0].item() for v in item_shapes]
 col_idx = [np.where(col_values==v)[0].item() for v in item_cols]
 item_sps = ssp_space.bind(shape_sps[shape_idx,:], col_sps[col_idx,:])
@@ -200,18 +222,28 @@ def is_landmark_in_view(t):
     else:
         return 0
 
+# ==========================================
+# 4. NEURAL NETWORK CONSTRUCTION (Nengo)
+# ==========================================
 pi_n_neurons = 250
 mem_n_neurons = 10*d
 circonv_n_neurons = 100
 intercept = (np.dot(item_ssps, item_ssps.T) - np.eye(n_items)).flatten().max()
+
+# Instantiate the Master Nengo Network
 model = nengo.Network(seed=seed)
 with model:
+    # --- Input Nodes ---
+    # These nodes provide the 'sensor' data to the brain at every timestep `t`
     vel_input = nengo.Node(velocity_func, label='vel_input')
     init_state = nengo.Node(lambda t: real_ssp[int((t - dt) / dt)] if t < 0.05 else np.zeros(d), label='init_state')
 
     landmark_vec = nengo.Node(landmark_vecssp_func)
     landmark_id = nengo.Node(landmark_sp_func)
     is_landmark = nengo.Node(is_landmark_in_view)
+    
+    # --- SLAM Master Network ---
+    # This pre-built subnetwork handles the routing between Path Integration and Associative Memory
     slam = sspslam.networks.SLAMNetwork(ssp_space, lm_space, view_rad, n_items + n_walls,
                                         pi_n_neurons, mem_n_neurons, circonv_n_neurons,
                                         tau_pi=0.05, update_thres=0.2, vel_scaling_factor=vel_scaling_factor,
@@ -220,13 +252,8 @@ with model:
                                         clean_up_method=clean_up_method,
                                         gc_n_neurons=0, encoders=None, voja=True,
                                         seed=seed)
-    # slam = sspslam.networks.SLAMNetwork(ssp_space, lm_space, view_rad, n_items + n_walls,
-    #                                     pi_n_neurons, mem_n_neurons, circonv_n_neurons,
-    #                                     tau_pi=0.05, update_thres=0.2, vel_scaling_factor=vel_scaling_factor,
-    #                                     shift_rate=0.1, voja_learning_rate=5e-4, pes_learning_rate=1e-3,
-    #                                     clean_up_method=clean_up_method, gc_n_neurons=1000, encoders=None, voja=True,
-    #                                     seed=seed)
 
+    # Wire our input nodes into the SLAM network
     nengo.Connection(landmark_vec, slam.landmark_vec_ssp, synapse=None)
     nengo.Connection(landmark_id, slam.landmark_id_input, synapse=None)
     nengo.Connection(is_landmark, slam.no_landmark_in_view, synapse=None)
@@ -264,12 +291,14 @@ with model:
 
 nengo.rc['progress']['progress_bar'] = 'nengo.utils.progress.TerminalProgressBar'
 
+# ==========================================
+# 5. RUN SIMULATION
+# ==========================================
 sim = nengo_ocl.Simulator(model)
 with sim:
     sim.run(T)
 
-
-# np.savez('data/slam_results/slam_map_walls.npz', sim_ssp=sim.data[ssp_p],
+# np.savez('data/slam_results/slam_map_walls.npz', sim_ssp=sim.data[ssp_p], ...
 #           ssp_space=ssp_space,ts = sim.trange(),path=path,
 #           item_locations=item_locations,item_sps=landmark_sps,
 #           sim_objssp = sim.data[objssp_p],
@@ -279,11 +308,17 @@ with sim:
 #          mem_encoders =sim.data[mem_encoders],
 #          meminv_encoders = sim.data[meminv_encoders],)
 
+# ==========================================
+# 6. EVALUATE & PLOT RESULTS
+# ==========================================
+# Compare the SLAM output to the ground-truth trajectory calculating Cosine Similarity 
+# (sims of 1.0 means perfectly identical SSPs).
 slam_sims = np.sum(real_ssp[::10,:] * sim.data[ssp_p][::10,:],axis=-1)/np.linalg.norm(sim.data[ssp_p][::10,:],axis=-1)
 pi_sims = np.sum(real_ssp[::10,:] * sim.data[ssp_pi_p][::10,:],axis=-1)/np.linalg.norm(sim.data[ssp_pi_p][::10,:],axis=-1)
+
+# Decode the SSPs back into 2D coordinates to calculate literal cartesian distance errors.
 slam_path = ssp_space.decode(sim.data[ssp_p][::100,:])
 pi_path = ssp_space.decode(sim.data[ssp_pi_p][::100,:])
-
 
 fig,axs=plt.subplots(2,1,figsize=(4,3))
 axs[0].plot(sim.trange()[::10], 1-slam_sims,label='ssp-slam')
@@ -294,9 +329,13 @@ axs[1].plot(sim.trange()[::100], np.linalg.norm(path[::100,:]-slam_path,axis=-1)
 axs[1].plot(sim.trange()[::100], np.linalg.norm(path[::100,:]-pi_path,axis=-1),label='ssp-pi')
 axs[1].set_ylabel("Distance error")
 fig.show()
-############################
-### Object queries of memory at the end
-#############################
+
+# ==========================================
+# 7. ASSOCIATIVE MEMORY QUERIES
+# ==========================================
+# Here we test what the network remembers. 
+# We query the associative memory using SPs (identities) to recall SSPs (locations).
+
 
 def plot_env(ax):
     ax.set_xlim(-1.2, 1.2)
@@ -340,6 +379,10 @@ decoders = sim.data[mem_weights][-1].T
 decodersinv = sim.data[meminv_weights][-1].T
 
 def get_mem_out(x):
+    """
+    Given a query Semantic Pointer 'x', pass it through the trained Neural Encoders/Decoders
+    to recall the corresponding Spatial Semantic Pointer (Location).
+    """
     x = np.dot(x, sim.data[mem_encoders][-1,:,:].T)
     with sim:
         activites=slam.assomemory.memory.neuron_type.rates(x,
@@ -353,9 +396,14 @@ def get_mem_out2(x):
     return np.dot(activites, decodersinv)
 
 item_ssp_hat = get_mem_out(landmark_sps)
+
+# Testing query compositions.
+# E.g. Query 1 asks the memory for "Any Shape" Bound with "Blue Color"
 query1 = ssp_space.normalize(ssp_space.bind(shape_sps[0,:], np.sum(col_sps[:,:],axis=0)))
+# Query 2 asks the memory for "Any Color" Bound with "Triangle Shape"
 query2 =ssp_space.normalize(ssp_space.bind(col_sps[0,:], np.sum(shape_sps[:,:],axis=0)))
 query3 = ssp_space.normalize(np.sum(wall_sps,axis=0).reshape(1,-1))
+
 
 vmin = 0.0
 fig = plt.figure(figsize=(7.2, 3))

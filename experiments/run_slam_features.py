@@ -65,6 +65,8 @@ parser.add_argument("--data-dt", default=0.001, type=float,
 parser.add_argument("--feature-data", default=None, type=str,
                     help=".npy file with a (T × N_landmarks × feat_dim) array of "
                          "pre-computed feature vectors. If None, synthetic features are used.")
+parser.add_argument("--landmark-data", default=None, type=str,
+                    help=".npy file containing (N_landmarks × domain_dim) landmark positions.")
 parser.add_argument("--feat-dim", default=128, type=int,
                     help="Dimensionality of synthetic feature vectors (ignored if "
                          "--feature-data is supplied).")
@@ -187,11 +189,14 @@ if args.feature_data is not None:
     # Derive n_landmarks and feat_dim from the loaded array
     n_landmarks = feature_vectors_data.shape[1]
     feat_dim = feature_vectors_data.shape[2]
-    # Still need landmark positions — assume uniform random placement
-    rng = np.random.RandomState(args.seed)
-    obj_locs = 0.9 * radius * 2 * (
-        sspslam.utils.Rd_sampling(n_landmarks, domain_dim, seed=args.seed) - 0.5
-    )
+    # Still need landmark positions — load if provided, else assume uniform random
+    if args.landmark_data is not None:
+        obj_locs = np.load(os.path.join(os.getcwd(), args.landmark_data))
+    else:
+        rng = np.random.RandomState(args.seed)
+        obj_locs = 0.9 * radius * 2 * (
+            sspslam.utils.Rd_sampling(n_landmarks, domain_dim, seed=args.seed) - 0.5
+        )
 else:
     n_landmarks = args.n_landmarks
     feat_dim = args.feat_dim
@@ -248,7 +253,7 @@ feature_encoder = ImageFeatureEncoder(
     seed=args.seed,
 )
 
-print(f"ImageFeatureEncoder: feat_dim={feat_dim} → ssp_dim={d}")
+print(f"ImageFeatureEncoder: feat_dim={feat_dim} -> ssp_dim={d}")
 
 # Build SLAM input functions using feature vectors instead of a discrete SPSpace
 (velocity_func, vel_scaling_factor,
@@ -280,6 +285,7 @@ model = nengo.Network(seed=args.seed)
 if "loihi" in args.backend:
     model.config[nengo.Ensemble].neuron_type = LoihiLIF()
 
+print("Building Nengo SLAMNetwork...")
 with model:
     vel_input = nengo.Node(velocity_func, label="vel_input")
     init_state = nengo.Node(
@@ -325,6 +331,7 @@ with model:
 
 nengo.rc["progress"]["progress_bar"] = "nengo.utils.progress.TerminalProgressBar"
 
+print("Building Simulator object...")
 if args.backend == "cpu":
     sim = nengo.Simulator(model)
 elif args.backend == "ocl":
@@ -336,6 +343,7 @@ elif args.backend == "loihi":
                                 precompute=False)
 
 start = time.time()
+print(f"Starting simulation for T={T}s...")
 with sim:
     sim.run(T)
 elapsed = time.time() - start

@@ -221,10 +221,10 @@ def test_similarity_preservation(ssp_dim=97):
     sim_orth     = cosine_sim(sp_base, sp_orth)
     sim_opposite = cosine_sim(sp_base, sp_opposite)
 
-    print(f"  base ↔ near-identical:  sim = {sim_near:.4f}")
-    print(f"  base ↔ moderately-sim:  sim = {sim_mid:.4f}")
-    print(f"  base ↔ orthogonal:      sim = {sim_orth:.4f}")
-    print(f"  base ↔ opposite:        sim = {sim_opposite:.4f}")
+    print(f"  base <-> near-identical:  sim = {sim_near:.4f}")
+    print(f"  base <-> moderately-sim:  sim = {sim_mid:.4f}")
+    print(f"  base <-> orthogonal:      sim = {sim_orth:.4f}")
+    print(f"  base <-> opposite:        sim = {sim_opposite:.4f}")
 
     total += 1; passed += check("near-identical sim > 0.9", sim_near, 0.9, 1.0)
     total += 1; passed += check("near > mid",
@@ -269,8 +269,8 @@ def test_classical_features(methods, ssp_dim=97):
         if "circle" in sps and "noisy_circle" in sps and "checkerboard" in sps:
             sim_same  = cosine_sim(sps["circle"], sps["noisy_circle"])
             sim_diff  = cosine_sim(sps["circle"], sps["checkerboard"])
-            print(f"\n  circle ↔ noisy_circle : {sim_same:.4f}")
-            print(f"  circle ↔ checkerboard : {sim_diff:.4f}")
+            print(f"\n  circle <-> noisy_circle : {sim_same:.4f}")
+            print(f"  circle <-> checkerboard : {sim_diff:.4f}")
             all_total += 1
             all_passed += check(
                 f"[{method}] noisy-same > diff",

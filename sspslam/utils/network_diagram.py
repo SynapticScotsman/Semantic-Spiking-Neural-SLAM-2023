@@ -22,7 +22,10 @@ import numpy as np
 import os
 
 import nengo
-import nengo_loihi
+try:
+    import nengo_loihi
+except ImportError:
+    nengo_loihi = None
 import logging
 
 def add_network_obj_conns(net, depth=0, label="", sim_model=None):

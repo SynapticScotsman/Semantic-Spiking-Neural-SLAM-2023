@@ -16,17 +16,8 @@ import matplotlib.cm as cm
 
 # Load the correct matplotlibrc
 mpl.rc_file(os.path.join(os.path.dirname(__file__), 'matplotlibrc'))
-mpl.rcParams["text.usetex"] = True
-mpl.rcParams["text.latex.preamble"] = r"""
-    \usepackage{siunitx}
-    \usepackage{libertine}
-    \usepackage{libertinust1math}
-    \usepackage{mathrsfs}
-    \usepackage{amssymb}
-    \renewcommand*\familydefault{\sfdefault}
-    \renewcommand{\vec}[1]{\mathbf{#1}}
-    \newcommand{\mat}[1]{\mathbf{#1}}
-"""
+mpl.rcParams["text.usetex"] = False
+mpl.rcParams["text.latex.preamble"] = ""
 
 blues = ["#729fcfff", "#3465a4ff", "#204a87ff"][::-1]
 reds = ["#ef2929ff", "#cc0000ff", "#a40000ff"][::-1]

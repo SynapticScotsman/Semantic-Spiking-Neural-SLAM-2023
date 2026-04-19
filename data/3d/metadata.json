@@ -1,0 +1,21 @@
+{
+  "n_objects": 4,
+  "n_steps": 50,
+  "room_size": 12.0,
+  "view_radius_world": 3.0,
+  "view_radius_normalized": 0.5,
+  "policy": "explore",
+  "seed": 42,
+  "obs_resolution": [
+    120,
+    160
+  ],
+  "feat_method": "hog",
+  "feat_dim": 9576,
+  "landmark_labels": [
+    "red_box",
+    "blue_box",
+    "green_ball",
+    "yellow_ball"
+  ]
+}

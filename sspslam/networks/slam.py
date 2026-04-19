@@ -238,27 +238,37 @@ class SLAMNetwork(nengo.network.Network):
             
         
         with self:
+            # -------------------------------------------------------------
+            # INPUT NODES
+            # -------------------------------------------------------------
             self.velocity_input = nengo.Node(size_in=domain_dim, label='vel_input')
             self.landmark_id_input = nengo.Node(size_in=d, label='lm_id_input')
             
             self.landmark_vec_ssp = nengo.Node(size_in=d, label='lm_vecssp_input')
-            # self.no_landmark_in_view = nengo.Node(is_landmark_in_view, size_in=domain_dim, label='lm_in_view_input')
-            # nengo.Connection(self.landmark_vec_input, self.no_landmark_in_view, synapse=None)
             self.no_landmark_in_view = nengo.Node(size_in=1, label='lm_in_view_input')
             
+            # This node calculates the correction term for the path integrator based 
+            # on the difference between the PI estimate and the Map's position estimate.
             self.update_state = nengo.Node(update_state_func,size_in=2*d + 1)
             nengo.Connection(self.no_landmark_in_view, self.update_state[-1], synapse=None)
              
-            # PI network
+            # -------------------------------------------------------------
+            # 1. PI NETWORK: Path Integration (Keeps track of position based on velocity)
+            # -------------------------------------------------------------
             self.pathintegrator = PathIntegration(ssp_space, pi_n_neurons, tau_pi,
                                     max_radius=rad_scaling_factor,
                                     scaling_factor=vel_scaling_factor,
                                     stable=True,solver_weights=False, label='pathint')
             self.output = self.pathintegrator.output
             nengo.Connection(self.velocity_input, self.pathintegrator.velocity_input, synapse=None)
+            
+            # The PI network takes iterative corrections from `update_state`
             nengo.Connection(self.update_state, self.pathintegrator.input, synapse=None)
             
-            # Object vec cells
+            # -------------------------------------------------------------
+            # 2. LANDMARK GLOBAL LOCATION (Binding relative vec + self-position)
+            # -------------------------------------------------------------
+            # Object vec cells: Represents the relative vector to the landmark
             self.ovc_ens = nengo.Ensemble(ovc_n_neurons, d, encoders=OVC_encoders)
             nengo.Connection(self.landmark_vec_ssp,self.ovc_ens, synapse=None)
             
@@ -284,17 +294,27 @@ class SLAMNetwork(nengo.network.Network):
             else:
                 nengo.Connection(self.pathintegrator.output, self.landmark_ssp_ens.input_a, synapse=tau)
 
-            # Env map
+            # -------------------------------------------------------------
+            # 3. ENVIRONMENT MAP (Associative Memory)
+            # -------------------------------------------------------------
             self.assomemory = AssociativeMemory(mem_n_neurons, d, d, intercept,
                                            voja_learning_rate=voja_learning_rate,
                                            pes_learning_rate=pes_learning_rate,
                                            voja=voja,encoders=encoders)
 
+            # Map inputs:
+            # - Key: Landmark Identity (SP)
+            # - Value: Landmark Absolute Location (SSP) from landmark_ssp_ens
             nengo.Connection(self.landmark_id_input, self.assomemory.key_input, synapse=None)
             nengo.Connection(self.landmark_ssp_ens.output, self.assomemory.value_input, synapse=tau)
             nengo.Connection(self.no_landmark_in_view, self.assomemory.learning, synapse=None)
             
-            # Estimate position using env map
+            # -------------------------------------------------------------
+            # 4. MEMORY RECALL (Correcting Self-Position)
+            # -------------------------------------------------------------
+            # Estimate position using env map by unbinding (Circular Convolution with inverse)
+            # `position_estimate` represents: Recalled Landmark Absolute Location (*) Inverse(Landmark Vector)
+            # This yields an "expected" agent position!
             self.position_estimate = CircularConvolution(circonv_n_neurons, d, invert_a=True, label='newpos_circonv')
             nengo.Connection(self.ovc_ens, self.position_estimate.input_a, synapse=tau,
                              function=lambda x: ssp_space.make_unitary(x))
