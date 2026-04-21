@@ -9,7 +9,12 @@ import numpy as np
 import nengo
 import sys, os, time
 
-sys.path.insert(1, os.path.dirname(os.getcwd()))
+try:
+    import cv2
+except ImportError:
+    raise ImportError("run_event_orb_slam.py requires opencv-python. Install with: pip install opencv-python")
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import sspslam
 from sspslam.networks import SLAMNetwork, get_slam_input_functions_from_features
 from sspslam.perception import ImageFeatureEncoder
@@ -36,7 +41,6 @@ def generate_dummy_event_dataset():
         
         # A 50x50 noisy patch acting as events around a corner moving strictly rightwards
         square = np.zeros((50, 50), dtype=np.uint8)
-        cv2 = __import__('cv2') # inline import for speed
         cv2.randu(square, 150, 255)
         
         offset = 50 + i * 5

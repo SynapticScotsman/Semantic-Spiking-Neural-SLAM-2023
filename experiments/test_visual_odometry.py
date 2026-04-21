@@ -1,11 +1,18 @@
-import cv2
 import numpy as np
 import unittest
 import sys, os
 
-sys.path.insert(1, os.path.dirname(os.getcwd()))
+sys.path.insert(1, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+try:
+    import cv2
+    HAS_CV2 = True
+except ImportError:
+    HAS_CV2 = False
+
 from sspslam.perception.visual_odometry import ORBVisualOdometry
 
+@unittest.skipUnless(HAS_CV2, "opencv-python not installed — skipping visual odometry test")
 class TestVisualOdometry(unittest.TestCase):
     def test_vo_tracking(self):
         vo = ORBVisualOdometry()

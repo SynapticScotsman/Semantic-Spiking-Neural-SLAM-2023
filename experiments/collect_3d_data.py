@@ -85,12 +85,17 @@ if args.feat_method != "none":
             print(f"\nExtracting CLIP features (dim={feat_dim}) from {len(rgb_frames)} frames...")
             from PIL import Image
             
-            # Extract features from every frame using CLIP
+            # Per-object features: use CLIP text encoding of object label as a stable
+            # per-object identity, blended with the frame's image features.
+            # This gives each object a distinct appearance SP while remaining grounded
+            # in visual context. Pure frame features would make all objects identical.
             feature_vectors = np.zeros((len(rgb_frames), args.n_objects, feat_dim), dtype=np.float32)
             frame_features = clip_extractor.encode_image([Image.fromarray(f) for f in rgb_frames])
-            
+            label_features = clip_extractor.encode_text(data["landmark_labels"])  # (n_objects, feat_dim)
+
             for j in range(args.n_objects):
-                feature_vectors[:, j, :] = frame_features
+                # 50/50 blend of frame appearance and object-specific label embedding
+                feature_vectors[:, j, :] = 0.5 * frame_features + 0.5 * label_features[j]
                 
         else:
             from sspslam.perception.image_feature_encoder import extract_sift, extract_hog, extract_orb
@@ -107,11 +112,24 @@ if args.feat_method != "none":
             feat_dim = test_feat.shape[0]
             print(f"\nExtracting {args.feat_method.upper()} features (dim={feat_dim}) from {len(rgb_frames)} frames...")
 
+            # Per-object features: frame-level descriptor plus a deterministic per-object
+            # perturbation so that each object maps to a distinct SP. Without bounding
+            # boxes we cannot crop per-object regions, so the perturbation is the
+            # lightweight stand-in for object identity.
             feature_vectors = np.zeros((len(rgb_frames), args.n_objects, feat_dim), dtype=np.float32)
-            frame_features = np.array([extract(frame) for frame in rgb_frames])
+            frame_features = np.array([extract(frame) for frame in rgb_frames])  # (T, feat_dim)
+            # Normalize each frame feature to unit length before blending, so the
+            # per-object identity vector contributes a meaningful fraction regardless
+            # of the raw descriptor magnitude (which varies by method).
+            frame_norms = np.linalg.norm(frame_features, axis=1, keepdims=True)
+            frame_features_norm = frame_features / np.maximum(frame_norms, 1e-8)
 
             for j in range(args.n_objects):
-                feature_vectors[:, j, :] = frame_features
+                rng = np.random.default_rng(seed=j)
+                obj_identity = rng.standard_normal(feat_dim).astype(np.float32)
+                obj_identity /= np.linalg.norm(obj_identity)
+                # 50/50 blend of frame appearance and stable per-object identity vector
+                feature_vectors[:, j, :] = 0.5 * frame_features_norm + 0.5 * obj_identity
 
         print(f"  Feature vectors shape: {feature_vectors.shape}")
 
@@ -131,7 +149,8 @@ if feature_vectors is not None:
     np.save(os.path.join(args.save_dir, "feature_vectors.npy"), feature_vectors)
 
 # Save a subset of frames (every 100th) for visualization
-np.save(os.path.join(args.save_dir, "rgb_frames_subset.npy"), rgb_frames[::100])
+subset_stride = max(1, len(rgb_frames) // 10)
+np.save(os.path.join(args.save_dir, "rgb_frames_subset.npy"), rgb_frames[::subset_stride])
 
 # Metadata
 metadata = {

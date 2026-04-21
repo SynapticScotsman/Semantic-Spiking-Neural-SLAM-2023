@@ -8,10 +8,11 @@ class EventVisionAdapter:
     tracks them across frames using Lucas-Kanade optical flow, and extracts ORB appearance descriptors.
     """
     
-    def __init__(self, max_landmarks=30, view_radius=3.0, fov_x=60.0):
+    def __init__(self, max_landmarks=30, view_radius=3.0, fov_x=60.0, backend='classic'):
         self.max_landmarks = max_landmarks
         self.view_radius = view_radius
         self.fov_x = fov_x # Horizontal Field of View in degrees
+        self.backend = backend
         
         # Detector and Extractor
         self.orb = cv2.ORB_create()
@@ -120,7 +121,8 @@ class EventVisionAdapter:
                 'dist': d,
                 'bearing': bearing,
                 'vector': vec,
-                'desc': descs[i].astype(np.float32)
+                'desc': descs[i].astype(np.float32),
+                'pos': (u, v),
             }
             
         self.history.append(frame_data)
@@ -142,21 +144,48 @@ class EventVisionAdapter:
         T = len(event_frames)
         
         if agent_velocities is None:
-            from .visual_odometry import ORBVisualOdometry
-            vo = ORBVisualOdometry()
+            if self.backend == 'gpert':
+                from .event_odometry import EventOdometry
+                vo = EventOdometry()
+            else:
+                from .visual_odometry import ORBVisualOdometry
+                vo = ORBVisualOdometry()
             estimated_vels = []
             
+        # GPERT simulation support
+        if self.backend == 'gpert':
+            try:
+                from .gpert_adapter import SimulatedGPERTAdapter
+            except ImportError:
+                raise ImportError("gpert backend requires gpert_adapter module (not installed)")
+            gpert_adapter = SimulatedGPERTAdapter(max_landmarks=self.max_landmarks, fov_x=self.fov_x)
+            
         for t in range(T):
-            depth = 1.0 # arbitrary baseline
-            if landmark_depths is not None:
-                depth = landmark_depths[t]
+            if self.backend == 'gpert':
+                # Pass true depth directly as "simulated depth map" fallback (usually it's a 2D map from simulator)
+                # If landmark_depths is passed as a 2D map, send it. If it's a scalar, create a scalar map fallback
+                depth_map = landmark_depths[t] if landmark_depths is not None else np.ones_like(event_frames[t], dtype=np.float32)
+                # Ensure it's a 2D array since GPERT adapter expects one
+                if isinstance(depth_map, (float, int)):
+                    depth_map = np.ones_like(event_frames[t], dtype=np.float32) * depth_map
                 
-            self.process_frame(event_frames[t], true_distance=depth)
+                # We append history manually from GPERT adapter since process_dataset loops frames
+                frame_data = gpert_adapter.process_frame(event_frames[t], depth_map)
+                self.history.append(frame_data)
+                
+            else:
+                depth = 1.0 # arbitrary baseline
+                if landmark_depths is not None:
+                    depth = landmark_depths[t]
+                self.process_frame(event_frames[t], true_distance=depth)
             
             if agent_velocities is None:
-                vel, _, _ = vo.process_frame(event_frames[t])
-                # vo computes 3D velocity (x, y, z). We project to horizontal ground plane (x, z)
-                estimated_vels.append([vel[0], vel[2]])
+                if self.backend == 'gpert':
+                    vel, rot = vo.process_frame(event_frames[t])
+                    estimated_vels.append([vel[0], vel[2]]) # X and Z
+                else:
+                    vel, _, _ = vo.process_frame(event_frames[t])
+                    estimated_vels.append([vel[0], vel[2]])
                 
         # Find which track ids were most stable (seen in most frames)
         track_counts = {}

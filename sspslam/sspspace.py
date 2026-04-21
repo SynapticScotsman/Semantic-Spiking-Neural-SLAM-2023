@@ -593,12 +593,17 @@ class SSPSpace:
     def train_decoder_net(self,n_training_pts=200000,n_hidden_units = 8,
                           learning_rate=1e-3,n_epochs = 20, load_file=True, save_file=True,
                           folder='decode_params'):
-        import tensorflow as tf
-        tf.config.set_visible_devices([],'GPU')
-
-        import sklearn
-        from tensorflow import keras
-        from tensorflow.keras import layers#, regularizers
+        try:
+            import tensorflow as tf
+            tf.config.set_visible_devices([], 'GPU')
+            import sklearn
+            from tensorflow import keras
+            from tensorflow.keras import layers
+        except ImportError as e:
+            raise ImportError(
+                "train_decoder_net requires tensorflow and scikit-learn. "
+                "Install with: pip install tensorflow scikit-learn"
+            ) from e
         
         path_name = f'{folder}/{type(self).__name__}_domaindim{self.domain_dim}_lenscale{self.length_scale[0]}_seed{self.rng.__str__()}.h5'
 

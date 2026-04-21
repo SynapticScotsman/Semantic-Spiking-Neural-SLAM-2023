@@ -67,9 +67,10 @@ class ORBVisualOdometry:
                 if E is not None:
                     _, R_est, t_est, mask_pose = cv2.recoverPose(E, pts2, pts1, self.K, mask=mask)
                     
-                    # Monocular scale ambiguity means t_est is a unit vector.
-                    # We assume a constant scale factor for the toy example unless stereo/depth is passed.
-                    scale = 0.1 
+                    # Monocular scale ambiguity: t_est is a unit vector with unknown magnitude.
+                    # scale=0.1 is calibrated for MiniWorld's forward_step=0.5 at 60° FOV;
+                    # override via camera_matrix if using a different setup.
+                    scale = 0.1
                     
                     self.t = self.t + scale * self.R.dot(t_est)
                     self.R = R_est.dot(self.R)

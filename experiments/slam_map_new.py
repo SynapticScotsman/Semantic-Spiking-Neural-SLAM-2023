@@ -3,15 +3,27 @@ import nengo
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 import sys, os
-sys.path.insert(1, os.path.dirname(os.getcwd()))
-os.chdir("..")
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import sspslam
-import nengo_ocl
 from sspslam.networks import get_slam_input_functions
 import sspslam.utils as utils
 import matplotlib.gridspec as gridspec
 
-seed=0
+try:
+    import nengo_ocl
+    import pyopencl as cl
+    # Pick the first available platform/device without interactive prompt
+    platform = cl.get_platforms()[0]
+    device   = platform.get_devices()[0]
+    ctx      = cl.Context([device])
+    _SIMULATOR = lambda model, **kw: nengo_ocl.Simulator(model, context=ctx, **kw)
+    print(f"Using nengo_ocl on: {device.name}")
+except Exception:
+    _SIMULATOR = nengo.Simulator
+    print("Using nengo CPU simulator")
+
+seed = 0
+T = 60        # simulation time in seconds — set to 10 for a quick test run
 # ==========================================
 # 1. SETUP: Define Spatial Representations
 # ==========================================
@@ -30,7 +42,6 @@ ssp_space = sspslam.HexagonalSSPSpace(domain_dim,n_scales=8,n_rotates=5,
 d = ssp_space.ssp_dim
 
 # Generate test path
-T = 60
 dt = 0.001
 timesteps = np.arange(0, T, dt)
 path = np.hstack([nengo.processes.WhiteSignal(T, high=.05, seed=0).run(T,dt=dt),
@@ -294,7 +305,7 @@ nengo.rc['progress']['progress_bar'] = 'nengo.utils.progress.TerminalProgressBar
 # ==========================================
 # 5. RUN SIMULATION
 # ==========================================
-sim = nengo_ocl.Simulator(model)
+sim = _SIMULATOR(model)
 with sim:
     sim.run(T)
 
@@ -436,17 +447,17 @@ axs[2].plot(item_locations[[0,2],0],item_locations[[0,2],1], 'X',markersize=6,
 axs[3].plot(item_locations[:2,0],item_locations[:2,1], 'X',markersize=6,
              markeredgewidth=0.5, markerfacecolor='k',markeredgecolor='white')
 
-fig.text(0.2, 0.93, '\\textbf{A}', size=11, va="baseline", ha="left")
-fig.text(0.52,0.93, '\\textbf{B}', size=11, va="baseline", ha="left")
-fig.text(0.72,0.93, '\\textbf{C}', size=11, va="baseline", ha="left")
-fig.text(0.52,0.45, '\\textbf{D}', size=11, va="baseline", ha="left")
-fig.text(0.75,0.45, '\\textbf{E}', size=11, va="baseline", ha="left")
+fig.text(0.2, 0.93, 'A', size=11, va="baseline", ha="left", fontweight='bold')
+fig.text(0.52,0.93, 'B', size=11, va="baseline", ha="left", fontweight='bold')
+fig.text(0.72,0.93, 'C', size=11, va="baseline", ha="left", fontweight='bold')
+fig.text(0.52,0.45, 'D', size=11, va="baseline", ha="left", fontweight='bold')
+fig.text(0.75,0.45, 'E', size=11, va="baseline", ha="left", fontweight='bold')
 
-fig.text(0.3, 0.93, "Environment", va="baseline", ha="center",fontsize=11)
-fig.text(0.6, 0.93, "Blue triangle", va="baseline", ha="center",fontsize=11)
-fig.text(0.82, 0.93, "All blue objects", va="baseline", ha="center",fontsize=11)
-fig.text(0.6, 0.45, "All triangles", va="baseline", ha="center",fontsize=11)
-fig.text(0.82, 0.45, "Walls", va="baseline", ha="center",fontsize=11)
+fig.text(0.3, 0.93, "Environment", va="baseline", ha="center", fontsize=11)
+fig.text(0.6, 0.93, "Blue triangle", va="baseline", ha="center", fontsize=11)
+fig.text(0.82, 0.93, "All blue objects", va="baseline", ha="center", fontsize=11)
+fig.text(0.6, 0.45, "All triangles", va="baseline", ha="center", fontsize=11)
+fig.text(0.82, 0.45, "Walls", va="baseline", ha="center", fontsize=11)
 fig.show()
 # utils.save(fig, "wall_env_obj_queries.pdf")
 # fig.savefig("wall_env_obj_queries.pdf")
@@ -539,12 +550,11 @@ axs[0].set_xlabel('Time [s]')
 axs[0].set_xlim([0,T])
 axs[1].set_xlim([0,T])
 
-fig.text(0.08, 0.93, '\\textbf{A} $\quad$ Cosine error of landmark queries', size=11, va="baseline", ha="left")
-fig.text(0.52, 0.93, '\\textbf{B} $\quad$ Distance error of landmark queries', size=11, va="baseline", ha="left")
-# fig.text(0.55, 0.93, '\\textbf{C}', size=12, va="baseline", ha="left")
+fig.text(0.08, 0.93, 'A  Cosine error of landmark queries', size=11, va="baseline", ha="left", fontweight='bold')
+fig.text(0.52, 0.93, 'B  Distance error of landmark queries', size=11, va="baseline", ha="left", fontweight='bold')
 
-fig.text(0.08, 0.43, "\\textbf{C} $\quad$ Environment \& query area", va="baseline", ha="left",fontsize=11)
-fig.text(0.65, 0.43, "\\textbf{D} $\quad$ Similarity between area query \& landmarks", va="baseline", ha="center",fontsize=11)
+fig.text(0.08, 0.43, "C  Environment & query area", va="baseline", ha="left", fontsize=11, fontweight='bold')
+fig.text(0.65, 0.43, "D  Similarity between area query & landmarks", va="baseline", ha="center", fontsize=11, fontweight='bold')
 fig.tight_layout()
 fig.show()
 fig

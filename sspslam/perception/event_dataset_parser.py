@@ -48,7 +48,7 @@ def accumulate_events_to_frames(t, x, y, p, dt_window, width, height):
     t_start = t[0]
     t_end = t[-1]
     
-    n_frames = int(np.ceil((t_end - t_start) / dt_window))
+    n_frames = max(1, int(np.ceil((t_end - t_start) / dt_window)))
     frames = np.zeros((n_frames, height, width), dtype=np.uint8)
     times = t_start + np.arange(1, n_frames + 1) * dt_window
     

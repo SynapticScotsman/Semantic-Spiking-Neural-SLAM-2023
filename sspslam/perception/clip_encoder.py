@@ -15,14 +15,26 @@ class CLIPFeatureExtractor:
     """
     
     def __init__(self, model_name="openai/clip-vit-base-patch32", device=None):
-        import torch
-        from transformers import CLIPProcessor, CLIPModel
-        
+        try:
+            import torch
+            from transformers import CLIPProcessor, CLIPModel
+        except ImportError as e:
+            raise ImportError(
+                "CLIPFeatureExtractor requires torch and transformers. "
+                "Install with: pip install torch transformers"
+            ) from e
+
         self.device = device if device else ("cuda" if torch.cuda.is_available() else "cpu")
         print(f"Loading CLIP model '{model_name}' on {self.device}...")
-        
-        self.model = CLIPModel.from_pretrained(model_name).to(self.device)
-        self.processor = CLIPProcessor.from_pretrained(model_name)
+
+        try:
+            self.model = CLIPModel.from_pretrained(model_name).to(self.device)
+            self.processor = CLIPProcessor.from_pretrained(model_name)
+        except Exception as e:
+            raise RuntimeError(
+                f"Failed to load CLIP model '{model_name}'. "
+                "Check your internet connection or HuggingFace cache."
+            ) from e
         
         # We output a fixed 512 dimension for 'clip-vit-base-patch32'
         self.feat_dim = self.model.config.projection_dim
