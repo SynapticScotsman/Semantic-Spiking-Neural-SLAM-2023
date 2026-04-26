@@ -1,0 +1,1596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SSP-SLAM Robo-Dog Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    overflow: hidden;
+    font-family: 'Inter', system-ui, sans-serif;
+    background: #060b16;
+    color: #e2e8f0;
+    user-select: none;
+    touch-action: none;
+}
+#game-container { position: absolute; inset: 0; z-index: 1; }
+
+/* ── Stats panel ───────────────────────────────────────────────── */
+#stats-panel {
+    position: absolute; top: 16px; left: 16px; z-index: 10;
+    background: linear-gradient(135deg, rgba(16,24,39,0.7), rgba(10,15,30,0.85));
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(56,189,248,0.2);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    border-radius: 16px; padding: 14px 18px;
+    min-width: 230px; font-size: 12px; line-height: 1.9;
+}
+#stats-panel h3 {
+    font-size: 11px; letter-spacing: 1.8px; text-transform: uppercase;
+    font-weight: 700; color: #38bdf8; margin-bottom: 8px;
+    color: #38bdf8; margin-bottom: 6px;
+}
+.stat-row { display: flex; justify-content: space-between; gap: 8px; }
+.stat-label { color: #94a3b8; }
+.stat-val   { color: #f1f5f9; font-weight: 600; }
+.bar-wrap   { width: 100%; background: #1e293b; border-radius: 4px; height: 6px; margin: 2px 0 4px; }
+.bar-fill   { height: 6px; border-radius: 4px; transition: width 0.15s; }
+.bar-slam   { background: #38bdf8; }
+.bar-dr     { background: #f87171; }
+.bar-cdr    { background: #f97316; }
+.bar-mem    { background: #a78bfa; }
+.tag-slam   { color: #38bdf8; }
+.tag-dr     { color: #f87171; }
+.tag-cdr    { color: #f97316; }
+.tag-corr   { color: #fbbf24; }
+
+/* ── Mode buttons ──────────────────────────────────────────────── */
+#mode-panel {
+    position: absolute; top: 16px; right: 16px; z-index: 10;
+    display: flex; flex-direction: column; gap: 6px; align-items: flex-end;
+}
+.mode-btn {
+    padding: 8px 20px; border-radius: 20px; border: 1px solid rgba(56,189,248,0.3);
+    background: linear-gradient(135deg, rgba(16,24,39,0.7), rgba(10,15,30,0.85));
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    color: #94a3b8; font-size: 11px; font-weight: 600; letter-spacing: 0.8px; 
+    cursor: pointer; transition: all 0.2s cubic-bezier(0.175,0.885,0.32,1.275);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+.mode-btn:hover  { 
+    border-color: #38bdf8; color: #e2e8f0; 
+    transform: translateY(-2px); box-shadow: 0 6px 16px rgba(56,189,248,0.2);
+}
+.mode-btn.active { 
+    background: #38bdf8; color: #0a0f1e; border-color: #38bdf8; 
+    box-shadow: 0 0 15px rgba(56,189,248,0.4);
+}
+.mode-btn.dr-active { 
+    background: #f87171; color: #0a0f1e; border-color: #f87171;
+    box-shadow: 0 0 15px rgba(248,113,113,0.4);
+}
+
+/* ── Speech bubble ─────────────────────────────────────────────── */
+#speech-wrap {
+    position: absolute; top: 16px; left: 50%; transform: translateX(-50%);
+    z-index: 10; pointer-events: none;
+}
+#speech {
+    background: rgba(255,255,255,0.95); color: #0a0f1e;
+    padding: 9px 20px; border-radius: 22px;
+    font-weight: 600; font-size: 13px; max-width: 480px; text-align: center;
+    opacity: 0; transform: translateY(10px);
+    transition: all 0.35s cubic-bezier(0.175,0.885,0.32,1.275);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+    white-space: normal; word-break: break-word;
+}
+#speech.show { opacity: 1; transform: translateY(0); }
+
+/* ── Mission Banner ────────────────────────────────────────────── */
+#mission-banner {
+    position: absolute; top: 70px; left: 50%; transform: translateX(-50%);
+    z-index: 9; pointer-events: none;
+    background: linear-gradient(90deg, rgba(56,189,248,0.1), rgba(56,189,248,0.3) 50%, rgba(56,189,248,0.1));
+    border-top: 1px solid rgba(56,189,248,0.5); border-bottom: 1px solid rgba(56,189,248,0.5);
+    padding: 8px 32px; color: #e2e8f0; font-size: 14px; font-weight: 600;
+    text-align: center; letter-spacing: 1px; text-transform: uppercase;
+    opacity: 0; transition: opacity 0.4s;
+    box-shadow: 0 4px 16px rgba(56,189,248,0.2);
+}
+#mission-banner.active { opacity: 1; }
+#mission-banner span { color: #38bdf8; font-weight: 700; text-shadow: 0 0 10px rgba(56,189,248,0.8); }
+
+/* ── Mini-map ──────────────────────────────────────────────────── */
+#minimap-wrap {
+    position: absolute; bottom: 16px; left: 16px; z-index: 10;
+    background: rgba(10,15,30,0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(56,189,248,0.2);
+    border-radius: 16px; overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+#minimap { display: block; width: 220px; height: 220px; }
+#minimap-label {
+    background: rgba(10,15,30,0.9); text-align: center;
+    font-size: 10px; letter-spacing: 1px; text-transform: uppercase;
+    color: #38bdf8; padding: 4px 0;
+}
+#minimap-legend {
+    background: rgba(10,15,30,0.9); padding: 4px 8px;
+    font-size: 10px; display: flex; gap: 10px; justify-content: center;
+}
+.leg { display: flex; align-items: center; gap: 3px; }
+.leg-dot { width: 8px; height: 3px; border-radius: 2px; }
+
+/* ── SSP heatmap ───────────────────────────────────────────────── */
+#heatmap-wrap {
+    position: absolute; bottom: 16px; right: 16px; z-index: 10;
+    background: rgba(10,15,30,0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(168,139,250,0.2);
+    border-radius: 16px; overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+#heatmap { display: block; width: 180px; height: 180px; }
+#heatmap-label {
+    background: rgba(10,15,30,0.9); text-align: center;
+    font-size: 10px; letter-spacing: 1px; text-transform: uppercase;
+    color: #a78bfa; padding: 4px 0;
+}
+
+/* ── D-pad ─────────────────────────────────────────────────────── */
+.dpad {
+    position: absolute; bottom: 20px; right: 200px; z-index: 30;
+    width: 130px; height: 130px;
+    display: grid; grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; gap: 4px;
+}
+.d-btn {
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px; display: flex; align-items: center; justify-content: center;
+    font-size: 18px; color: #94a3b8; cursor: pointer; touch-action: none;
+}
+.d-btn:active, .d-btn.active { background: rgba(56,189,248,0.4); }
+.d-up    { grid-column:2; grid-row:1; }
+.d-left  { grid-column:1; grid-row:2; }
+.d-right { grid-column:3; grid-row:2; }
+.d-down  { grid-column:2; grid-row:3; }
+
+/* ── Overlay screens ───────────────────────────────────────────── */
+.screen {
+    position: absolute; inset: 0; z-index: 40;
+    background: radial-gradient(circle at center, rgba(15,23,42,0.95) 0%, rgba(6,11,22,0.98) 100%);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.5s ease;
+}
+.screen.active { opacity: 1; pointer-events: auto; }
+.screen h1 { 
+    font-size: 3rem; font-weight: 700; letter-spacing: -0.5px;
+    background: linear-gradient(to right, #38bdf8, #818cf8);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    text-shadow: 0 4px 32px rgba(56,189,248,0.4); margin-bottom: 16px; 
+}
+.screen p  { font-size: 1.05rem; color: #cbd5e1; max-width: 540px; text-align: center; margin-bottom: 32px; line-height: 1.6; }
+.btn-primary {
+    background: linear-gradient(135deg, #38bdf8, #0ea5e9); color: #0f172a; border: none;
+    padding: 14px 40px; font-size: 1.05rem; font-weight: 700; border-radius: 30px;
+    cursor: pointer; transition: all 0.2s cubic-bezier(0.175,0.885,0.32,1.275);
+    box-shadow: 0 8px 24px rgba(56,189,248,0.3); margin: 6px;
+}
+.btn-primary:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 12px 32px rgba(56,189,248,0.5); }
+.btn-secondary {
+    background: transparent; color: #38bdf8; border: 1.5px solid rgba(56,189,248,0.5);
+    padding: 12px 32px; font-size: 0.95rem; font-weight: 600; border-radius: 30px;
+    cursor: pointer; margin: 6px; transition: all 0.2s;
+}
+.btn-secondary:hover { background: rgba(56,189,248,0.1); border-color: #38bdf8; transform: translateY(-1px); }
+.info-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 0 0 24px 0;
+    max-width: 600px;
+}
+.info-card {
+    background: rgba(30,41,59,0.4); border: 1px solid rgba(56,189,248,0.15);
+    border-radius: 12px; padding: 16px; font-size: 0.85rem; line-height: 1.6; color: #94a3b8;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
+    transition: border-color 0.3s;
+}
+.info-card:hover { border-color: rgba(56,189,248,0.4); }
+.info-card strong { color: #e2e8f0; display: block; margin-bottom: 6px; font-size: 0.95rem; font-weight: 600; }
+.flash {
+    position: absolute; inset: 0; pointer-events: none; z-index: 5;
+    background: radial-gradient(circle at 50% 50%, rgba(56,189,248,0.25), transparent 70%);
+    opacity: 0; transition: opacity 0.15s;
+}
+</style>
+</head>
+<body>
+
+<div id="game-container"></div>
+<div class="flash" id="flash"></div>
+
+<!-- Stats panel -->
+<div id="stats-panel">
+    <h3>SSP-SLAM Status</h3>
+    <div class="stat-row"><span class="stat-label">SLAM similarity</span><span class="stat-val tag-slam" id="st-slam-sim">1.00</span></div>
+    <div class="bar-wrap"><div class="bar-fill bar-slam" id="bar-slam" style="width:100%"></div></div>
+    <div class="stat-row"><span class="stat-label">Neural DR sim</span><span class="stat-val tag-dr" id="st-dr-sim">1.00</span></div>
+    <div class="bar-wrap"><div class="bar-fill bar-dr" id="bar-dr" style="width:100%"></div></div>
+    <div class="stat-row"><span class="stat-label">SLAM error</span><span class="stat-val tag-slam" id="st-slam-err">0.00 m</span></div>
+    <div class="bar-wrap"><div class="bar-fill bar-slam" id="bar-err-slam" style="width:0%"></div></div>
+    <div class="stat-row"><span class="stat-label">Neural DR err</span><span class="stat-val tag-dr" id="st-dr-err">0.00 m</span></div>
+    <div class="bar-wrap"><div class="bar-fill bar-dr" id="bar-err-dr" style="width:0%"></div></div>
+    <div class="stat-row"><span class="stat-label">Classic DR err</span><span class="stat-val tag-cdr" id="st-cdr-err">0.00 m</span></div>
+    <div class="bar-wrap"><div class="bar-fill bar-cdr" id="bar-err-cdr" style="width:0%"></div></div>
+    <div class="stat-row"><span class="stat-label">Memory</span><span class="stat-val" id="st-mem">0 / 10</span></div>
+    <div class="bar-wrap"><div class="bar-fill bar-mem" id="bar-mem" style="width:0%"></div></div>
+    <div class="stat-row"><span class="stat-label">Corrections fired</span><span class="stat-val tag-corr" id="st-corr">0</span></div>
+    <div class="stat-row"><span class="stat-label">Sim time</span><span class="stat-val" id="st-time">0.0 s</span></div>
+    <div id="mission-stat" style="display:none; margin-top:8px; border-top:1px solid rgba(56,189,248,0.2); padding-top:8px;">
+        <div class="stat-row"><span class="stat-label">Mission</span><span class="stat-val tag-slam" id="st-mission-tgt">-</span></div>
+        <div class="stat-row"><span class="stat-label">Distance</span><span class="stat-val" id="st-mission-dist">0.00 m</span></div>
+    </div>
+</div>
+
+<!-- Mode buttons -->
+<div id="mode-panel">
+    <button class="mode-btn active" id="btn-slam" onclick="setMode('SLAM_AUTO')">⚡ SLAM Autopilot</button>
+    <button class="mode-btn" id="btn-mission" onclick="setMode('MISSION_AUTO')" style="border-color:rgba(56,189,248,0.8); color:#38bdf8; box-shadow: 0 0 8px rgba(56,189,248,0.3);">🎯 Mission Mode</button>
+    <button class="mode-btn" id="btn-dr" onclick="setMode('DR_AUTO')">📡 DR Only</button>
+    <button class="mode-btn" id="btn-manual" onclick="setMode('MANUAL')">🕹 Manual</button>
+    <button class="mode-btn" id="btn-cam" onclick="toggleCam()" style="border-color:rgba(168,139,250,0.4); color:#a78bfa;">🎥 Dog Eye View</button>
+    <button class="mode-btn" onclick="resetSim()" style="margin-top:6px; border-color:rgba(251,191,36,0.4); color:#fbbf24;">↺ Reset</button>
+</div>
+
+<!-- Speech bubble -->
+<div id="speech-wrap"><div id="speech"></div></div>
+
+<!-- Mission Banner -->
+<div id="mission-banner">Navigate to: <span id="mission-target-name">...</span></div>
+
+<!-- Mini-map -->
+<div id="minimap-wrap">
+    <canvas id="minimap" width="200" height="200"></canvas>
+    <div id="minimap-label">Cognitive Map</div>
+    <div id="minimap-legend">
+        <span class="leg"><span class="leg-dot" style="background:#38bdf8"></span>SLAM</span>
+        <span class="leg"><span class="leg-dot" style="background:#f87171"></span>Neural DR (SSP)</span>
+        <span class="leg"><span class="leg-dot" style="background:#f97316"></span>Classic DR</span>
+        <span class="leg"><span class="leg-dot" style="background:#94a3b8"></span>True</span>
+        <span class="leg"><span class="leg-dot" style="background:#fbbf24; width:8px; height:8px; border-radius:50%"></span>LM</span>
+    </div>
+</div>
+
+<!-- SSP heatmap -->
+<div id="heatmap-wrap">
+    <canvas id="heatmap" width="160" height="160"></canvas>
+    <div id="heatmap-label">SSP Belief (SLAM)</div>
+</div>
+
+<!-- D-pad -->
+<div class="dpad">
+    <div class="d-btn d-up"    id="d-up">▲</div>
+    <div class="d-btn d-left"  id="d-left">◀</div>
+    <div class="d-btn d-right" id="d-right">▶</div>
+    <div class="d-btn d-down"  id="d-down">▼</div>
+</div>
+
+<!-- Start screen -->
+<div class="screen active" id="start-screen">
+    <h1>SSP-SLAM Robo-Dog</h1>
+    <p>Watch a robo-dog build a cognitive map using <strong>Spatial Semantic Pointers</strong>.
+    Phase-coded neural oscillators track position. Landmark loop-closures correct drift.
+    Compare three methods in real time:
+    <span style="color:#38bdf8">SSP-SLAM</span> (neural + corrections),
+    <span style="color:#f87171">Neural DR</span> (SSP path integration, no corrections), and
+    <span style="color:#f97316">Classic DR</span> (simple x += v, no corrections).</p>
+    <div class="info-grid">
+        <div class="info-card"><strong>Path Integration</strong>Velocity rotates Fourier phases → SSP tracks position. Neural noise accumulates as √t drift.</div>
+        <div class="info-card"><strong>Associative Memory</strong>First landmark visit stores SSP. Revisit recalls stored location → loop closure correction.</div>
+        <div class="info-card"><strong>Loop Closure</strong>If recalled SSP sim > threshold, nudge PI estimate toward memory. Bounds drift to O(1).</div>
+        <div class="info-card"><strong>SSP Heatmap</strong>Shows the neural "belief" — which positions are consistent with current phase state.</div>
+    </div>
+    <button class="btn-primary" onclick="startDemo()">Launch Demo 🐾</button>
+</div>
+
+<!-- Win screen -->
+<div class="screen" id="win-screen">
+    <h1>Map Complete! 🗺️</h1>
+    <p id="win-msg">SLAM successfully mapped the area.</p>
+    <button class="btn-primary" onclick="resetSim()">Run Again</button>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  CONFIG
+// ═══════════════════════════════════════════════════════════
+const ARENA_R    = 25;
+const SPEED      = 0.12;
+const ROT_SPEED  = 0.06;
+const DT         = 1/60;
+let N_LM         = 4;
+const VIEW_RAD   = 5.0;
+const VIEW_FOV   = Math.PI * 2 / 3; // 120° forward cone (±60° from heading)
+
+// SSP
+const N_FREQS    = 48;
+const SSP_DIM    = 96;  // 2 * N_FREQS
+const LS         = 4.0; // length scale (tuned for 50m arena to reduce aliasing)
+const NOISE_SLAM = 0.025;  // phase noise per step (SLAM path)
+const NOISE_DR   = 0.025;  // same phase noise, no corrections
+const NOISE_CDR  = 0.06;   // higher Cartesian noise so classic DR visibly drifts
+const UPD_THRES  = 0.50;   // lowered slightly to allow easier loop closures
+const SHIFT_RATE = 0.50;   // stronger correction rate to snap back into place
+
+// ═══════════════════════════════════════════════════════════
+//  SSP MATH
+// ═══════════════════════════════════════════════════════════
+let freqVecs; // Float32Array(N_FREQS*2)
+
+function initFreqs(seed) {
+    freqVecs = new Float32Array(N_FREQS * 2);
+    let s = seed >>> 0;
+    function rand() {
+        s = Math.imul(1664525, s) + 1013904223 >>> 0;
+        return s / 0x100000000;
+    }
+    for (let k = 0; k < N_FREQS; k++) {
+        const u1 = Math.max(1e-10, rand()), u2 = rand();
+        const mag = Math.sqrt(-2 * Math.log(u1));
+        freqVecs[2*k]   = Math.cos(2 * Math.PI * u2) * mag;
+        freqVecs[2*k+1] = Math.sin(2 * Math.PI * u2) * mag;
+    }
+}
+
+function sspEncode(x, z) {
+    const s = new Float32Array(SSP_DIM);
+    for (let k = 0; k < N_FREQS; k++) {
+        const ph = (freqVecs[2*k]*x + freqVecs[2*k+1]*z) / LS;
+        s[2*k] = Math.cos(ph); s[2*k+1] = Math.sin(ph);
+    }
+    return s;
+}
+
+// Integrate velocity into SSP (complex rotation per frequency)
+function sspStep(ssp, vx, vz, sigma) {
+    const r = new Float32Array(SSP_DIM);
+    for (let k = 0; k < N_FREQS; k++) {
+        const dp = (freqVecs[2*k]*vx + freqVecs[2*k+1]*vz) / LS
+                 + (Math.random()-0.5) * sigma * 2; // phase noise
+        const c = Math.cos(dp), sn = Math.sin(dp);
+        const re = ssp[2*k], im = ssp[2*k+1];
+        r[2*k]   = re*c - im*sn;
+        r[2*k+1] = re*sn + im*c;
+    }
+    return r;
+}
+
+function sspSim(a, b) {
+    let d = 0;
+    for (let i = 0; i < SSP_DIM; i++) d += a[i]*b[i];
+    return d / N_FREQS; // normalised: 1 at same pos, ≈0 far away
+}
+
+// Nudge ssp a toward b by alpha (phase interpolation)
+function sspBlend(a, b, alpha) {
+    const r = new Float32Array(SSP_DIM);
+    for (let k = 0; k < N_FREQS; k++) {
+        let da = Math.atan2(a[2*k+1], a[2*k]);
+        let db = Math.atan2(b[2*k+1], b[2*k]);
+        let dd = db - da;
+        while (dd >  Math.PI) dd -= 2*Math.PI;
+        while (dd < -Math.PI) dd += 2*Math.PI;
+        const ang = da + alpha * dd;
+        r[2*k] = Math.cos(ang); r[2*k+1] = Math.sin(ang);
+    }
+    return r;
+}
+
+// Decode: grid search over arena
+function sspDecode(ssp, nG) {
+    nG = nG || 22;
+    let best = -1e9, bx = 0, bz = 0;
+    for (let i = 0; i <= nG; i++) for (let j = 0; j <= nG; j++) {
+        const x = -ARENA_R + 2*ARENA_R*i/nG;
+        const z = -ARENA_R + 2*ARENA_R*j/nG;
+        const s = sspSim(ssp, sspEncode(x, z));
+        if (s > best) { best = s; bx = x; bz = z; }
+    }
+    return { x: bx, z: bz, sim: best };
+}
+
+// ═══════════════════════════════════════════════════════════
+//  GLOBAL STATE
+// ═══════════════════════════════════════════════════════════
+let scene, camera, renderer, animId;
+let dogGroup, dogBody, dogHead, dogTail, dogLegs = [];
+let walkCycle = 0;
+let lmMeshes = [], goalMesh;
+let groundMesh, ringMesh;
+let flashEl; // cached after DOM ready
+
+let landmarks = []; // {id, x, z, color, type}
+
+// SLAM state
+let piSSP_slam, piSSP_dr;
+let slamMemory = {};  // id → {absSSP}
+let truePos = { x: 0, z: 0 };
+let slamPos = { x: 0, z: 0 };
+let drPos   = { x: 0, z: 0 }; // Neural DR
+let classicDrPos = { x: 0, z: 0 }; // Cartesian DR
+let slamSim = 1.0, drSim = 1.0;
+let sumErrSlam = 0, sumErrDr = 0, sumErrCdr = 0, errSamples = 0;
+let corrCount = 0, simTime = 0, lastCorrTime = -1;
+let pathHist = [];   // [{tx,tz, sx,sz, dx,dz}]
+let HIST_MAX = 600;
+let frameIdx = 0, heatDirty = true, heatTimer = 0;
+let decodeTimer = 0;
+
+let playerAngle = 0;
+let gameMode = 'SLAM_AUTO';
+let running = false;
+let goalReached = false;
+let inputs = {up:false, down:false, left:false, right:false};
+let camMode = 'overhead'; // 'overhead' or 'fpv'
+
+// Mission Mode State
+let missionPhase = 'explore';   // 'explore' | 'navigate' | 'complete'
+let missionTarget = null;       // landmark object
+let missionStartTime = 0;
+let missionsCompleted = 0;
+let missionDistTravel = 0;
+const MISSIONS_TO_WIN = 3;
+const MIN_LANDMARKS_FOR_MISSION = 3;
+let beaconMesh = null;
+
+// ═══════════════════════════════════════════════════════════
+//  LANDMARK POSITIONS
+// ═══════════════════════════════════════════════════════════
+function buildLandmarks() {
+    landmarks = [
+        { id: 'Red Box',       x:  15.0, z: -15.0, color: 0xf87171, type: 'box' },
+        { id: 'Blue Tube',     x: -18.0, z:  -6.0, color: 0x60a5fa, type: 'cylinder' },
+        { id: 'Green Tree',    x: -10.0, z:  18.0, color: 0x4ade80, type: 'tree' },
+        { id: 'Yellow Cone',   x:  15.0, z:  12.0, color: 0xfbbf24, type: 'cone' },
+        { id: 'Pink Sphere',   x: -20.0, z: -18.0, color: 0xf472b6, type: 'sphere' },
+        { id: 'Cyan Obelisk',  x:   3.0, z: -20.0, color: 0x22d3ee, type: 'obelisk' },
+        { id: 'Orange Torus',  x:  20.0, z:  -2.0, color: 0xfb923c, type: 'torus' },
+        { id: 'Purple Crystal', x: -5.0, z:  -8.0, color: 0xc084fc, type: 'crystal' }
+    ];
+    N_LM = landmarks.length;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  THREE.JS SCENE
+// ═══════════════════════════════════════════════════════════
+function initScene() {
+    const cont = document.getElementById('game-container');
+    flashEl = document.getElementById('flash'); // cache flash element
+
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x060b16);
+    scene.fog = new THREE.FogExp2(0x060b16, 0.010);
+
+    camera = new THREE.PerspectiveCamera(55, innerWidth/innerHeight, 0.1, 250);
+    camera.position.set(0, 20, 14);
+    camera.lookAt(0, 0, 0);
+
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.1;
+    renderer.outputEncoding = THREE.sRGBEncoding;
+    cont.appendChild(renderer.domElement);
+
+    // Lighting — cinematic 3-point + ambient
+    scene.add(new THREE.AmbientLight(0x334466, 0.6));
+    // Key light (warm sun)
+    const sun = new THREE.DirectionalLight(0xffeedd, 1.2);
+    sun.position.set(15, 30, 10); sun.castShadow = true;
+    sun.shadow.mapSize.set(2048, 2048);
+    sun.shadow.camera.left = -30; sun.shadow.camera.right = 30;
+    sun.shadow.camera.top = 30; sun.shadow.camera.bottom = -30;
+    sun.shadow.camera.near = 1; sun.shadow.camera.far = 80;
+    sun.shadow.bias = -0.001;
+    scene.add(sun);
+    // Fill light (cool blue)
+    const fill = new THREE.DirectionalLight(0x6688cc, 0.4);
+    fill.position.set(-20, 12, -15); scene.add(fill);
+    // Rim light (cyan accent)
+    const rim = new THREE.DirectionalLight(0x38bdf8, 0.5);
+    rim.position.set(-10, 8, 20); scene.add(rim);
+    // Hemisphere light for natural ambient gradient
+    scene.add(new THREE.HemisphereLight(0x1a2a4a, 0x0a0f1e, 0.4));
+
+    buildArena();
+    buildLandmarks();
+    buildLandmarkMeshes();
+    buildScenery();
+    buildDog();
+
+    // Render one static frame so the scene is visible behind the start screen
+    renderer.render(scene, camera);
+
+    window.addEventListener('resize', () => {
+        camera.aspect = innerWidth/innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(innerWidth, innerHeight);
+    });
+}
+
+function buildArena() {
+    // Floor — dark metallic ground
+    const floorG = new THREE.CircleGeometry(ARENA_R, 128);
+    const floorM = new THREE.MeshStandardMaterial({
+        color: 0x0f1a2e, roughness: 0.85, metalness: 0.15
+    });
+    groundMesh = new THREE.Mesh(floorG, floorM);
+    groundMesh.rotation.x = -Math.PI/2;
+    groundMesh.receiveShadow = true;
+    scene.add(groundMesh);
+
+    // Subtle grid lines
+    const gridH = new THREE.GridHelper(ARENA_R*2, 40, 0x1a2d4a, 0x141f35);
+    gridH.position.y = 0.005;
+    gridH.material.opacity = 0.4;
+    gridH.material.transparent = true;
+    scene.add(gridH);
+
+    // Arena wall — thicker, more dramatic
+    const ringG = new THREE.TorusGeometry(ARENA_R, 0.35, 12, 128);
+    const ringMat = new THREE.MeshStandardMaterial({
+        color: 0x1a3a6a, emissive: 0x0a1a3a, roughness: 0.3, metalness: 0.7
+    });
+    ringMesh = new THREE.Mesh(ringG, ringMat);
+    ringMesh.rotation.x = Math.PI/2;
+    ringMesh.position.y = 0.35;
+    scene.add(ringMesh);
+
+    // Boundary glow line
+    const glowG = new THREE.TorusGeometry(ARENA_R, 0.08, 6, 128);
+    const glowM = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
+    const glow = new THREE.Mesh(glowG, glowM);
+    glow.rotation.x = Math.PI/2; glow.position.y = 0.36;
+    scene.add(glow);
+
+    // Second inner glow ring (subtle)
+    const glow2G = new THREE.TorusGeometry(ARENA_R - 0.5, 0.03, 4, 128);
+    const glow2M = new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.25 });
+    const glow2 = new THREE.Mesh(glow2G, glow2M);
+    glow2.rotation.x = Math.PI/2; glow2.position.y = 0.02;
+    scene.add(glow2);
+
+    // Multiple spotlights for even illumination across large arena
+    [{ x: 0, z: 0 }, { x: 12, z: 12 }, { x: -12, z: -12 }, { x: 12, z: -12 }, { x: -12, z: 12 }].forEach(p => {
+        const spot = new THREE.SpotLight(0xeef4ff, 0.5, 55, Math.PI/3.5, 0.6);
+        spot.position.set(p.x, 28, p.z);
+        spot.castShadow = false;
+        scene.add(spot);
+        scene.add(spot.target);
+        spot.target.position.set(p.x, 0, p.z);
+    });
+
+    // Decorative ground rings for visual depth
+    [6, 12, 18, 23].forEach(r => {
+        const rG = new THREE.TorusGeometry(r, 0.025, 4, 128);
+        const rM = new THREE.MeshBasicMaterial({ color: 0x1a3050, transparent: true, opacity: 0.2 });
+        const rm = new THREE.Mesh(rG, rM);
+        rm.rotation.x = Math.PI/2; rm.position.y = 0.008;
+        scene.add(rm);
+    });
+}
+
+function buildLandmarkMeshes() {
+    Object.values(lmMeshes).forEach(m => scene.remove(m));
+    lmMeshes = {};
+    landmarks.forEach(lm => {
+        const g = new THREE.Group();
+        let topMesh;
+        
+        if (lm.type === 'box') {
+            const mat = new THREE.MeshPhongMaterial({ color: lm.color });
+            topMesh = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 0.8), mat);
+            topMesh.position.y = 0.4;
+        } else if (lm.type === 'cylinder') {
+            const mat = new THREE.MeshPhongMaterial({ color: lm.color });
+            topMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 1.2, 16), mat);
+            topMesh.position.y = 0.6;
+        } else if (lm.type === 'tree') {
+            const mat = new THREE.MeshPhongMaterial({ color: lm.color });
+            const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.6, 8), new THREE.MeshPhongMaterial({ color: 0x78350f }));
+            trunk.position.y = 0.3;
+            g.add(trunk);
+            topMesh = new THREE.Mesh(new THREE.DodecahedronGeometry(0.7), mat);
+            topMesh.position.y = 1.0;
+        } else if (lm.type === 'cone') {
+            const mat = new THREE.MeshPhongMaterial({ color: lm.color });
+            topMesh = new THREE.Mesh(new THREE.ConeGeometry(0.5, 1.2, 16), mat);
+            topMesh.position.y = 0.6;
+        } else if (lm.type === 'sphere') {
+            const mat = new THREE.MeshPhongMaterial({ color: lm.color, emissive: lm.color, emissiveIntensity: 0.2 });
+            topMesh = new THREE.Mesh(new THREE.SphereGeometry(0.6, 16, 16), mat);
+            topMesh.position.y = 0.6;
+        } else if (lm.type === 'obelisk') {
+            const mat = new THREE.MeshPhongMaterial({ color: lm.color, emissive: lm.color, emissiveIntensity: 0.15 });
+            topMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.35, 2.0, 4), mat);
+            topMesh.position.y = 1.0;
+        } else if (lm.type === 'torus') {
+            const mat = new THREE.MeshPhongMaterial({ color: lm.color });
+            topMesh = new THREE.Mesh(new THREE.TorusGeometry(0.5, 0.18, 8, 24), mat);
+            topMesh.position.y = 0.8;
+            topMesh.rotation.x = Math.PI / 4;
+        } else if (lm.type === 'crystal') {
+            const mat = new THREE.MeshPhongMaterial({ color: lm.color, emissive: lm.color, emissiveIntensity: 0.3, transparent: true, opacity: 0.85 });
+            topMesh = new THREE.Mesh(new THREE.OctahedronGeometry(0.55), mat);
+            topMesh.position.y = 0.7;
+            topMesh.rotation.y = Math.PI / 6;
+        }
+
+        topMesh.castShadow = true;
+        g.add(topMesh);
+
+        // Point light
+        const pl = new THREE.PointLight(lm.color, 0.5, 3.5);
+        pl.position.y = 1.55; g.add(pl);
+
+        g.position.set(lm.x, 0, lm.z);
+        g.userData = { id: lm.id, light: pl, topMesh: topMesh, origColor: lm.color };
+        scene.add(g);
+        lmMeshes[lm.id] = g;
+    });
+}
+
+function buildScenery() {
+    // Seeded random for consistent scenery placement
+    let seed = 12345;
+    function sRand() { seed = (seed * 16807 + 0) % 2147483647; return seed / 2147483647; }
+
+    const rockMat = new THREE.MeshPhongMaterial({ color: 0x2a3548, flatShading: true });
+    const darkRockMat = new THREE.MeshPhongMaterial({ color: 0x1a2535, flatShading: true });
+
+    // Scattered rocks (non-collidable decoration)
+    for (let i = 0; i < 40; i++) {
+        const ang = sRand() * Math.PI * 2;
+        const dist = 3 + sRand() * (ARENA_R - 4);
+        const rx = Math.cos(ang) * dist;
+        const rz = Math.sin(ang) * dist;
+        // Skip if too close to a landmark
+        const tooClose = landmarks.some(lm => Math.hypot(rx - lm.x, rz - lm.z) < 2.5);
+        if (tooClose) continue;
+
+        const s = 0.15 + sRand() * 0.4;
+        const rock = new THREE.Mesh(
+            new THREE.DodecahedronGeometry(s, 0),
+            sRand() > 0.5 ? rockMat : darkRockMat
+        );
+        rock.position.set(rx, s * 0.3, rz);
+        rock.rotation.set(sRand() * Math.PI, sRand() * Math.PI, sRand() * Math.PI);
+        rock.castShadow = true;
+        scene.add(rock);
+    }
+
+    // Glowing data pillars (like holographic pylons)
+    const pillarColors = [0x38bdf8, 0xa78bfa, 0x22d3ee, 0x818cf8];
+    for (let i = 0; i < 12; i++) {
+        const ang = sRand() * Math.PI * 2;
+        const dist = 6 + sRand() * (ARENA_R - 8);
+        const px = Math.cos(ang) * dist;
+        const pz = Math.sin(ang) * dist;
+        const tooClose = landmarks.some(lm => Math.hypot(px - lm.x, pz - lm.z) < 2.0);
+        if (tooClose) continue;
+
+        const h = 0.3 + sRand() * 0.8;
+        const col = pillarColors[Math.floor(sRand() * pillarColors.length)];
+        const pillar = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.04, 0.04, h, 6),
+            new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.5 })
+        );
+        pillar.position.set(px, h / 2, pz);
+        scene.add(pillar);
+
+        // Tiny glow at tip
+        const tip = new THREE.Mesh(
+            new THREE.SphereGeometry(0.06, 8, 8),
+            new THREE.MeshBasicMaterial({ color: col })
+        );
+        tip.position.set(px, h + 0.03, pz);
+        scene.add(tip);
+    }
+
+    // Small crystal clusters
+    const crystalColors = [0xc084fc, 0x818cf8, 0x38bdf8, 0x22d3ee];
+    for (let i = 0; i < 8; i++) {
+        const ang = sRand() * Math.PI * 2;
+        const dist = 5 + sRand() * (ARENA_R - 7);
+        const cx = Math.cos(ang) * dist;
+        const cz = Math.sin(ang) * dist;
+        const tooClose = landmarks.some(lm => Math.hypot(cx - lm.x, cz - lm.z) < 2.0);
+        if (tooClose) continue;
+
+        const col = crystalColors[Math.floor(sRand() * crystalColors.length)];
+        const cGroup = new THREE.Group();
+        for (let j = 0; j < 3; j++) {
+            const ch = 0.2 + sRand() * 0.4;
+            const cr = new THREE.Mesh(
+                new THREE.ConeGeometry(0.06 + sRand() * 0.06, ch, 4),
+                new THREE.MeshPhongMaterial({ color: col, emissive: col, emissiveIntensity: 0.25, transparent: true, opacity: 0.7 })
+            );
+            cr.position.set((sRand() - 0.5) * 0.2, ch / 2, (sRand() - 0.5) * 0.2);
+            cr.rotation.set((sRand() - 0.5) * 0.3, sRand() * Math.PI, (sRand() - 0.5) * 0.3);
+            cGroup.add(cr);
+        }
+        cGroup.position.set(cx, 0, cz);
+        scene.add(cGroup);
+    }
+
+    // Floating particle motes (static mesh "stars" hovering above the arena)
+    const particleMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.4 });
+    for (let i = 0; i < 60; i++) {
+        const px = (sRand() - 0.5) * ARENA_R * 2;
+        const py = 1.5 + sRand() * 6;
+        const pz = (sRand() - 0.5) * ARENA_R * 2;
+        if (Math.hypot(px, pz) > ARENA_R) continue;
+        const mote = new THREE.Mesh(
+            new THREE.SphereGeometry(0.03 + sRand() * 0.04, 4, 4),
+            particleMat
+        );
+        mote.position.set(px, py, pz);
+        scene.add(mote);
+    }
+}
+
+function buildDog() {
+    dogGroup = new THREE.Group();
+    const white = new THREE.MeshPhongMaterial({ color: 0xe2e8f0, shininess: 80 });
+    const dark  = new THREE.MeshPhongMaterial({ color: 0x334155 });
+    const cyan  = new THREE.MeshPhongMaterial({ color: 0x38bdf8 });
+    const glow  = new THREE.MeshBasicMaterial({ color: 0x06b6d4 });
+    const black = new THREE.MeshBasicMaterial({ color: 0x0a0f1e });
+
+    dogBody = new THREE.Group(); dogBody.position.y = 0.65;
+    dogGroup.add(dogBody);
+
+    // Torso
+    const torso = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.45, 0.95), white);
+    torso.castShadow = true; dogBody.add(torso);
+    // Armor plate
+    const armor = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.1, 0.65), cyan);
+    armor.position.y = 0.27; armor.castShadow = true; dogBody.add(armor);
+    // Core glow
+    const core = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.13, 0.28), glow);
+    core.position.set(0, 0.32, 0); dogBody.add(core);
+
+    // Head
+    dogHead = new THREE.Group(); dogHead.position.set(0, 0.28, -0.57);
+    const headM = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.42, 0.52), white);
+    headM.castShadow = true; dogHead.add(headM);
+    const visor = new THREE.Mesh(new THREE.BoxGeometry(0.40, 0.18, 0.05), black);
+    visor.position.set(0, 0.05, -0.27); dogHead.add(visor);
+    const eyeG = new THREE.BoxGeometry(0.10, 0.055, 0.02);
+    [-0.10, 0.10].forEach(ex => {
+        const eye = new THREE.Mesh(eyeG, glow); eye.position.set(ex, 0, -0.03); visor.add(eye);
+    });
+    // Antennas
+    const antG = new THREE.CylinderGeometry(0.02, 0.02, 0.22);
+    [-0.23, 0.23].forEach((ax, i) => {
+        const ant = new THREE.Mesh(antG, dark);
+        ant.position.set(ax, 0.28, 0); ant.rotation.z = i ? -0.28 : 0.28; dogHead.add(ant);
+    });
+    dogBody.add(dogHead);
+
+    // Tail
+    dogTail = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.035, 0.45), dark);
+    dogTail.position.set(0, 0.18, 0.48); dogTail.rotation.x = -Math.PI/3;
+    const tailTip = new THREE.Mesh(new THREE.SphereGeometry(0.055), glow);
+    tailTip.position.y = 0.23; dogTail.add(tailTip);
+    dogBody.add(dogTail);
+
+    // Legs
+    dogLegs = [];
+    [[-0.27,0.32],[0.27,0.32],[-0.27,-0.32],[0.27,-0.32]].forEach(([lx,lz]) => {
+        const lg = new THREE.Group(); lg.position.set(lx, 0.18, lz);
+        const up = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.35, 0.18), white);
+        up.position.y = -0.08; up.castShadow = true; lg.add(up);
+        const lo = new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.35, 0.13), dark);
+        lo.position.y = -0.38; lo.castShadow = true; lg.add(lo);
+        const ft = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.09, 0.22), cyan);
+        ft.position.set(0, -0.58, -0.04); ft.castShadow = true; lg.add(ft);
+        dogBody.add(lg); dogLegs.push(lg);
+    });
+
+    // View cone indicator (forward-facing wedge)
+    const coneShape = new THREE.Shape();
+    coneShape.moveTo(0, 0);
+    const segments = 32;
+    const halfFov = VIEW_FOV / 2;
+    for (let i = 0; i <= segments; i++) {
+        const ang = -halfFov + (VIEW_FOV * i / segments);
+        coneShape.lineTo(Math.sin(ang) * VIEW_RAD, Math.cos(ang) * VIEW_RAD);
+    }
+    coneShape.lineTo(0, 0);
+    const coneGeom = new THREE.ShapeGeometry(coneShape);
+    const coneMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.10, side: THREE.DoubleSide });
+    const coneMesh = new THREE.Mesh(coneGeom, coneMat);
+    coneMesh.rotation.x = -Math.PI / 2;
+    coneMesh.position.y = 0.04;
+    dogGroup.add(coneMesh);
+
+    // Dog point light (cyan glow)
+    const dogLight = new THREE.PointLight(0x06b6d4, 0.8, 4);
+    dogLight.position.y = 1.2; dogGroup.add(dogLight);
+
+    dogGroup.position.set(0, 0, 0);
+    scene.add(dogGroup);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SLAM RESET / INIT
+// ═══════════════════════════════════════════════════════════
+function resetSim() {
+    truePos = { x: 0, z: 0 };
+    slamPos = { x: 0, z: 0 };
+    drPos   = { x: 0, z: 0 };
+    classicDrPos = { x: 0, z: 0 };
+    playerAngle = 0;
+    slamMemory = {};
+    corrCount = 0; simTime = 0;
+    slamSim = 1.0; drSim = 1.0;
+    sumErrSlam = 0; sumErrDr = 0; sumErrCdr = 0; errSamples = 0;
+    pathHist = [];
+    frameIdx = 0; heatDirty = true; heatTimer = 0; decodeTimer = 0;
+    goalReached = false;
+
+    // Reset Mission state
+    missionPhase = 'explore';
+    missionTarget = null;
+    missionsCompleted = 0;
+    missionDistTravel = 0;
+    document.getElementById('mission-banner').classList.remove('active');
+    document.getElementById('mission-stat').style.display = 'none';
+    if (beaconMesh) beaconMesh.visible = false;
+
+    piSSP_slam = sspEncode(0, 0);
+    piSSP_dr   = sspEncode(0, 0);
+
+    if (dogGroup) dogGroup.position.set(0, 0, 0);
+
+    document.getElementById('start-screen').classList.remove('active');
+    document.getElementById('win-screen').classList.remove('active');
+    running = true;
+    say('SSP-SLAM online. Neural maps loading… 🐾');
+}
+
+function startDemo() {
+    initFreqs(42);
+    resetSim();
+    animate();
+    window.focus(); // Ensure keyboard inputs register immediately
+}
+
+// ═══════════════════════════════════════════════════════════
+//  GAME LOGIC
+// ═══════════════════════════════════════════════════════════
+function isInsideArena(x, z) {
+    return (x*x + z*z) < (ARENA_R - 0.5) * (ARENA_R - 0.5);
+}
+
+let targetAngle = 0;
+let wanderTimer = 0;
+
+function computeAutoSteering(estX, estZ) {
+    if (wanderTimer <= 0) {
+        targetAngle = (Math.random() * 2 * Math.PI);
+        wanderTimer = 60 + Math.random() * 120;
+    }
+    wanderTimer--;
+
+    // Avoid walls
+    const distToCenter = Math.hypot(truePos.x, truePos.z);
+    if (distToCenter > ARENA_R - 2.0) {
+        const angToCenter = Math.atan2(-truePos.x, -truePos.z);
+        targetAngle = angToCenter;
+    }
+
+    // Avoid landmarks
+    landmarks.forEach(lm => {
+        const ldx = lm.x - truePos.x, ldz = lm.z - truePos.z;
+        const ldist = Math.hypot(ldx, ldz);
+        if (ldist < 1.5) { // increased for better clearance
+            targetAngle = Math.atan2(-ldx, -ldz); // steer away
+        }
+    });
+
+    let diff = targetAngle - playerAngle;
+    while (diff >  Math.PI) diff -= 2*Math.PI;
+    while (diff < -Math.PI) diff += 2*Math.PI;
+
+    playerAngle += Math.sign(diff) * Math.min(Math.abs(diff), ROT_SPEED * 0.5);
+    return { vx: Math.sin(playerAngle)*SPEED, vz: Math.cos(playerAngle)*SPEED };
+}
+
+// ═══════════════════════════════════════════════════════════
+//  MISSION MODE LOGIC
+// ═══════════════════════════════════════════════════════════
+
+function checkMissionStatus() {
+    if (gameMode !== 'MISSION_AUTO') return;
+    
+    const knownCount = Object.keys(slamMemory).length;
+    
+    if (missionPhase === 'explore') {
+        if (knownCount >= MIN_LANDMARKS_FOR_MISSION) {
+            assignMission();
+        }
+    } else if (missionPhase === 'navigate') {
+        if (!missionTarget) return;
+        const dist = Math.hypot(truePos.x - missionTarget.x, truePos.z - missionTarget.z);
+        
+        let inView = false;
+        if (dist < VIEW_RAD) {
+            const angToLm = Math.atan2(missionTarget.x - truePos.x, missionTarget.z - truePos.z);
+            let angleDiff = angToLm - playerAngle;
+            while (angleDiff >  Math.PI) angleDiff -= 2 * Math.PI;
+            while (angleDiff < -Math.PI) angleDiff += 2 * Math.PI;
+            inView = Math.abs(angleDiff) < VIEW_FOV / 2;
+        }
+
+        if (dist < VIEW_RAD * 0.8 && inView) { // arrived
+            missionPhase = 'complete';
+            missionsCompleted++;
+            const timeTaken = (simTime - missionStartTime).toFixed(1);
+            say(`Mission Complete! Found ${missionTarget.id} in ${timeTaken}s.`, 4000);
+            
+            if (beaconMesh) beaconMesh.visible = false;
+            document.getElementById('mission-banner').classList.remove('active');
+            
+            if (missionsCompleted >= MISSIONS_TO_WIN) {
+                goalReached = true;
+                document.getElementById('win-msg').textContent =
+                    `Search & Rescue Success! | Completed ${MISSIONS_TO_WIN} missions via Cognitive Map.`;
+                document.getElementById('win-screen').classList.add('active');
+            } else {
+                setTimeout(assignMission, 4000);
+            }
+        }
+    }
+}
+
+function assignMission() {
+    if (goalReached || gameMode !== 'MISSION_AUTO') return;
+    
+    const knownIds = Object.keys(slamMemory);
+    let tgtId = knownIds[Math.floor(Math.random() * knownIds.length)];
+    if (missionTarget && knownIds.length > 1) {
+        while (tgtId === missionTarget.id) {
+            tgtId = knownIds[Math.floor(Math.random() * knownIds.length)];
+        }
+    }
+    
+    missionTarget = landmarks.find(lm => lm.id === tgtId);
+    missionPhase = 'navigate';
+    missionStartTime = simTime;
+    missionDistTravel = 0;
+    
+    say(`NEW MISSION: Navigate to the ${missionTarget.id}!`, 5000);
+    
+    document.getElementById('mission-target-name').textContent = missionTarget.id;
+    document.getElementById('mission-banner').classList.add('active');
+    document.getElementById('st-mission-tgt').textContent = missionTarget.id;
+    document.getElementById('mission-stat').style.display = 'block';
+    
+    if (!beaconMesh) {
+        const bg = new THREE.CylinderGeometry(0.1, 0.4, 20, 16);
+        const bm = new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.4, side: THREE.DoubleSide, blending: THREE.AdditiveBlending });
+        beaconMesh = new THREE.Mesh(bg, bm);
+        beaconMesh.position.y = 10;
+        scene.add(beaconMesh);
+    }
+    beaconMesh.position.x = missionTarget.x;
+    beaconMesh.position.z = missionTarget.z;
+    beaconMesh.material.color.setHex(missionTarget.color);
+    beaconMesh.visible = true;
+}
+
+function computeMissionSteering() {
+    if (!missionTarget) return computeAutoSteering(slamPos.x, slamPos.z);
+    
+    // ── Cognitive Map Recall ──────────────────────────────────
+    // Decode the target's stored SSP to recall its position from memory.
+    // This IS the cognitive map in action — the agent recalls WHERE the
+    // landmark is by decoding the SSP vector stored in associative memory.
+    const targetSSP = slamMemory[missionTarget.id].absSSP;
+    const recalledPos = sspDecode(targetSSP, 30);
+    
+    // Current estimated position (from SLAM path integration)
+    const myX = slamPos.x, myZ = slamPos.z;
+    
+    // Steer toward the recalled landmark position
+    let finalTargetAngle = Math.atan2(recalledPos.x - myX, recalledPos.z - myZ);
+    
+    // ── Safety overrides ─────────────────────────────────────
+    // Avoid walls
+    const distToCenter = Math.hypot(truePos.x, truePos.z);
+    if (distToCenter > ARENA_R - 2.0) {
+        const angToCenter = Math.atan2(-truePos.x, -truePos.z);
+        finalTargetAngle = angToCenter;
+    }
+
+    // Avoid non-target landmarks
+    landmarks.forEach(lm => {
+        if (lm.id === missionTarget.id) return;
+        const ldx = lm.x - truePos.x, ldz = lm.z - truePos.z;
+        const ldist = Math.hypot(ldx, ldz);
+        if (ldist < 1.5) { 
+            finalTargetAngle = Math.atan2(-ldx, -ldz);
+        }
+    });
+
+    // Smooth turning toward target
+    let diff = finalTargetAngle - playerAngle;
+    while (diff >  Math.PI) diff -= 2*Math.PI;
+    while (diff < -Math.PI) diff += 2*Math.PI;
+
+    playerAngle += Math.sign(diff) * Math.min(Math.abs(diff), ROT_SPEED * 0.8);
+    return { vx: Math.sin(playerAngle)*SPEED, vz: Math.cos(playerAngle)*SPEED };
+}
+
+let speechTimer = 0, speechQueue = [];
+function say(msg, duration) {
+    const el = document.getElementById('speech');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(window._speechTO);
+    window._speechTO = setTimeout(() => el.classList.remove('show'), duration || 3000);
+}
+
+let lastSayTime = {};
+function sayOnce(key, msg, cooldown) {
+    const now = simTime;
+    if (!lastSayTime[key] || now - lastSayTime[key] > (cooldown || 8)) {
+        lastSayTime[key] = now;
+        say(msg);
+    }
+}
+
+function flashCorrection() {
+    if (!flashEl) flashEl = document.getElementById('flash');
+    flashEl.style.opacity = '1';
+    setTimeout(() => { flashEl.style.opacity = '0'; }, 200);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SLAM UPDATE (called each frame)
+// ═══════════════════════════════════════════════════════════
+function slamUpdate(vx, vz) {
+    // 1. Path integration
+    piSSP_slam = sspStep(piSSP_slam, vx, vz, NOISE_SLAM);
+    piSSP_dr   = sspStep(piSSP_dr,   vx, vz, NOISE_DR);
+    
+    // Classic Cartesian DR — uses larger noise so drift is visually apparent
+    classicDrPos.x += vx + (Math.random()-0.5) * NOISE_CDR * 2;
+    classicDrPos.z += vz + (Math.random()-0.5) * NOISE_CDR * 2;
+
+    // 2. Landmark sensing
+    let corrFired = false;
+    landmarks.forEach(lm => {
+        const dist = Math.hypot(truePos.x - lm.x, truePos.z - lm.z);
+        
+        // Check if landmark is within the forward-facing cone
+        let inView = false;
+        if (dist < VIEW_RAD) {
+            // Angle from dog to landmark
+            const angToLm = Math.atan2(lm.x - truePos.x, lm.z - truePos.z);
+            let angleDiff = angToLm - playerAngle;
+            while (angleDiff >  Math.PI) angleDiff -= 2 * Math.PI;
+            while (angleDiff < -Math.PI) angleDiff += 2 * Math.PI;
+            inView = Math.abs(angleDiff) < VIEW_FOV / 2;
+        }
+
+        // Highlight landmark mesh
+        const mesh = lmMeshes[lm.id];
+        if (mesh) {
+            mesh.userData.light.intensity = inView ? 1.8 : 0.5;
+            mesh.userData.topMesh.material.color.setHex(inView ? 0xffffff : lm.color);
+        }
+
+        if (inView) {
+            // Relative vector from robot to landmark (with small sensor noise)
+            const nz = 0.04;
+            const rx = lm.x - truePos.x + (Math.random()-0.5)*nz;
+            const rz = lm.z - truePos.z + (Math.random()-0.5)*nz;
+
+            if (!slamMemory[lm.id]) {
+                // First visit: store estimated absolute landmark SSP
+                // absolute_lm_SSP = piSSP shifted by relative vector
+                slamMemory[lm.id] = {
+                    absSSP: sspStep(piSSP_slam, rx, rz, 0)
+                };
+                sayOnce('lm_'+lm.id,
+                    `Landmark ${lm.id} encoded! Memory: ${Object.keys(slamMemory).length}/${N_LM}`, 5);
+                heatDirty = true;
+            } else {
+                // Loop closure: estimate current position from stored landmark
+                // estPosSSP = stored_lm_absSSP shifted by −relative_vector
+                const estPosSSP = sspStep(slamMemory[lm.id].absSSP, -rx, -rz, 0);
+                const sim = sspSim(piSSP_slam, estPosSSP);
+                if (sim > UPD_THRES) {
+                    const strength = SHIFT_RATE * Math.min(1, (sim - UPD_THRES) * 4);
+                    piSSP_slam = sspBlend(piSSP_slam, estPosSSP, strength);
+                    corrCount++;
+                    lastCorrTime = simTime;
+                    corrFired = true;
+                    heatDirty = true;
+                }
+            }
+        }
+    });
+
+    if (corrFired) {
+        flashCorrection();
+        sayOnce('corr', `Loop closure! Correction fired. sim→${slamSim.toFixed(2)}`, 4);
+    }
+
+    // 3. Decode positions every ~12 frames
+    decodeTimer++;
+    if (decodeTimer >= 12) {
+        decodeTimer = 0;
+        const sd = sspDecode(piSSP_slam, 40);
+        const dd = sspDecode(piSSP_dr,   40);
+        slamPos.x = sd.x; slamPos.z = sd.z; slamSim = sd.sim;
+        drPos.x   = dd.x; drPos.z   = dd.z; drSim   = dd.sim;
+    }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  ANIMATION LOOP
+// ═══════════════════════════════════════════════════════════
+function animate() {
+    animId = requestAnimationFrame(animate);
+
+    if (!running) { renderer.render(scene, camera); return; }
+
+    simTime += DT;
+    frameIdx++;
+
+    // ── Input / steering ─────────────────────────────────
+    let vx = 0, vz = 0;
+    let moved = false;
+
+    if (gameMode === 'MANUAL') {
+        if (inputs.left)  playerAngle -= ROT_SPEED;
+        if (inputs.right) playerAngle += ROT_SPEED;
+        if (inputs.up)    { vx = Math.sin(playerAngle)*SPEED; vz = Math.cos(playerAngle)*SPEED; }
+        if (inputs.down)  { vx = -Math.sin(playerAngle)*SPEED; vz = -Math.cos(playerAngle)*SPEED; }
+        moved = inputs.up || inputs.down;
+    } else {
+        // Auto-pilot logic
+        if (gameMode === 'MISSION_AUTO' && missionPhase === 'navigate') {
+            // Cognitive map navigation
+            const steer = computeMissionSteering();
+            if (steer) { vx = steer.vx; vz = steer.vz; moved = true; }
+        } else {
+            // Exploration mode
+            const estX = gameMode === 'SLAM_AUTO' ? slamPos.x : drPos.x;
+            const estZ = gameMode === 'SLAM_AUTO' ? slamPos.z : drPos.z;
+            const steer = computeAutoSteering(estX, estZ);
+            if (steer) { vx = steer.vx; vz = steer.vz; moved = true; }
+            
+            // Win condition for standard SLAM_AUTO mode
+            if (!goalReached && gameMode === 'SLAM_AUTO' &&
+                Object.keys(slamMemory).length === N_LM && corrCount >= 30) {
+                goalReached = true;
+                document.getElementById('win-msg').textContent =
+                    `SLAM Autopilot | Mapped all ${N_LM} landmarks! | Loop closures: ${corrCount}`;
+                document.getElementById('win-screen').classList.add('active');
+            }
+        }
+    }
+
+    // ── Move dog (ground truth) ────────────────────────────
+    if (moved) {
+        const nx = truePos.x + vx, nz = truePos.z + vz;
+        // Check arena boundary
+        let ok = isInsideArena(nx, nz);
+        // Check landmark collisions
+        if (ok) landmarks.forEach(lm => {
+            if (Math.hypot(nx - lm.x, nz - lm.z) < 0.45) ok = false;
+        });
+        if (ok) { truePos.x = nx; truePos.z = nz; }
+        else { 
+            playerAngle += 0.15; 
+            targetAngle = playerAngle + Math.PI; // force turn around
+        } // bounce
+    }
+
+    // ── SLAM update ────────────────────────────────────────
+    slamUpdate(vx, vz);
+
+    // ── Update dog mesh ────────────────────────────────────
+    dogGroup.position.set(truePos.x, 0, truePos.z);
+    dogGroup.rotation.y = playerAngle + Math.PI; // dog model was built facing -Z, but +Z is forward
+
+    walkCycle += moved ? 0.18 : 0;
+    dogLegs.forEach((lg, i) => {
+        const phase = walkCycle + (i % 2) * Math.PI;
+        lg.rotation.x = Math.sin(phase) * 0.35;
+    });
+    dogBody.position.y = 0.65 + (moved ? Math.sin(walkCycle*2) * 0.025 : 0);
+    dogTail.rotation.x = -Math.PI/3 + Math.sin(walkCycle * 0.5) * 0.15;
+
+    // ── Update Mission State ───────────────────────────────
+    if (beaconMesh && beaconMesh.visible) {
+        beaconMesh.scale.y = 1.0 + Math.sin(simTime * 4) * 0.2;
+        beaconMesh.material.opacity = 0.3 + Math.sin(simTime * 6) * 0.15;
+    }
+    checkMissionStatus();
+    if (moved && missionPhase === 'navigate') {
+        missionDistTravel += Math.hypot(vx, vz);
+    }
+
+    // ── Camera follows dog (smooth lerp) ─────────────────────
+    const lerpSpeed = 0.06;
+    if (camMode === 'fpv') {
+        // First-person: camera at dog's head, looking forward
+        const eyeH = 1.2 + (moved ? Math.sin(walkCycle * 2) * 0.03 : 0);
+        const targetX = truePos.x;
+        const targetZ = truePos.z;
+        camera.position.x += (targetX - camera.position.x) * 0.15;
+        camera.position.z += (targetZ - camera.position.z) * 0.15;
+        camera.position.y += (eyeH - camera.position.y) * 0.15;
+        camera.lookAt(
+            truePos.x + Math.sin(playerAngle) * 8,
+            eyeH * 0.6,
+            truePos.z + Math.cos(playerAngle) * 8
+        );
+        dogGroup.visible = false;
+    } else {
+        // Overhead follow camera with smooth lerp
+        const camDist = 22, camH = 20;
+        const targetCamX = truePos.x - Math.sin(playerAngle) * camDist * 0.5;
+        const targetCamZ = truePos.z - Math.cos(playerAngle) * camDist * 0.5;
+        camera.position.x += (targetCamX - camera.position.x) * lerpSpeed;
+        camera.position.z += (targetCamZ - camera.position.z) * lerpSpeed;
+        camera.position.y += (camH - camera.position.y) * lerpSpeed;
+        camera.lookAt(truePos.x, 0, truePos.z);
+        dogGroup.visible = true;
+    }
+
+    // ── Record path history ────────────────────────────────
+    if (frameIdx % 3 === 0) {
+        pathHist.push({ tx: truePos.x, tz: truePos.z,
+                        sx: slamPos.x, sz: slamPos.z,
+                        dx: drPos.x,   dz: drPos.z,
+                        cx: classicDrPos.x, cz: classicDrPos.z });
+        if (pathHist.length > HIST_MAX) pathHist.shift();
+    }
+
+    // ── Commentary ─────────────────────────────────────────
+    if (drSim < 0.60 && simTime > 5)
+        sayOnce('drdrift', `DR drifting! Error: ${Math.hypot(truePos.x-drPos.x,truePos.z-drPos.z).toFixed(1)}m 📡`, 10);
+    if (slamSim > 0.85 && simTime > 8)
+        sayOnce('slamgood', `SLAM holding strong: sim=${slamSim.toFixed(2)} ⚡`, 12);
+
+    // ── Update stats UI ────────────────────────────────────
+    if (frameIdx % 6 === 0) updateStatsUI();
+
+    // ── Mini-map and heatmap ───────────────────────────────
+    drawMinimap();
+    heatTimer += DT;
+    if (heatTimer > 0.5 && heatDirty) { drawHeatmap(); heatTimer = 0; heatDirty = false; }
+
+    renderer.render(scene, camera);
+}
+
+function updateStatsUI() {
+    const sErr = Math.hypot(truePos.x - slamPos.x, truePos.z - slamPos.z);
+    const dErr = Math.hypot(truePos.x - drPos.x,   truePos.z - drPos.z);
+    const cErr = Math.hypot(truePos.x - classicDrPos.x, truePos.z - classicDrPos.z);
+    
+    // Accumulate for ATE (Average Trajectory Error)
+    sumErrSlam += sErr; sumErrDr += dErr; sumErrCdr += cErr; errSamples++;
+    const avgSlam = sumErrSlam / errSamples;
+    const avgDr = sumErrDr / errSamples;
+    const avgCdr = sumErrCdr / errSamples;
+
+    document.getElementById('st-slam-sim').textContent = slamSim.toFixed(3);
+    document.getElementById('st-dr-sim').textContent   = drSim.toFixed(3);
+    document.getElementById('st-slam-err').textContent = `${sErr.toFixed(1)}m (Avg: ${avgSlam.toFixed(1)}m)`;
+    document.getElementById('st-dr-err').textContent   = `${dErr.toFixed(1)}m (Avg: ${avgDr.toFixed(1)}m)`;
+    document.getElementById('st-cdr-err').textContent  = `${cErr.toFixed(1)}m (Avg: ${avgCdr.toFixed(1)}m)`;
+    
+    if (missionPhase === 'navigate' && missionTarget) {
+        const distToTgt = Math.hypot(truePos.x - missionTarget.x, truePos.z - missionTarget.z);
+        document.getElementById('st-mission-dist').textContent = distToTgt.toFixed(1) + ' m';
+    }
+    document.getElementById('st-mem').textContent = Object.keys(slamMemory).length + ' / ' + N_LM;
+    document.getElementById('st-corr').textContent = corrCount;
+    document.getElementById('st-time').textContent = simTime.toFixed(1) + ' s';
+    document.getElementById('bar-slam').style.width = Math.max(0, slamSim * 100).toFixed(1) + '%';
+    document.getElementById('bar-dr').style.width   = Math.max(0, drSim   * 100).toFixed(1) + '%';
+    document.getElementById('bar-mem').style.width  = (Object.keys(slamMemory).length / N_LM * 100).toFixed(1) + '%';
+    
+    // Cap visual error bars at 20m (so 20m = 100% full)
+    document.getElementById('bar-err-slam').style.width = Math.min(100, (sErr / 20) * 100).toFixed(1) + '%';
+    document.getElementById('bar-err-dr').style.width   = Math.min(100, (dErr / 20) * 100).toFixed(1) + '%';
+    document.getElementById('bar-err-cdr').style.width  = Math.min(100, (cErr / 20) * 100).toFixed(1) + '%';
+}
+
+// ═══════════════════════════════════════════════════════════
+//  MINI-MAP
+// ═══════════════════════════════════════════════════════════
+function drawMinimap() {
+    const cv = document.getElementById('minimap');
+    const ctx = cv.getContext('2d');
+    const W = cv.width, H = cv.height;
+    const cx = W/2, cy = H/2;
+    const scale = (W * 0.46) / ARENA_R;
+
+    function toMap(x, z) { return { mx: cx + x*scale, my: cy + z*scale }; }
+
+    ctx.clearRect(0, 0, W, H);
+
+    // Background
+    ctx.fillStyle = '#0a0f1e';
+    ctx.beginPath(); ctx.arc(cx, cy, W*0.48, 0, Math.PI*2); ctx.fill();
+
+    // Arena boundary
+    ctx.strokeStyle = 'rgba(56,189,248,0.4)'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(cx, cy, ARENA_R*scale, 0, Math.PI*2); ctx.stroke();
+
+    // Grid
+    ctx.strokeStyle = 'rgba(255,255,255,0.04)'; ctx.lineWidth = 0.5;
+    for (let i = -ARENA_R; i <= ARENA_R; i += 5) {
+        const {mx,my} = toMap(i, -ARENA_R); const {mx:mx2,my:my2} = toMap(i, ARENA_R);
+        ctx.beginPath(); ctx.moveTo(mx,my); ctx.lineTo(mx2,my2); ctx.stroke();
+        const {mx:mx3,my:my3} = toMap(-ARENA_R, i); const {mx:mx4,my:my4} = toMap(ARENA_R, i);
+        ctx.beginPath(); ctx.moveTo(mx3,my3); ctx.lineTo(mx4,my4); ctx.stroke();
+    }
+
+    // Path history
+    if (pathHist.length > 1) {
+        // True path (faint gray)
+        ctx.strokeStyle = 'rgba(148,163,184,0.3)'; ctx.lineWidth = 1;
+        ctx.beginPath();
+        pathHist.forEach((p, i) => {
+            const {mx,my} = toMap(p.tx, p.tz);
+            i === 0 ? ctx.moveTo(mx,my) : ctx.lineTo(mx,my);
+        });
+        ctx.stroke();
+
+        // Classic DR path (orange)
+        ctx.strokeStyle = 'rgba(249,115,22,0.7)'; ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        pathHist.forEach((p, i) => {
+            const {mx,my} = toMap(p.cx, p.cz);
+            i === 0 ? ctx.moveTo(mx,my) : ctx.lineTo(mx,my);
+        });
+        ctx.stroke();
+
+        // Neural DR path (red)
+        ctx.strokeStyle = 'rgba(248,113,113,0.7)'; ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        pathHist.forEach((p, i) => {
+            const {mx,my} = toMap(p.dx, p.dz);
+            i === 0 ? ctx.moveTo(mx,my) : ctx.lineTo(mx,my);
+        });
+        ctx.stroke();
+
+        // SLAM path (cyan)
+        ctx.strokeStyle = 'rgba(56,189,248,0.85)'; ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        pathHist.forEach((p, i) => {
+            const {mx,my} = toMap(p.sx, p.sz);
+            i === 0 ? ctx.moveTo(mx,my) : ctx.lineTo(mx,my);
+        });
+        ctx.stroke();
+    }
+
+    // Landmarks
+    landmarks.forEach(lm => {
+        const {mx,my} = toMap(lm.x, lm.z);
+        const known = slamMemory[lm.id] !== undefined;
+        const r = '#' + lm.color.toString(16).padStart(6,'0');
+        ctx.beginPath(); ctx.arc(mx, my, known ? 5 : 3.5, 0, Math.PI*2);
+        ctx.fillStyle = known ? r : 'rgba(148,163,184,0.4)';
+        ctx.fill();
+        if (known) {
+            ctx.strokeStyle = 'white'; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.arc(mx, my, 5.5, 0, Math.PI*2); ctx.stroke();
+        }
+    });
+
+    // Mission Target Arrow
+    if (gameMode === 'MISSION_AUTO' && missionPhase === 'navigate' && missionTarget) {
+        const dmap = toMap(truePos.x, truePos.z);
+        const tmap = toMap(missionTarget.x, missionTarget.z);
+        
+        ctx.strokeStyle = 'rgba(251,191,36,0.8)'; // amber
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath();
+        ctx.moveTo(dmap.mx, dmap.my);
+        ctx.lineTo(tmap.mx, tmap.my);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        
+        // draw crosshair at target
+        ctx.strokeStyle = 'rgba(251,191,36,1)';
+        ctx.beginPath();
+        ctx.moveTo(tmap.mx - 10, tmap.my); ctx.lineTo(tmap.mx + 10, tmap.my);
+        ctx.moveTo(tmap.mx, tmap.my - 10); ctx.lineTo(tmap.mx, tmap.my + 10);
+        ctx.stroke();
+    }
+
+
+
+    // View cone (dashed arc wedge)
+    const mapX = cx + truePos.x * scale;
+    const mapZ = cy + truePos.z * scale;
+    const halfFovMap = VIEW_FOV / 2;
+    // playerAngle: 0 = +Z. On canvas, +Z = down. Canvas angles: 0 = right.
+    // Heading in canvas coords: canvasAng = playerAngle - PI/2
+    const canvasAng = playerAngle - Math.PI / 2;
+    ctx.strokeStyle = 'rgba(56,189,248,0.35)'; ctx.lineWidth = 1;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath();
+    ctx.moveTo(mapX, mapZ);
+    ctx.arc(mapX, mapZ, VIEW_RAD * scale, canvasAng - halfFovMap, canvasAng + halfFovMap);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.setLineDash([]);
+    // Fill the cone lightly
+    ctx.fillStyle = 'rgba(56,189,248,0.06)';
+    ctx.beginPath();
+    ctx.moveTo(mapX, mapZ);
+    ctx.arc(mapX, mapZ, VIEW_RAD * scale, canvasAng - halfFovMap, canvasAng + halfFovMap);
+    ctx.closePath();
+    ctx.fill();
+
+    // Current positions
+    // True (white)
+    const tp = toMap(truePos.x, truePos.z);
+    ctx.beginPath(); ctx.arc(tp.mx, tp.my, 4.5, 0, Math.PI*2);
+    ctx.fillStyle = '#ffffff'; ctx.fill();
+    // SLAM (cyan dot)
+    const sp = toMap(slamPos.x, slamPos.z);
+    ctx.beginPath(); ctx.arc(sp.mx, sp.my, 3.5, 0, Math.PI*2);
+    ctx.fillStyle = '#38bdf8'; ctx.fill();
+    // Neural DR (red diamond)
+    const dp = toMap(drPos.x, drPos.z);
+    ctx.save(); ctx.translate(dp.mx, dp.my); ctx.rotate(Math.PI/4);
+    ctx.fillStyle = '#f87171';
+    ctx.fillRect(-3, -3, 6, 6); ctx.restore();
+    // Classic DR (orange triangle)
+    const cp = toMap(classicDrPos.x, classicDrPos.z);
+    ctx.beginPath();
+    ctx.moveTo(cp.mx, cp.my - 5);
+    ctx.lineTo(cp.mx - 4, cp.my + 3);
+    ctx.lineTo(cp.mx + 4, cp.my + 3);
+    ctx.closePath();
+    ctx.fillStyle = '#f97316'; ctx.fill();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SSP HEATMAP
+// ═══════════════════════════════════════════════════════════
+function drawHeatmap() {
+    const cv = document.getElementById('heatmap');
+    const ctx = cv.getContext('2d');
+    const N = cv.width, M = cv.height;
+    const img = ctx.createImageData(N, M);
+
+    for (let i = 0; i < N; i++) {
+        for (let j = 0; j < M; j++) {
+            const x = -ARENA_R + 2*ARENA_R * i/N;
+            const z = -ARENA_R + 2*ARENA_R * j/M;
+            const s = sspSim(piSSP_slam, sspEncode(x, z));
+            const v = Math.max(0, Math.min(1, (s + 0.1) / 1.1));
+            const idx = (j * N + i) * 4;
+            // Hot colormap: dark blue → cyan → white
+            img.data[idx]   = Math.floor(v * v * 200);
+            img.data[idx+1] = Math.floor(v * 180);
+            img.data[idx+2] = Math.floor(v * 255);
+            img.data[idx+3] = 255;
+        }
+    }
+    ctx.putImageData(img, 0, 0);
+
+    // Draw true position as crosshair
+    const px = (truePos.x + ARENA_R) / (2*ARENA_R) * N;
+    const pz = (truePos.z + ARENA_R) / (2*ARENA_R) * M;
+    ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(px-4, pz); ctx.lineTo(px+4, pz); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(px, pz-4); ctx.lineTo(px, pz+4); ctx.stroke();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  MODE & INPUT
+// ═══════════════════════════════════════════════════════════
+function setMode(m) {
+    gameMode = m;
+    ['slam','dr','manual'].forEach(id => {
+        const b = document.getElementById('btn-'+id);
+        if (b) { b.classList.remove('active','dr-active'); }
+    });
+    const map = {SLAM_AUTO:'slam', DR_AUTO:'dr', MANUAL:'manual'};
+    const btn = document.getElementById('btn-'+map[m]);
+    if (btn) {
+        btn.classList.add(m === 'DR_AUTO' ? 'dr-active' : 'active');
+    }
+    const msgs = {
+        SLAM_AUTO: 'SLAM Autopilot engaged! Using neural map to navigate. ⚡',
+        DR_AUTO:   'Dead reckoning mode. No loop closure corrections. Watch the drift! 📡',
+        MANUAL:    'Manual control. Use arrow keys or D-pad to drive. 🕹'
+    };
+    say(msgs[m]);
+}
+
+function toggleCam() {
+    camMode = camMode === 'overhead' ? 'fpv' : 'overhead';
+    const btn = document.getElementById('btn-cam');
+    if (camMode === 'fpv') {
+        btn.classList.add('active');
+        btn.textContent = '🎥 Overhead View';
+        camera.fov = 75; // wider FOV for immersive FPV
+        camera.updateProjectionMatrix();
+        say('Dog Eye View! See the world through robo-dog\'s visor. 🐾');
+    } else {
+        btn.classList.remove('active');
+        btn.textContent = '🎥 Dog Eye View';
+        camera.fov = 55; // normal FOV for overhead
+        camera.updateProjectionMatrix();
+        say('Overhead view restored. 🗺️');
+    }
+}
+
+// Keyboard — only suppress default for navigation/game keys
+const NAV_KEYS = new Set(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','w','a','s','d','c']);
+document.addEventListener('keydown', e => {
+    let movedKey = false;
+    if (e.key==='ArrowUp'   ||e.key==='w') { inputs.up    = true; movedKey = true; }
+    if (e.key==='ArrowDown' ||e.key==='s') { inputs.down  = true; movedKey = true; }
+    if (e.key==='ArrowLeft' ||e.key==='a') { inputs.left  = true; movedKey = true; }
+    if (e.key==='ArrowRight'||e.key==='d') { inputs.right = true; movedKey = true; }
+    
+    if (movedKey && gameMode !== 'MANUAL') setMode('MANUAL');
+
+    if (e.key==='m') setMode('MANUAL');
+    if (e.key==='1') setMode('SLAM_AUTO');
+    if (e.key==='2') setMode('DR_AUTO');
+    if (e.key==='r') resetSim();
+    if (e.key==='c') toggleCam();
+    // Only prevent scroll/navigation for game keys, not global shortcuts (F12, Tab, etc.)
+    if (NAV_KEYS.has(e.key)) e.preventDefault();
+});
+document.addEventListener('keyup', e => {
+    if (e.key==='ArrowUp'   ||e.key==='w') inputs.up    = false;
+    if (e.key==='ArrowDown' ||e.key==='s') inputs.down  = false;
+    if (e.key==='ArrowLeft' ||e.key==='a') inputs.left  = false;
+    if (e.key==='ArrowRight'||e.key==='d') inputs.right = false;
+});
+
+// D-pad touch
+['up','left','right','down'].forEach(dir => {
+    const btn = document.getElementById('d-'+dir);
+    if (!btn) return;
+    ['pointerdown','touchstart'].forEach(ev => btn.addEventListener(ev, e => {
+        e.preventDefault(); inputs[dir] = true; btn.classList.add('active');
+        if (gameMode !== 'MANUAL') setMode('MANUAL');
+    }, {passive: false}));
+    ['pointerup','touchend','pointerleave'].forEach(ev => btn.addEventListener(ev, e => {
+        e.preventDefault(); inputs[dir] = false; btn.classList.remove('active');
+    }, {passive: false}));
+});
+
+// ═══════════════════════════════════════════════════════════
+//  BOOT
+// ═══════════════════════════════════════════════════════════
+initScene();
+</script>
+</body>
+</html>
