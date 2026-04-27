@@ -226,6 +226,7 @@ body {
     <div class="bar-wrap"><div class="bar-fill bar-cdr" id="bar-err-cdr" style="width:0%"></div></div>
     <div class="stat-row"><span class="stat-label">Memory</span><span class="stat-val" id="st-mem">0 / 10</span></div>
     <div class="bar-wrap"><div class="bar-fill bar-mem" id="bar-mem" style="width:0%"></div></div>
+    <div class="stat-row"><span class="stat-label">Obstacle Patches</span><span class="stat-val tag-slam" id="st-obs">0</span></div>
     <div class="stat-row"><span class="stat-label">Corrections fired</span><span class="stat-val tag-corr" id="st-corr">0</span></div>
     <div class="stat-row"><span class="stat-label">Sim time</span><span class="stat-val" id="st-time">0.0 s</span></div>
     <div id="mission-stat" style="display:none; margin-top:8px; border-top:1px solid rgba(56,189,248,0.2); padding-top:8px;">
@@ -445,6 +446,48 @@ const MISSIONS_TO_WIN = 3;
 const MIN_LANDMARKS_FOR_MISSION = 3;
 let beaconMesh = null;
 
+// Obstacle State & Physics
+let obstacleSSP = null; // initialized when SSP_DIM is ready
+let obstacleEncodedCount = 0;
+let lastObstacleEncodePos = {x: 999, z: 999};
+
+const OBSTACLES = [
+    {x: 0, z: -5, w: 10, d: 2},
+    {x: -12, z: 8, w: 2, d: 8},
+    {x: 14, z: 10, w: 6, d: 2},
+    {x: -8, z: -15, w: 4, d: 4}
+];
+
+function rectIntersect(px, pz, rx, rz, rw, rd, pad=0.0) {
+    return (px > rx - rw/2 - pad && px < rx + rw/2 + pad && pz > rz - rd/2 - pad && pz < rz + rd/2 + pad);
+}
+
+function lineRectIntersect(x1, z1, x2, z2, rx, rz, rw, rd) {
+    const minX = rx - rw/2, maxX = rx + rw/2;
+    const minZ = rz - rd/2, maxZ = rz + rd/2;
+    if (x1 >= minX && x1 <= maxX && z1 >= minZ && z1 <= maxZ) return true;
+    if (x2 >= minX && x2 <= maxX && z2 >= minZ && z2 <= maxZ) return true;
+    function ccw(A,B,C) { return (C.z-A.z)*(B.x-A.x) > (B.z-A.z)*(C.x-A.x); }
+    function intersect(A,B, C,D) { return ccw(A,C,D) !== ccw(B,C,D) && ccw(A,B,C) !== ccw(A,B,D); }
+    const p1 = {x: x1, z: z1}, p2 = {x: x2, z: z2};
+    const c1 = {x: minX, z: minZ}, c2 = {x: maxX, z: minZ};
+    const c3 = {x: maxX, z: maxZ}, c4 = {x: minX, z: maxZ};
+    return intersect(p1,p2, c1,c2) || intersect(p1,p2, c2,c3) || intersect(p1,p2, c3,c4) || intersect(p1,p2, c4,c1);
+}
+
+function encodeObstacle(relX, relZ) {
+    if (!obstacleSSP) obstacleSSP = new Float32Array(SSP_DIM);
+    const estX = slamPos.x + relX, estZ = slamPos.z + relZ;
+    const dist = Math.hypot(estX - lastObstacleEncodePos.x, estZ - lastObstacleEncodePos.z);
+    if (dist > 1.2) {
+        const obsSSP = sspStep(piSSP_slam, relX, relZ, 0);
+        for (let i = 0; i < SSP_DIM; i++) obstacleSSP[i] += obsSSP[i];
+        obstacleEncodedCount++;
+        lastObstacleEncodePos = {x: estX, z: estZ};
+        heatDirty = true;
+    }
+}
+
 // ═══════════════════════════════════════════════════════════
 //  LANDMARK POSITIONS
 // ═══════════════════════════════════════════════════════════
@@ -511,6 +554,7 @@ function initScene() {
     buildLandmarks();
     buildLandmarkMeshes();
     buildScenery();
+    buildObstacles();
     buildDog();
 
     // Render one static frame so the scene is visible behind the start screen
@@ -583,6 +627,20 @@ function buildArena() {
         rm.rotation.x = Math.PI/2; rm.position.y = 0.008;
         scene.add(rm);
     });
+}
+
+function buildObstacles() {
+    const mat = new THREE.MeshStandardMaterial({ 
+        color: 0x1e293b, roughness: 0.8, metalness: 0.2 
+    });
+    for (let obs of OBSTACLES) {
+        const geo = new THREE.BoxGeometry(obs.w, 4, obs.d);
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.position.set(obs.x, 2, obs.z);
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        scene.add(mesh);
+    }
 }
 
 function buildLandmarkMeshes() {
@@ -882,6 +940,31 @@ function isInsideArena(x, z) {
 let targetAngle = 0;
 let wanderTimer = 0;
 
+function evaluateDirection(ang, prefAng) {
+    let angDiff = prefAng - ang;
+    while(angDiff > Math.PI) angDiff -= 2*Math.PI;
+    while(angDiff < -Math.PI) angDiff += 2*Math.PI;
+    
+    let score = -Math.abs(angDiff);
+    
+    // VSA Obstacle Check (Cognitive Map)
+    if (obstacleEncodedCount > 0 && obstacleSSP) {
+        const PROBE_DIST = 2.0;
+        const nx = slamPos.x + Math.sin(ang)*PROBE_DIST;
+        const nz = slamPos.z + Math.cos(ang)*PROBE_DIST;
+        const candSSP = sspEncode(nx, nz);
+        const obsSim = sspSim(candSSP, obstacleSSP);
+        if (obsSim > 0.15) score -= obsSim * 20; // heavy penalty for obstacles
+    }
+    
+    // Physical hard overrides
+    const px = truePos.x + Math.sin(ang)*1.2;
+    const pz = truePos.z + Math.cos(ang)*1.2;
+    if (Math.hypot(px, pz) > ARENA_R - 1.5) score -= 50;
+    
+    return score;
+}
+
 function computeAutoSteering(estX, estZ) {
     if (wanderTimer <= 0) {
         targetAngle = (Math.random() * 2 * Math.PI);
@@ -889,27 +972,22 @@ function computeAutoSteering(estX, estZ) {
     }
     wanderTimer--;
 
-    // Avoid walls
-    const distToCenter = Math.hypot(truePos.x, truePos.z);
-    if (distToCenter > ARENA_R - 2.0) {
-        const angToCenter = Math.atan2(-truePos.x, -truePos.z);
-        targetAngle = angToCenter;
+    let bestAng = playerAngle;
+    let bestScore = -Infinity;
+    for (let i = 0; i < 16; i++) {
+        const ang = playerAngle + (i - 8) * (Math.PI / 8);
+        const score = evaluateDirection(ang, targetAngle);
+        if (score > bestScore) {
+            bestScore = score;
+            bestAng = ang;
+        }
     }
 
-    // Avoid landmarks
-    landmarks.forEach(lm => {
-        const ldx = lm.x - truePos.x, ldz = lm.z - truePos.z;
-        const ldist = Math.hypot(ldx, ldz);
-        if (ldist < 1.5) { // increased for better clearance
-            targetAngle = Math.atan2(-ldx, -ldz); // steer away
-        }
-    });
-
-    let diff = targetAngle - playerAngle;
+    let diff = bestAng - playerAngle;
     while (diff >  Math.PI) diff -= 2*Math.PI;
     while (diff < -Math.PI) diff += 2*Math.PI;
 
-    playerAngle += Math.sign(diff) * Math.min(Math.abs(diff), ROT_SPEED * 0.5);
+    playerAngle += Math.sign(diff) * Math.min(Math.abs(diff), ROT_SPEED * 0.8);
     return { vx: Math.sin(playerAngle)*SPEED, vz: Math.cos(playerAngle)*SPEED };
 }
 
@@ -1012,26 +1090,19 @@ function computeMissionSteering() {
     // Steer toward the recalled landmark position
     let finalTargetAngle = Math.atan2(recalledPos.x - myX, recalledPos.z - myZ);
     
-    // ── Safety overrides ─────────────────────────────────────
-    // Avoid walls
-    const distToCenter = Math.hypot(truePos.x, truePos.z);
-    if (distToCenter > ARENA_R - 2.0) {
-        const angToCenter = Math.atan2(-truePos.x, -truePos.z);
-        finalTargetAngle = angToCenter;
+    // Sample directions using cognitive map to avoid obstacles
+    let bestAng = playerAngle;
+    let bestScore = -Infinity;
+    for (let i = 0; i < 16; i++) {
+        const ang = playerAngle + (i - 8) * (Math.PI / 8);
+        const score = evaluateDirection(ang, finalTargetAngle);
+        if (score > bestScore) {
+            bestScore = score;
+            bestAng = ang;
+        }
     }
 
-    // Avoid non-target landmarks
-    landmarks.forEach(lm => {
-        if (lm.id === missionTarget.id) return;
-        const ldx = lm.x - truePos.x, ldz = lm.z - truePos.z;
-        const ldist = Math.hypot(ldx, ldz);
-        if (ldist < 1.5) { 
-            finalTargetAngle = Math.atan2(-ldx, -ldz);
-        }
-    });
-
-    // Smooth turning toward target
-    let diff = finalTargetAngle - playerAngle;
+    let diff = bestAng - playerAngle;
     while (diff >  Math.PI) diff -= 2*Math.PI;
     while (diff < -Math.PI) diff += 2*Math.PI;
 
@@ -1075,6 +1146,27 @@ function slamUpdate(vx, vz) {
     classicDrPos.x += vx + (Math.random()-0.5) * NOISE_CDR * 2;
     classicDrPos.z += vz + (Math.random()-0.5) * NOISE_CDR * 2;
 
+    // Whiskers for obstacle encoding
+    let whiskers = [ -Math.PI/3, -Math.PI/6, 0, Math.PI/6, Math.PI/3 ];
+    for (let w of whiskers) {
+        const rayAng = playerAngle + w;
+        const maxDist = 2.5;
+        const steps = 6;
+        for (let s = 1; s <= steps; s++) {
+            const d = (s/steps) * maxDist;
+            const testX = truePos.x + Math.sin(rayAng)*d;
+            const testZ = truePos.z + Math.cos(rayAng)*d;
+            let hit = false;
+            for (let obs of OBSTACLES) {
+                if (rectIntersect(testX, testZ, obs.x, obs.z, obs.w, obs.d, 0.1)) { hit = true; break; }
+            }
+            if (hit) {
+                encodeObstacle(Math.sin(rayAng)*d, Math.cos(rayAng)*d);
+                break;
+            }
+        }
+    }
+
     // 2. Landmark sensing
     let corrFired = false;
     landmarks.forEach(lm => {
@@ -1089,6 +1181,15 @@ function slamUpdate(vx, vz) {
             while (angleDiff >  Math.PI) angleDiff -= 2 * Math.PI;
             while (angleDiff < -Math.PI) angleDiff += 2 * Math.PI;
             inView = Math.abs(angleDiff) < VIEW_FOV / 2;
+            
+            // Check line of sight (occlusion)
+            if (inView) {
+                for (let obs of OBSTACLES) {
+                    if (lineRectIntersect(truePos.x, truePos.z, lm.x, lm.z, obs.x, obs.z, obs.w, obs.d)) {
+                        inView = false; break;
+                    }
+                }
+            }
         }
 
         // Highlight landmark mesh
@@ -1196,6 +1297,10 @@ function animate() {
         const nx = truePos.x + vx, nz = truePos.z + vz;
         // Check arena boundary
         let ok = isInsideArena(nx, nz);
+        // Check obstacle collisions
+        for (let obs of OBSTACLES) {
+            if (rectIntersect(nx, nz, obs.x, obs.z, obs.w, obs.d, 0.4)) ok = false;
+        }
         // Check landmark collisions
         if (ok) landmarks.forEach(lm => {
             if (Math.hypot(nx - lm.x, nz - lm.z) < 0.45) ok = false;
@@ -1308,6 +1413,7 @@ function updateStatsUI() {
         document.getElementById('st-mission-dist').textContent = distToTgt.toFixed(1) + ' m';
     }
     document.getElementById('st-mem').textContent = Object.keys(slamMemory).length + ' / ' + N_LM;
+    document.getElementById('st-obs').textContent = obstacleEncodedCount;
     document.getElementById('st-corr').textContent = corrCount;
     document.getElementById('st-time').textContent = simTime.toFixed(1) + ' s';
     document.getElementById('bar-slam').style.width = Math.max(0, slamSim * 100).toFixed(1) + '%';
@@ -1341,6 +1447,14 @@ function drawMinimap() {
     // Arena boundary
     ctx.strokeStyle = 'rgba(56,189,248,0.4)'; ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.arc(cx, cy, ARENA_R*scale, 0, Math.PI*2); ctx.stroke();
+
+    // Obstacles
+    ctx.fillStyle = 'rgba(148,163,184,0.3)';
+    for (let obs of OBSTACLES) {
+        const mx = cx + obs.x*scale, mz = cy + obs.z*scale;
+        const mw = obs.w*scale, md = obs.d*scale;
+        ctx.fillRect(mx - mw/2, mz - md/2, mw, md);
+    }
 
     // Grid
     ctx.strokeStyle = 'rgba(255,255,255,0.04)'; ctx.lineWidth = 0.5;
