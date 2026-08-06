@@ -2,7 +2,7 @@
 habitat_env.py
 ==============
 Wraps Habitat-sim into the SSP-SLAM pipeline with the same interface as
-``miniworld_env.py``, so ``collect_habitat_data.py`` mirrors
+``miniworld_env.py``, so ``archive/habitat_optional/collect_habitat_data.py`` mirrors
 ``collect_3d_data.py``.
 
 Requires:

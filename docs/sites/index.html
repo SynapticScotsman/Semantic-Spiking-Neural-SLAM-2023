@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SSN-SLAM · results sites</title>
+<style>
+:root{--bg:#05080f;--panel:#0d1524;--ink:#e8eef6;--ink2:#aab8c8;--muted:#64748b;
+--line:#1b2740;--cyan:#57e6d4;--amber:#ffb454;
+--mono:ui-monospace,"Cascadia Code",Consolas,Menlo,monospace}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+font:16px/1.6 Georgia,"Times New Roman",serif;padding:40px 20px 80px}
+.wrap{max-width:880px;margin:0 auto}
+h1{font-weight:400;font-size:clamp(1.6rem,4vw,2.4rem);letter-spacing:-.01em;margin:0 0 6px}
+h1 b{color:var(--cyan);font-style:italic;font-weight:400}
+.sub{font-family:var(--mono);font-size:.8rem;color:var(--muted);margin:0 0 34px}
+h2{font-family:var(--mono);font-size:.75rem;letter-spacing:.18em;text-transform:uppercase;
+color:var(--cyan);margin:34px 0 10px;font-weight:700}
+a.card{display:block;background:var(--panel);border:1px solid var(--line);border-radius:12px;
+padding:14px 18px;margin:10px 0;text-decoration:none;color:var(--ink)}
+a.card:hover{border-color:var(--cyan)}
+a.card b{display:block;font-size:1.05rem}
+a.card span{font-family:var(--mono);font-size:.75rem;color:var(--ink2)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.grid a.card{margin:0}
+</style></head><body><div class="wrap">
+<h1>The <b>32-kilobyte map</b> — results sites</h1>
+<p class="sub">semantic spiking-neural SLAM · every page self-contained, every number
+measured · rebuilt from tools/ in this repo</p>
+
+<h2>start here</h2>
+<a class="card" href="results_vs_sota.html"><b>Results vs the state of the art — the visual showcase</b>
+<span>live belief fields · playable chess &amp; classroom walks · two-robot time merge ·
+4-robot merge animation · the χ law · honest limits</span></a>
+<a class="card" href="replica_truth_summary.html"><b>8-scene Replica truth run — the tables</b>
+<span>pooled 88.1% R@1 at 1 m (chance 18.2%) · per-scene stratification · miss taxonomy ·
+backend &amp; joining comparisons</span></a>
+
+<h2>photo inspectors — judge every query yourself</h2>
+<a class="card" href="cross_inspector_7scenes_chess.html"><b>7-Scenes chess · cross-traverse localisation</b>
+<span>memory = 4 training walks · queries = 2 unseen walks · VSA vs kNN photos on the map</span></a>
+<a class="card" href="recall_inspector.html"><b>School run &amp; classroom · time recall + place recall</b>
+<span>two-robot time merge with photos · classroom EigenPlaces battery · CDF header</span></a>
+
+<h2>replica belief-field inspectors (per scene)</h2>
+<div class="grid">
+<a class="card" href="grounding_inspector_room0.html"><b>room0</b><span>83% · the honest vase miss</span></a>
+<a class="card" href="grounding_inspector_room1.html"><b>room1</b><span>100%</span></a>
+<a class="card" href="grounding_inspector_room2.html"><b>room2</b><span>83% · densest scene</span></a>
+<a class="card" href="grounding_inspector_office0.html"><b>office0</b><span>83%</span></a>
+<a class="card" href="grounding_inspector_office1.html"><b>office1</b><span>100% · 1-observation table</span></a>
+<a class="card" href="grounding_inspector_office2.html"><b>office2</b><span>100%</span></a>
+<a class="card" href="grounding_inspector_office3.html"><b>office3</b><span>83% · bench &amp; clock</span></a>
+<a class="card" href="grounding_inspector_office4.html"><b>office4</b><span>80% · desk confusion</span></a>
+</div>
+
+<h2>background</h2>
+<a class="card" href="results_tum.html"><b>TUM fr1/desk — the scale-mismatch finding</b>
+<span>why street-scale descriptors blur a 2.4 m desk orbit</span></a>
+<a class="card" href="cjepa_explainer.html"><b>C-JEPA explainer</b>
+<span>object-level latent masking and what we borrow from it</span></a>
+</div></body></html>

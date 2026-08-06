@@ -9,7 +9,10 @@ import nengo
 import sys, os, time
 import matplotlib.pyplot as plt
 
-sys.path.insert(1, os.path.dirname(os.getcwd()) if 'experiments' in os.getcwd() else os.getcwd())
+_REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+if _REPO_ROOT not in sys.path:
+    sys.path.insert(0, _REPO_ROOT)
+
 import sspslam
 from sspslam.networks import SLAMNetwork, get_slam_input_functions_from_features
 from sspslam.perception import ImageFeatureEncoder
@@ -38,7 +41,7 @@ def stretch_array(arr, orig_dt, new_dt):
 # Reading the native async `events.txt` representing millions of polarity shifts natively matching GPERT formats.
 
 # %%
-dataset_dir = os.path.join(os.path.dirname(os.getcwd()) if 'experiments' in os.getcwd() else os.getcwd(), "data", "shapes_6dof")
+dataset_dir = os.path.join(_REPO_ROOT, "data", "shapes_6dof")
 events_path = os.path.join(dataset_dir, "events.txt")
 gt_path = os.path.join(dataset_dir, "groundtruth.txt")
 

@@ -1,0 +1,374 @@
+<meta charset="utf-8">
+<title>Second environment: TUM fr1/desk — what reproduces, what gets demoted</title>
+<style>
+:root{
+  --bg:#fbfbfc; --bg2:#ffffff; --panel:#eef0f4; --card:#ffffff;
+  --ink:#14171c; --ink2:#39404b; --muted:#646c78; --line:#dce0e7; --line2:#c6ccd6;
+  --accent:#2a5fd9; --accent-soft:#e6ecfb;
+  --good:#0f7a4b; --good-soft:#e2f4ea;
+  --warn:#9a5c05; --warn-soft:#fbeeda;
+  --bad:#b02a24;  --bad-soft:#fbe6e4;
+  --s1:#2a5fd9; --s2:#0f7a4b; --s3:#9a5c05;
+  --shadow:0 1px 2px rgba(16,20,28,.06), 0 6px 22px rgba(16,20,28,.07);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0e1116; --bg2:#141922; --panel:#1a212c; --card:#151b24;
+    --ink:#eef2f8; --ink2:#c3ccd9; --muted:#8b95a4; --line:#26303d; --line2:#33404f;
+    --accent:#79a6ff; --accent-soft:#18243a;
+    --good:#54d39a; --good-soft:#10291f;
+    --warn:#f0b24a; --warn-soft:#2b2211;
+    --bad:#ff8078;  --bad-soft:#2c1615;
+    --s1:#79a6ff; --s2:#54d39a; --s3:#f0b24a;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 26px rgba(0,0,0,.34);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1116; --bg2:#141922; --panel:#1a212c; --card:#151b24;
+  --ink:#eef2f8; --ink2:#c3ccd9; --muted:#8b95a4; --line:#26303d; --line2:#33404f;
+  --accent:#79a6ff; --accent-soft:#18243a;
+  --good:#54d39a; --good-soft:#10291f;
+  --warn:#f0b24a; --warn-soft:#2b2211;
+  --bad:#ff8078;  --bad-soft:#2c1615;
+  --s1:#79a6ff; --s2:#54d39a; --s3:#f0b24a;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 26px rgba(0,0,0,.34);
+}
+:root[data-theme="light"]{
+  --bg:#fbfbfc; --bg2:#ffffff; --panel:#eef0f4; --card:#ffffff;
+  --ink:#14171c; --ink2:#39404b; --muted:#646c78; --line:#dce0e7; --line2:#c6ccd6;
+  --accent:#2a5fd9; --accent-soft:#e6ecfb;
+  --good:#0f7a4b; --good-soft:#e2f4ea;
+  --warn:#9a5c05; --warn-soft:#fbeeda;
+  --bad:#b02a24;  --bad-soft:#fbe6e4;
+  --s1:#2a5fd9; --s2:#0f7a4b; --s3:#9a5c05;
+  --shadow:0 1px 2px rgba(16,20,28,.06), 0 6px 22px rgba(16,20,28,.07);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.62 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.wrap{max-width:1040px;margin:0 auto;padding:0 22px}
+code{background:var(--panel);border-radius:5px;padding:1px 5px;font-size:.88em;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;overflow-wrap:anywhere}
+header{background:var(--bg2);border-bottom:1px solid var(--line);padding:32px 0 28px}
+.topbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:22px}
+.kicker{font-size:.74rem;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);font-weight:700}
+.btn{background:var(--card);color:var(--ink);border:1px solid var(--line2);border-radius:8px;
+  padding:7px 13px;font-size:.85rem;cursor:pointer;font-family:inherit}
+.btn:hover{border-color:var(--accent)}
+h1{font-size:clamp(1.5rem,3.8vw,2.25rem);line-height:1.15;margin:0 0 12px;letter-spacing:-.02em;text-wrap:balance}
+.lede{font-size:1.03rem;color:var(--ink2);max-width:76ch;margin:0}
+.statgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:22px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:11px;padding:12px 14px}
+.stat b{display:block;font-size:1.3rem;font-variant-numeric:tabular-nums}
+.stat span{display:block;font-size:.78rem;color:var(--muted);margin-top:3px;line-height:1.36}
+section{padding:40px 0;border-bottom:1px solid var(--line)}
+.eyebrow{font-size:.73rem;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 8px}
+h2{font-size:clamp(1.22rem,2.6vw,1.68rem);margin:0 0 12px;letter-spacing:-.015em;text-wrap:balance}
+.prose{max-width:76ch;color:var(--ink2)}
+.prose p{margin:0 0 12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:18px;box-shadow:var(--shadow);margin:16px 0}
+.cap{font-size:.86rem;color:var(--muted);max-width:80ch;margin-top:10px}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.87rem;min-width:560px}
+th,td{padding:8px 11px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{font-size:.71rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;
+  border-bottom:1px solid var(--line2)}
+td.n{font-family:ui-monospace,Menlo,Consolas,monospace;font-variant-numeric:tabular-nums}
+tr.hi td{background:var(--accent-soft)}
+.pill{display:inline-block;font-size:.71rem;font-weight:700;border-radius:999px;padding:2px 9px}
+.pill.g{background:var(--good-soft);color:var(--good)}
+.pill.b{background:var(--bad-soft);color:var(--bad)}
+.pill.w{background:var(--warn-soft);color:var(--warn)}
+.callout{border-left:3px solid var(--accent);background:var(--accent-soft);border-radius:0 10px 10px 0;
+  padding:14px 17px;margin:18px 0;max-width:80ch}
+.callout.warn{border-left-color:var(--warn);background:var(--warn-soft)}
+.callout p{margin:0 0 8px;color:var(--ink2)} .callout p:last-child{margin:0} .callout b{color:var(--ink)}
+svg{display:block;width:100%;height:auto;overflow:hidden}
+.tk{fill:var(--muted);font-size:11px;font-family:ui-monospace,Menlo,Consolas,monospace}
+.al{fill:var(--ink2);font-size:12px;font-weight:600}
+.pl{fill:var(--ink);font-size:11.5px}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:.8rem;color:var(--muted);margin-top:10px}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+footer{padding:30px 0 60px;color:var(--muted);font-size:.86rem}
+a{color:var(--accent)}
+</style>
+
+<header>
+  <div class="wrap">
+    <div class="topbar">
+      <span class="kicker">ASTM · second environment · TUM RGB-D fr1/desk</span>
+      <button id="themeBtn" class="btn" type="button">Dark / light</button>
+    </div>
+    <h1>A handheld Kinect in an office: what reproduces, and what gets demoted</h1>
+    <p class="lede">
+      Every core number so far came from one Spot walk through one classroom. This page is the
+      same measurements on a different camera, scene, and platform — TUM RGB-D
+      <code>freiburg1_desk</code>, a handheld Kinect office sequence with motion-capture ground
+      truth. A second environment is only useful if it can <em>change</em> conclusions; this one
+      did, in one place.
+    </p>
+    <div class="statgrid">
+      <div class="stat"><b>613</b><span>frames, 20.4 s at 30 Hz, 640×480</span></div>
+      <div class="stat"><b>3,218</b><span>object crops via YOLOv8n, 22 classes</span></div>
+      <div class="stat"><b>0.168</b><span>chance top-1 (vs 0.312 in the classroom — do not compare raw accuracies)</span></div>
+      <div class="stat"><b>mocap</b><span>ground-truth poses; passed the sanity check (unlike school_run1)</span></div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<section id="repro">
+  <div class="wrap">
+    <p class="eyebrow">1 · What reproduces</p>
+    <h2>The spectral anisotropy and the encoder grouping travel</h2>
+    <div class="card tw">
+      <table>
+        <thead><tr><th>claim</th><th>classroom</th><th>TUM fr1/desk</th><th>verdict</th></tr></thead>
+        <tbody>
+          <tr><td>Timkey: single worst dimension's share of mean cosine <br><span style="color:var(--muted);font-size:.8em">(GPT-2/BERT/XLNet: 76–99%)</span></td>
+              <td class="n">5.3%</td><td class="n">7.4%</td>
+              <td><span class="pill g">reproduces</span></td></tr>
+          <tr><td>Timkey: dimensions needed for half the mean cosine <br><span style="color:var(--muted);font-size:.8em">(NLP: ~1)</span></td>
+              <td class="n">49 / 256</td><td class="n">43 / 256</td>
+              <td><span class="pill g">reproduces</span></td></tr>
+          <tr><td>encoder grouping at gap 300 (trained-discriminative &gt; detection head)</td>
+              <td class="n">resnet50 0.787 ≈ dinov2 0.769 ≫ yolo 0.720*</td>
+              <td class="n">dinov2 0.710 ≈ resnet50 0.687 ≫ yolo 0.476</td>
+              <td><span class="pill g">reproduces</span></td></tr>
+          <tr><td>dissociation: IsoScore does not predict retrieval</td>
+              <td class="n">yes</td><td class="n">yes (see §2)</td>
+              <td><span class="pill g">reproduces</span></td></tr>
+          <tr><td>raw-cosine retrieval penalty of whitening at k=128</td>
+              <td class="n">−0.097</td><td class="n">−0.008</td>
+              <td><span class="pill b">demoted — scene-specific</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="cap">
+      *The classroom's yolo margin over the others is smaller because its crops <em>are</em> its
+      own YOLO detections. The stable cross-scene fact is the grouping, not a strict ordering —
+      exactly what the 5-seed error bars already said. Raw accuracies are not comparable across
+      scenes (chance 0.312 vs 0.168, sequence lengths differ); compare above-chance margins and
+      within-scene orderings only.
+    </p>
+  </div>
+</section>
+
+<section id="ladder">
+  <div class="wrap">
+    <p class="eyebrow">2 · The ladder, third scene</p>
+    <h2>Whitening's retrieval cost is scene-dependent. The dissociation is not.</h2>
+    <div class="card">
+      <svg id="figLadder" viewBox="0 0 940 430" role="img"
+           aria-label="Grouped bars: class top-1 retrieval per isotropisation rung at gaps 30, 90 and 300 frames on TUM fr1/desk. Whiten-32 slightly beats raw; only full ZCA costs clearly."></svg>
+      <div class="legend">
+        <span><i style="background:var(--s1)"></i>gap 30 (1 s)</span>
+        <span><i style="background:var(--s2)"></i>gap 90 (3 s ≈ classroom's gap-300 as a fraction)</span>
+        <span><i style="background:var(--s3)"></i>gap 300 (10 s ≈ half the sequence)</span>
+      </div>
+    </div>
+    <p class="cap">
+      TUM ladder (yolov8n crops, chance 0.168). The classroom's monotone decline does not appear:
+      <b>whiten-32 is the best rung here</b> (+0.024 over raw at the fraction-matched gap), k=128
+      is a wash, and only full ZCA clearly costs. Note the fraction-matching: this sequence is
+      20.4 s, so gap 300 excludes half of it — the honest cross-scene column is gap 90.
+    </p>
+    <div class="callout">
+      <p><b>What survives, said precisely.</b> Across three scenes the k=128 whitening penalty is
+      −0.097 (classroom), −0.004 (school_run1), −0.008 (TUM): the dramatic classroom penalty is
+      the outlier, and the general claim must be <em>"the retrieval cost of whitening is
+      scene-dependent; centring and z-scoring are retrieval-safe everywhere; full ZCA always
+      costs."</em></p>
+      <p>The <b>dissociation is intact and sharper</b>: the four IsoScore-1.000 rungs span 0.440
+      to 0.493 while raw (IsoScore 0.031) sits at 0.476, inside that span. Perfect isotropy is
+      compatible with the best and the worst retrieval on the chart — isotropy predicts nothing
+      about key quality, which is the paper's actual claim.</p>
+    </div>
+  </div>
+</section>
+
+<section id="scenes">
+  <div class="wrap">
+    <p class="eyebrow">3 · Three scenes</p>
+    <h2>Class diversity does not predict effective rank — now with three inconsistent points</h2>
+    <div class="card">
+      <svg id="figScatter" viewBox="0 0 940 330" role="img"
+           aria-label="Scatter: effective number of classes against effective rank for classroom, school_run1 and TUM — the three points admit no monotone relation."></svg>
+    </div>
+    <p class="cap">
+      (effective classes, effective rank): classroom (6.0, 6.7) · school_run1 (7.1, 4.6) · TUM
+      (7.4, 8.9). The "richer scene → higher rank" hypothesis was falsified by school_run1;
+      TUM happens to point the other way. Three scenes, no relation in either direction —
+      the falsification stands and is stronger.
+    </p>
+  </div>
+</section>
+
+<section id="pending">
+  <div class="wrap">
+    <p class="eyebrow">4 · The critical test</p>
+    <h2>Through the memory, held out — the sharpest claim faces its second scene</h2>
+    <p class="prose">
+      The paper's most quotable finding — <em>whitening scores below chance on held-out data</em> —
+      was measured through the memory on the classroom only. TUM's raw-cosine result above
+      (no whitening penalty) makes this the test that matters: if the through-memory harm
+      reproduces here despite the benign cosine picture, the harm comes from the memory pipeline
+      itself, which is a finding; if it does not, the claim is classroom-only and gets hedged.
+    </p>
+    <div class="card tw">
+      <table>
+        <thead><tr><th>encoder (blocked, 5 seeds)</th><th>raw</th><th>centred</th><th>z-scored</th><th>whitened128</th></tr></thead>
+        <tbody>
+          <tr><td>yolov8n</td><td class="n">17.0±26.3% <span class="pill w">cells=1</span></td>
+              <td class="n">−92.1±40.0%</td><td class="n">−83.3±36.0%</td><td class="n">−196.3±91.7%</td></tr>
+          <tr><td>resnet50</td><td class="n">18.2±25.0% <span class="pill w">cells=3</span></td>
+              <td class="n">−68.0±37.8%</td><td class="n">−94.9±79.3%</td><td class="n">−172.5±101.6%</td></tr>
+          <tr><td>dinov2</td><td class="n">16.8±27.8% <span class="pill w">cells=3</span></td>
+              <td class="n">−64.9±28.5%</td><td class="n">−68.6±27.5%</td><td class="n">−171.8±103.7%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout warn">
+      <p><b>Verdict: the test collapsed here, and the diagnostics say why — the answer is
+      "wrong trajectory type", not "centring is bad".</b> The mocap space is a
+      <b>2.42 × 1.34 m desk orbit</b> (oracle 0.08 m, constant predictor 0.50 m). Every real
+      treatment scores <em>below the constant</em>; "raw" leads only by being a constant predictor
+      itself (1–3 distinct cells — the same degeneracy flag that caught it on the classroom).</p>
+      <p>The mechanism: on a handheld orbit, what the camera sees is governed by <em>viewing
+      direction</em>, not position — and this memory binds appearance to <b>position only</b>.
+      Nearly identical positions produce wildly different views, so appearance→position recall is
+      ill-posed on this trajectory regardless of treatment. Two statements do survive:
+      <b>whitening is still the worst treatment on both scenes</b> (−172% to −196% here), and the
+      classroom's "whitening below chance" claim stays <b>classroom-only</b> until a fair second
+      scene exists.</p>
+      <p><b>What a fair second scene needs:</b> either a locomotion-style trajectory where
+      position drives appearance (e.g. a larger-translation sequence), or the memory must bind
+      <em>orientation</em> as well — the circular heading encoder already exists
+      (<code>ctx_head</code>), so <code>appearance ⊗ S(x,y) ⊗ H(ψ)</code> is a small extension,
+      and it is the named next test.</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>
+      Dataset: TUM RGB-D <code>freiburg1_desk</code> (CVG, TU München), downloaded from the
+      official server; frames re-sequenced to integer ids (<code>rgb_seq/</code>) because TUM's
+      epoch-second filenames would alias ~30 frames per id — see the config's comment. Reproduce:
+      <code>sequences validate</code> → <code>embed-crops --dataset</code> →
+      <code>encoder_comparison</code> → <code>isotropy_ladder</code> → <code>encoder_report</code>.
+      Numbers from <code>outputs/tum_fr1_desk/{isotropy_ladder,encoder_report}.json</code> and
+      <code>room_diversity_tum_fr1_desk-classroom_gap300.json</code>; tracker entry (ak).
+    </p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+  var NS = "http://www.w3.org/2000/svg";
+  function el(t, a, p) { var e = document.createElementNS(NS, t); for (var k in a) e.setAttribute(k, a[k]); if (p) p.appendChild(e); return e; }
+  function css(v) { return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+  var redraws = [];
+
+  /* ---------- ladder grouped bars ---------- */
+  var RUNGS = [
+    { l: "raw",         iso: "0.031", v: [0.674, 0.581, 0.476] },
+    { l: "centred",     iso: "0.031", v: [0.676, 0.567, 0.469] },
+    { l: "z-scored",    iso: "0.046", v: [0.683, 0.590, 0.469] },
+    { l: "whiten 32",   iso: "1.000", v: [0.699, 0.605, 0.493] },
+    { l: "whiten 64",   iso: "1.000", v: [0.690, 0.593, 0.493] },
+    { l: "whiten 128",  iso: "1.000", v: [0.673, 0.578, 0.468] },
+    { l: "ZCA (256)",   iso: "1.000", v: [0.603, 0.528, 0.440] }
+  ];
+  function drawLadder() {
+    var svg = document.getElementById("figLadder");
+    svg.textContent = "";
+    var W = 940, H = 430, L = 62, R = 20, T = 16, B = 74;
+    var n = RUNGS.length, gw = (W - L - R) / n;
+    var lo = 0.40, hi = 0.72;
+    var Y = function (v) { return H - B - (v - lo) / (hi - lo) * (H - T - B); };
+    [0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70].forEach(function (v) {
+      el("line", { x1: L, x2: W - R, y1: Y(v), y2: Y(v), stroke: css("--line"),
+        "stroke-dasharray": "3 4" }, svg);
+      el("text", { x: L - 8, y: Y(v) + 4, class: "tk", "text-anchor": "end" }, svg)
+        .textContent = v.toFixed(2);
+    });
+    var chY = Y(0.168) > H - B ? null : Y(0.168);
+    el("line", { x1: L, x2: W - R, y1: H - B, y2: H - B, stroke: css("--line2") }, svg);
+    var cols = ["--s1", "--s2", "--s3"];
+    RUNGS.forEach(function (r, i) {
+      var x0 = L + gw * i + gw * 0.5;
+      r.v.forEach(function (v, g) {
+        var bw = gw * 0.2, cx = x0 + (g - 1) * bw * 1.15;
+        el("rect", { x: cx - bw / 2, y: Y(v), width: bw, height: (H - B) - Y(v),
+          fill: css(cols[g]), opacity: 0.88, rx: 3 }, svg);
+      });
+      el("text", { x: x0, y: Y(Math.max.apply(null, r.v)) - 7, class: "pl",
+        "text-anchor": "middle" }, svg).textContent = r.v[1].toFixed(3);
+      el("text", { x: x0, y: H - B + 20, class: "tk", "text-anchor": "middle" }, svg)
+        .textContent = r.l;
+      el("text", { x: x0, y: H - B + 36, class: "tk", "text-anchor": "middle",
+        opacity: 0.75 }, svg).textContent = "Iso " + r.iso;
+    });
+    el("text", { x: (L + W - R) / 2, y: H - 12, class: "al", "text-anchor": "middle" }, svg)
+      .textContent = "printed value = gap 90 (the fraction-matched column); chance = 0.168";
+  }
+  redraws.push(drawLadder);
+
+  /* ---------- three-scene scatter ---------- */
+  var SCENES = [
+    { l: "classroom",   ek: 6.0, er: 6.7, c: "--s1", dx: 12, dy: 4 },
+    { l: "school_run1", ek: 7.1, er: 4.6, c: "--s3", dx: 12, dy: 4 },
+    { l: "TUM fr1/desk", ek: 7.4, er: 8.9, c: "--s2", dx: -12, dy: 4, an: "end" }
+  ];
+  function drawScatter() {
+    var svg = document.getElementById("figScatter");
+    svg.textContent = "";
+    var W = 940, H = 330, L = 70, R = 30, T = 18, B = 56;
+    var X = function (v) { return L + (v - 5.6) / (7.8 - 5.6) * (W - L - R); };
+    var Y = function (v) { return H - B - (v - 4.0) / (9.6 - 4.0) * (H - T - B); };
+    [5, 6, 7, 8, 9].forEach(function (v) {
+      el("line", { x1: L, x2: W - R, y1: Y(v), y2: Y(v), stroke: css("--line"),
+        "stroke-dasharray": "3 4" }, svg);
+      el("text", { x: L - 8, y: Y(v) + 4, class: "tk", "text-anchor": "end" }, svg)
+        .textContent = v;
+    });
+    [6.0, 6.5, 7.0, 7.5].forEach(function (v) {
+      el("text", { x: X(v), y: H - B + 18, class: "tk", "text-anchor": "middle" }, svg)
+        .textContent = v.toFixed(1);
+    });
+    el("line", { x1: L, x2: W - R, y1: H - B, y2: H - B, stroke: css("--line2") }, svg);
+    el("line", { x1: L, x2: L, y1: T, y2: H - B, stroke: css("--line2") }, svg);
+    el("text", { x: (L + W - R) / 2, y: H - 10, class: "al", "text-anchor": "middle" }, svg)
+      .textContent = "effective number of classes, exp(entropy)  →  semantically richer";
+    el("text", { x: 18, y: (T + H - B) / 2, class: "al", "text-anchor": "middle",
+      transform: "rotate(-90 18 " + ((T + H - B) / 2) + ")" }, svg)
+      .textContent = "effective rank of crop features";
+    SCENES.forEach(function (s) {
+      el("circle", { cx: X(s.ek), cy: Y(s.er), r: 8, fill: css(s.c),
+        stroke: css("--card"), "stroke-width": 2 }, svg);
+      el("text", { x: X(s.ek) + s.dx, y: Y(s.er) + s.dy, class: "pl",
+        "text-anchor": s.an || "start" }, svg)
+        .textContent = s.l + " (" + s.ek.toFixed(1) + ", " + s.er.toFixed(1) + ")";
+    });
+  }
+  redraws.push(drawScatter);
+
+  function drawAll() { redraws.forEach(function (f) { try { f(); } catch (e) {} }); }
+  drawAll();
+  window.addEventListener("resize", drawAll);
+  document.getElementById("themeBtn").addEventListener("click", function () {
+    var cur = document.documentElement.getAttribute("data-theme");
+    if (!cur) cur = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    document.documentElement.setAttribute("data-theme", cur === "dark" ? "light" : "dark");
+    drawAll();
+  });
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", drawAll);
+})();
+</script>

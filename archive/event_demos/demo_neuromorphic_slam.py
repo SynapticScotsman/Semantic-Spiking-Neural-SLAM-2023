@@ -13,7 +13,10 @@ import sys, os, time
 import matplotlib.pyplot as plt
 import gymnasium as gym
 
-sys.path.insert(1, os.path.dirname(os.getcwd()) if 'experiments' in os.getcwd() else os.getcwd())
+_REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+if _REPO_ROOT not in sys.path:
+    sys.path.insert(0, _REPO_ROOT)
+
 import sspslam
 import miniworld
 from sspslam.networks import SLAMNetwork, get_slam_input_functions_from_features
@@ -100,7 +103,7 @@ def save_or_show():
             return
     except ImportError:
         pass
-    plt.savefig("experiments/demo_transition.png")
+    plt.savefig(os.path.join(_REPO_ROOT, "experiments", "demo_transition.png"))
 save_or_show()
 
 # %% [markdown]

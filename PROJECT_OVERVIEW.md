@@ -72,29 +72,39 @@ Semantic-Spiking-Neural-SLAM-2023/
 │   ├── sspspace.py       ← The maths for encoding positions and symbols as vectors
 │   ├── networks/         ← The neural network models (path integrator, memory, etc.)
 │   ├── perception/       ← Vision tools (image features, CLIP, event cameras)
-│   ├── environments/     ← A 3D test room the agent can move around in
+│   ├── environments/     ← Miniworld / optional Habitat wrappers
 │   └── utils/            ← Plotting and helper tools
 │
-├── experiments/          ← Scripts and notebooks you can run
-│   ├── run_slam_features.py        ← Best starting point for running SLAM
+├── experiments/          ← Primary runnable scripts and notebooks (see experiments/README.md)
+│   ├── run_slam_features.py        ← Good default for feature-based SLAM
 │   ├── run_semantic_slam.py        ← SLAM with object class labels (no GPU needed)
 │   ├── slam_map_new.py             ← Full 2D demo with walls and objects
-│   ├── collect_3d_data.py          ← Collect new data from the 3D environment
-│   ├── run_slam_3d.py              ← Run the full 3D pipeline end-to-end
-│   ├── example_slam_walkthrough.ipynb  ← Step-by-step interactive tutorial ← START HERE
-│   ├── slam_3d_dashboard.ipynb         ← Visualise and query a saved SLAM run
-│   └── test_*.py                       ← Automated checks to verify things work
+│   ├── collect_3d_data.py          ← Collect new data (Miniworld)
+│   ├── run_slam_3d.py              ← Full 3D pipeline end-to-end (Miniworld)
+│   ├── example_slam_walkthrough.ipynb  ← Step-by-step tutorial (if present)
+│   ├── slam_3d_dashboard.ipynb         ← Visualise saved runs (if present)
+│   └── test_*.py                   ← Smoke / integration checks
 │
-├── data/3d/              ← Pre-collected data (ready to use, no setup needed)
-│   ├── path.npy                    ← Where the agent went (x, y positions)
-│   ├── velocities.npy              ← How fast the agent moved at each step
-│   ├── feature_vectors.npy         ← Visual fingerprints of each object at each step
-│   ├── landmark_positions.npy      ← True positions of the objects in the room
-│   └── slam_features_*.npz         ← Saved results from a previous SLAM run
+├── tools/                ← Notebook generators and `make_slam_map_fast.py` (see tools/README.md)
+│
+├── snnhdc*.py            ← Active SNN–HDC / FHRR experiments at repo root (see SNHDC_README.md)
+│
+├── archive/              ← Optional side experiments (TUM-ViE, UZH demos, Habitat drivers)
+│   ├── README.md
+│   └── INVENTORY.md
+│
+├── data/3d/              ← Pre-collected data (ready to use, no Miniworld needed)
+│   ├── path.npy
+│   ├── velocities.npy
+│   ├── feature_vectors.npy
+│   ├── vec_to_landmarks.npy
+│   └── slam_features_*.npz
 │
 ├── PROJECT_OVERVIEW.md   ← This file
 └── README.md             ← Technical theory and installation instructions
 ```
+
+Dataset-specific flows (TUM-ViE, UZH shapes notebooks, Habitat collection) live under **`archive/`**. Active **SNN–HDC** work (`snnhdc*.py` at the repo root) is separate from `sspslam`; see [SNHDC_README.md](SNHDC_README.md). See also [archive/README.md](archive/README.md) and [experiments/README.md](experiments/README.md).
 
 ---
 
@@ -199,6 +209,8 @@ python experiments/run_slam_3d.py --policy explore --n-steps 2000
 | `run_event_slam.py` | SLAM using neuromorphic event-camera data | numpy + nengo |
 | `run_event_orb_slam.py` | Event SLAM with visual odometry | + opencv |
 | `run_miniworld_slam.py` | SLAM in a 3D room with ORB visual tracking | + miniworld + opencv |
+| `archive/event_demos/*` | TUM-ViE / UZH / GPERT-oriented demos | per [archive/INVENTORY.md](archive/INVENTORY.md) |
+| `archive/habitat_optional/*` | Habitat-sim collection + SLAM | + `habitat-sim` |
 
 **Traffic light summary:**
 

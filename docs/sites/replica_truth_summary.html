@@ -1,0 +1,148 @@
+<meta charset="utf-8">
+<title>8-scene Replica truth run — one 32 KB trace per scene</title>
+<style>
+:root{--bg:#fbfbfc;--bg2:#fff;--panel:#eef0f4;--card:#fff;--ink:#14171c;--ink2:#39404b;
+--muted:#646c78;--line:#dce0e7;--line2:#c6ccd6;--accent:#2a5fd9;
+--good:#0f7a4b;--bad:#b02a24;--warn:#9a5c05;
+--shadow:0 1px 2px rgba(16,20,28,.06),0 6px 22px rgba(16,20,28,.07)}
+@media (prefers-color-scheme:dark){:root{--bg:#0e1116;--bg2:#141922;--panel:#1a212c;
+--card:#151b24;--ink:#eef2f8;--ink2:#c3ccd9;--muted:#8b95a4;--line:#26303d;--line2:#33404f;
+--accent:#79a6ff;--good:#54d39a;--bad:#ff8078;--warn:#f0b24a;
+--shadow:0 1px 2px rgba(0,0,0,.4),0 8px 26px rgba(0,0,0,.34)}}
+:root[data-theme="dark"]{--bg:#0e1116;--bg2:#141922;--panel:#1a212c;--card:#151b24;
+--ink:#eef2f8;--ink2:#c3ccd9;--muted:#8b95a4;--line:#26303d;--line2:#33404f;--accent:#79a6ff;
+--good:#54d39a;--bad:#ff8078;--warn:#f0b24a;
+--shadow:0 1px 2px rgba(0,0,0,.4),0 8px 26px rgba(0,0,0,.34)}
+:root[data-theme="light"]{--bg:#fbfbfc;--bg2:#fff;--panel:#eef0f4;--card:#fff;--ink:#14171c;
+--ink2:#39404b;--muted:#646c78;--line:#dce0e7;--line2:#c6ccd6;--accent:#2a5fd9;
+--good:#0f7a4b;--bad:#b02a24;--warn:#9a5c05;
+--shadow:0 1px 2px rgba(16,20,28,.06),0 6px 22px rgba(16,20,28,.07)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+font:16px/1.6 ui-sans-serif,system-ui,"Segoe UI",Roboto,Arial,sans-serif}
+.wrap{max-width:1000px;margin:0 auto;padding:0 20px}
+header{background:var(--bg2);border-bottom:1px solid var(--line);padding:28px 0 24px}
+.topbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:14px}
+.kicker{font-size:.73rem;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);font-weight:700}
+.btn{background:var(--card);color:var(--ink);border:1px solid var(--line2);border-radius:8px;
+padding:7px 13px;font-size:.85rem;cursor:pointer;font-family:inherit}
+h1{font-size:clamp(1.35rem,3.4vw,2rem);margin:0 0 10px;letter-spacing:-.02em;text-wrap:balance}
+.lede{color:var(--ink2);max-width:80ch;margin:0}
+section{padding:30px 0;border-bottom:1px solid var(--line)}
+.eyebrow{font-size:.72rem;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 8px}
+h2{font-size:clamp(1.15rem,2.4vw,1.5rem);margin:0 0 10px;letter-spacing:-.015em}
+.prose{max-width:80ch;color:var(--ink2)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:16px;
+box-shadow:var(--shadow);margin:14px 0;overflow-x:auto}
+table{border-collapse:collapse;font-size:.9rem;font-variant-numeric:tabular-nums;min-width:620px}
+th,td{text-align:right;padding:6px 12px;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+th{font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.statgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-top:14px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 13px}
+.stat b{display:block;font-size:1.25rem}
+.stat span{font-size:.76rem;color:var(--muted)}
+.note{font-size:.85rem;color:var(--muted)}
+.good{color:var(--good);font-weight:700}
+.bad{color:var(--bad)}
+footer{padding:24px 0 56px;color:var(--muted);font-size:.85rem}
+code{background:var(--panel);border-radius:5px;padding:1px 5px;font-size:.87em;
+font-family:ui-monospace,Menlo,Consolas,monospace}
+</style>
+<header><div class="wrap">
+<div class="topbar"><span class="kicker">full Replica run · 8 scenes · truth-scored</span>
+<button class="btn" type="button"
+onclick="var r=document.documentElement,c=r.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');r.setAttribute('data-theme',c==='dark'?'light':'dark')">Dark / light</button></div>
+<h1>“Where is the chair?” — answered from one 32 KB trace per scene, scored against real ground truth</h1>
+<p class="lede">Every number below is <b>truth-R@1</b>: the fraction of ground-truth object
+classes whose top answer lands within radius r of a real instance (instance centroids
+backprojected from the Replica semantic renders). Frontend: YOLOv8n + box-median depth +
+render pose. Memory: one 4096-d phasor trace per scene, bounded insertion (≤60/class).
+All 8 scenes, no scene selection, no query curation.</p>
+<div class="statgrid">
+<div class="stat"><b>88.1%</b><span>pooled truth-R@1 at 1.0 m, 37/42 GT classes (chance for a uniform random guess: 18.2%)</span></div>
+<div class="stat"><b>78.6%</b><span>at the tighter 0.5 m radius (chance: 5.9%)</span></div>
+<div class="stat"><b>0</b><span>misses attributable to the memory — all 5 are frontend failures</span></div>
+<div class="stat"><b>32 KB</b><span>map size per scene, constant in observations (2,357–10,465 obs/scene)</span></div>
+</div>
+</div></header>
+<main>
+<section><div class="wrap">
+<p class="eyebrow">per scene</p>
+<h2>Stratified by scene — n and vocabulary coverage stated</h2>
+<p class="prose">“Coverage” is the fraction of GT instances the COCO-80 detector vocabulary can
+express at all (walls, blinds, lamps, cushions are invisible to it) — the battery is honest
+about only examining that subset. Chance = a uniform random point in that room scored at 1 m.</p>
+<div class="card"><table>
+<thead><tr><th>scene</th><th>observations</th><th>GT instances</th><th>COCO-visible</th>
+<th>coverage</th><th>n classes</th><th>R@1 (1 m)</th><th>R@1 (0.5 m)</th><th>chance (1 m)</th></tr></thead>
+<tbody>
+<tr><td>room0</td><td>5,359</td><td>89</td><td>20</td><td>22%</td><td>6</td><td>83%</td><td>83%</td><td>20.2%</td></tr>
+<tr><td>room1</td><td>2,970</td><td>53</td><td>5</td><td>9%</td><td>4</td><td class="good">100%</td><td>75%</td><td>9.1%</td></tr>
+<tr><td>room2</td><td>10,074</td><td>58</td><td>18</td><td>31%</td><td>6</td><td>83%</td><td>83%</td><td>24.3%</td></tr>
+<tr><td>office0</td><td>3,409</td><td>47</td><td>9</td><td>19%</td><td>6</td><td>83%</td><td>67%</td><td>18.4%</td></tr>
+<tr><td>office1</td><td>2,357</td><td>37</td><td>5</td><td>14%</td><td>4</td><td class="good">100%</td><td>75%</td><td>24.0%</td></tr>
+<tr><td>office2</td><td>6,742</td><td>64</td><td>15</td><td>23%</td><td>5</td><td class="good">100%</td><td class="good">100%</td><td>21.3%</td></tr>
+<tr><td>office3</td><td>10,465</td><td>78</td><td>17</td><td>22%</td><td>6</td><td>83%</td><td>67%</td><td>11.1%</td></tr>
+<tr><td>office4</td><td>7,379</td><td>55</td><td>15</td><td>27%</td><td>5</td><td>80%</td><td>80%</td><td>17.0%</td></tr>
+</tbody></table>
+<p class="note">Typical hit distances: chair 0.04–0.16 m, tv 0.04–0.33 m, vase 0.04–0.13 m,
+clock 0.02–0.03 m — most answers land within the object itself.</p></div>
+</div></section>
+<section><div class="wrap">
+<p class="eyebrow">miss taxonomy</p>
+<h2>Which stage failed — stratified, because the aggregate hides it</h2>
+<div class="card"><table>
+<thead><tr><th>failure stage</th><th>count</th><th>cases</th></tr></thead>
+<tbody>
+<tr><td>never detected (frontend recall)</td><td>2</td><td>office0: clock · office3: bottle — YOLO found zero instances; a memory cannot ground what it never stored</td></tr>
+<tr><td>wrong observations (frontend label/depth)</td><td>3</td><td>room0: vase (stable mislabel, consistency 0.07 m but truth 4.4 m) · room2: bottle (bad depth) · office4: dining table (desk confusion)</td></tr>
+<tr><td class="good">memory-attributable</td><td class="good">0</td><td>on every scene the trace matched or beat the explicit instance-list ceiling on stored classes; office1: grounded a table from a SINGLE stored observation the clustering backend discarded</td></tr>
+</tbody></table></div>
+</div></section>
+<section><div class="wrap">
+<p class="eyebrow">same frontend · different backend</p>
+<h2>The memory is not the bottleneck — and joining is where the trace wins</h2>
+<p class="prose">Identical observation stream into each backend (the fair-comparison design).
+Below it, the 4-robot map-joining test: each robot sees one contiguous quarter of the walk,
+builds alone, then the maps are joined.</p>
+<div class="card"><table>
+<thead><tr><th>backend (single map)</th><th>mean R@1</th><th>worst scene</th><th>bytes (median)</th><th>update / merge</th></tr></thead>
+<tbody>
+<tr><td><b>VSA trace (capped)</b></td><td class="good">87%</td><td>67%</td><td>32 KB constant</td><td>one add / exact addition</td></tr>
+<tr><td>instance list (scene-graph object layer)</td><td>84%</td><td>67%</td><td>~1 KB</td><td>re-cluster / association problem</td></tr>
+<tr><td>raw observation store</td><td>81%</td><td>60%</td><td>64 KB, grows</td><td>append / concatenation</td></tr>
+</tbody></table></div>
+<div class="card"><table>
+<thead><tr><th>4-robot joining method</th><th>mean R@1</th><th>worst</th><th>association decisions (8 scenes)</th><th>bytes/robot</th><th>join exactness</th></tr></thead>
+<tbody>
+<tr><td><b>VSA trace + addition</b></td><td class="good">89%</td><td>80%</td><td class="good">0</td><td>32 KB</td><td>~1e-12 (bit-level)</td></tr>
+<tr><td>instance lists + greedy association</td><td>84%</td><td class="bad">67%</td><td>622</td><td>0.3 KB</td><td>3–8 classes drift/scene</td></tr>
+<tr><td>per-class count grids + addition</td><td>82%</td><td class="bad">67%</td><td>0</td><td>~95 KB</td><td>exact, quantised</td></tr>
+<tr><td>raw observation union</td><td>85%</td><td class="bad">60%</td><td>0</td><td>~18 KB, grows</td><td>exact, unbounded</td></tr>
+</tbody></table>
+<p class="note">The associative merge (how scene graphs join) made 622 cross-robot decisions
+over the 8 scenes and its errors cost up to 16 points on a scene; the trace's join has no
+decisions to get wrong. All joins assume a shared world frame — alignment is not solved by
+any of them, including ours (stated caveat).</p></div>
+</div></section>
+<section><div class="wrap">
+<p class="eyebrow">context</p>
+<h2>Where this sits against published work — different metric, stated honestly</h2>
+<p class="prose">The scene-graph systems evaluate dense semantic segmentation on these same 8
+scenes (GT-scored): ConceptFusion 24.2 mAcc · ConceptGraphs 40.6 · HOV-SG 38.1 · KeySG
+(2025) 45.8. Those numbers are a <i>different task</i> (label every point) and sit here for
+scale, not same-number comparison: semantic error is the whole field's bottleneck.
+ConceptGraphs' own query-style evaluation reports R@1 ≈ 0.59. The same-metric,
+same-data head-to-head is the pending ConceptGraphs run on these scenes (student GPU),
+scored by the identical script — at which point the frontend×backend 2×2 completes.</p>
+<p class="prose" style="margin-top:10px"><b>Protocol notes:</b> GT = instance centroids
+backprojected from the vMAP semantic renders (same mesh, frame-alignment gate per scene);
+REPLICA→COCO name map with judgement calls stated (stool→chair, table→dining table);
+never-detected GT classes count as misses; success radius stated per column; per-scene
+belief-field photo inspectors accompany this page.</p>
+</div></section>
+</main>
+<footer><div class="wrap"><p>Rebuild: <code>python tools/aggregate_replica_truth.py</code> ·
+raw numbers <code>outputs/replica_truth_aggregate.json</code> and per-scene
+<code>outputs/replica_*/object_grounding.json</code> · tracker entry (bd) in the paper plan.</p></div></footer>

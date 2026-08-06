@@ -1,0 +1,397 @@
+<meta charset="utf-8">
+<title>C-JEPA, explained visually — object-level masking as a training intervention</title>
+<style>
+:root{
+  --bg:#fbfbfc; --bg2:#ffffff; --panel:#eef0f4; --card:#ffffff;
+  --ink:#14171c; --ink2:#39404b; --muted:#646c78; --line:#dce0e7; --line2:#c6ccd6;
+  --accent:#2a5fd9; --accent-soft:#e6ecfb;
+  --good:#0f7a4b; --good-soft:#e2f4ea;
+  --warn:#9a5c05; --warn-soft:#fbeeda;
+  --bad:#b02a24;  --bad-soft:#fbe6e4;
+  --obj-a:#2a5fd9; --obj-b:#0f7a4b; --obj-c:#b02a24; --obj-d:#9a5c05;
+  --shadow:0 1px 2px rgba(16,20,28,.06), 0 6px 22px rgba(16,20,28,.07);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0e1116; --bg2:#141922; --panel:#1a212c; --card:#151b24;
+    --ink:#eef2f8; --ink2:#c3ccd9; --muted:#8b95a4; --line:#26303d; --line2:#33404f;
+    --accent:#79a6ff; --accent-soft:#18243a;
+    --good:#54d39a; --good-soft:#10291f;
+    --warn:#f0b24a; --warn-soft:#2b2211;
+    --bad:#ff8078;  --bad-soft:#2c1615;
+    --obj-a:#79a6ff; --obj-b:#54d39a; --obj-c:#ff8078; --obj-d:#f0b24a;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 26px rgba(0,0,0,.34);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1116; --bg2:#141922; --panel:#1a212c; --card:#151b24;
+  --ink:#eef2f8; --ink2:#c3ccd9; --muted:#8b95a4; --line:#26303d; --line2:#33404f;
+  --accent:#79a6ff; --accent-soft:#18243a;
+  --good:#54d39a; --good-soft:#10291f;
+  --warn:#f0b24a; --warn-soft:#2b2211;
+  --bad:#ff8078;  --bad-soft:#2c1615;
+  --obj-a:#79a6ff; --obj-b:#54d39a; --obj-c:#ff8078; --obj-d:#f0b24a;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 26px rgba(0,0,0,.34);
+}
+:root[data-theme="light"]{
+  --bg:#fbfbfc; --bg2:#ffffff; --panel:#eef0f4; --card:#ffffff;
+  --ink:#14171c; --ink2:#39404b; --muted:#646c78; --line:#dce0e7; --line2:#c6ccd6;
+  --accent:#2a5fd9; --accent-soft:#e6ecfb;
+  --good:#0f7a4b; --good-soft:#e2f4ea;
+  --warn:#9a5c05; --warn-soft:#fbeeda;
+  --bad:#b02a24;  --bad-soft:#fbe6e4;
+  --obj-a:#2a5fd9; --obj-b:#0f7a4b; --obj-c:#b02a24; --obj-d:#9a5c05;
+  --shadow:0 1px 2px rgba(16,20,28,.06), 0 6px 22px rgba(16,20,28,.07);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.62 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.wrap{max-width:1020px;margin:0 auto;padding:0 22px}
+code{background:var(--panel);border-radius:5px;padding:1px 5px;font-size:.88em;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;overflow-wrap:anywhere}
+header{background:var(--bg2);border-bottom:1px solid var(--line);padding:32px 0 28px}
+.topbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:22px}
+.kicker{font-size:.74rem;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);font-weight:700}
+.btn{background:var(--card);color:var(--ink);border:1px solid var(--line2);border-radius:8px;
+  padding:7px 13px;font-size:.85rem;cursor:pointer;font-family:inherit}
+.btn:hover{border-color:var(--accent)}
+.btn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+h1{font-size:clamp(1.55rem,3.8vw,2.3rem);line-height:1.15;margin:0 0 12px;letter-spacing:-.02em;text-wrap:balance}
+.lede{font-size:1.04rem;color:var(--ink2);max-width:76ch;margin:0}
+section{padding:42px 0;border-bottom:1px solid var(--line)}
+.eyebrow{font-size:.73rem;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 8px}
+h2{font-size:clamp(1.25rem,2.6vw,1.7rem);margin:0 0 12px;letter-spacing:-.015em;text-wrap:balance}
+h3{font-size:1rem;margin:22px 0 8px}
+.prose{max-width:76ch;color:var(--ink2)}
+.prose p{margin:0 0 12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:18px;box-shadow:var(--shadow);margin:16px 0}
+.cap{font-size:.86rem;color:var(--muted);max-width:80ch;margin-top:10px}
+.callout{border-left:3px solid var(--accent);background:var(--accent-soft);border-radius:0 10px 10px 0;
+  padding:14px 17px;margin:18px 0;max-width:80ch}
+.callout.warn{border-left-color:var(--warn);background:var(--warn-soft)}
+.callout p{margin:0 0 8px;color:var(--ink2)} .callout p:last-child{margin:0} .callout b{color:var(--ink)}
+svg{display:block;width:100%;height:auto;overflow:hidden}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:.8rem;color:var(--muted);margin-top:10px}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:760px){ .grid2{grid-template-columns:1fr} }
+.stat{background:var(--card);border:1px solid var(--line);border-radius:11px;padding:13px 15px}
+.stat b{display:block;font-size:1.35rem;font-variant-numeric:tabular-nums}
+.stat span{display:block;font-size:.79rem;color:var(--muted);margin-top:3px;line-height:1.38}
+.statgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:20px}
+.vsa{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:820px){ .vsa{grid-template-columns:1fr} }
+.vsa .card{margin:0}
+.vsa h3{margin-top:0}
+.tk{fill:var(--muted);font-size:11px;font-family:ui-monospace,Menlo,Consolas,monospace}
+.lbl{fill:var(--ink);font-size:12.5px;font-weight:600}
+.small{fill:var(--muted);font-size:11px}
+footer{padding:30px 0 60px;color:var(--muted);font-size:.86rem}
+a{color:var(--accent)}
+</style>
+
+<header>
+  <div class="wrap">
+    <div class="topbar">
+      <span class="kicker">paper explainer · ICML 2026</span>
+      <button id="themeBtn" class="btn" type="button">Dark / light</button>
+    </div>
+    <h1>C-JEPA: hide one object, force the model to ask the others</h1>
+    <p class="lede">
+      <b>“Causal-JEPA: Learning World Models through Object-Level Latent Masking”</b> —
+      Nam, Le&nbsp;Lidec, Maes, LeCun &amp; Balestriero. One idea carries the paper:
+      a world model only learns <em>interactions</em> if you make interactions the only way to
+      lower its loss. They do that by deleting whole objects from the model's view of the past
+      and asking it to reconstruct them anyway.
+    </p>
+    <div class="statgrid">
+      <div class="stat"><b>+20 pts</b><span>absolute, counterfactual video QA (CLEVRER) vs the same model without object masking</span></div>
+      <div class="stat"><b>1.02%</b><span>of a patch-based world model's input features, at comparable Push-T control</span></div>
+      <div class="stat"><b>8×</b><span>faster model-predictive control than patch tokens</span></div>
+      <div class="stat"><b>0 pixels</b><span>predicted — everything happens between latent vectors</span></div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<section id="pipeline">
+  <div class="wrap">
+    <p class="eyebrow">1 · The pipeline</p>
+    <h2>Frames become objects; objects become the only tokens</h2>
+    <p class="prose">
+      A <b>frozen</b> encoder (Slot Attention over frozen DINOv2 features) turns each video frame
+      into a handful of <em>object slots</em> — one small vector per thing in the scene. The world
+      model never sees pixels or patches again: its entire input is a few object vectors per
+      timestep, plus optional action/proprioception tokens. That is where the 1% token count and
+      the 8× planning speedup come from — attention is quadratic, and five objects is a much
+      smaller set than a few hundred patches.
+    </p>
+    <div class="card">
+      <svg id="figPipe" viewBox="0 0 940 240" role="img"
+           aria-label="Pipeline: video frames pass through a frozen object-centric encoder producing per-object slot vectors, which a transformer predictor consumes; the loss compares predicted latents to the frozen encoder's latents."></svg>
+    </div>
+    <p class="cap">
+      The encoder is frozen, and the loss is a plain L2 between predicted and target latents.
+      No pixel reconstruction, and no collapse-prevention machinery — collapse is impossible
+      because the targets never move. (This is the DINO-WM / V-JEPA pattern, not the
+      LeJEPA/SIGReg pattern, despite the shared authorship.)
+    </p>
+  </div>
+</section>
+
+<section id="masking">
+  <div class="wrap">
+    <p class="eyebrow">2 · The idea</p>
+    <h2>Masking one object's whole history is an intervention, not augmentation</h2>
+    <p class="prose">
+      Ordinary masked prediction hides random patches, and a model can fill those in from local
+      texture. C-JEPA instead hides <b>one object's entire slot trajectory</b> across the history
+      window — every timestep except a single <em>identity anchor</em> at the start, kept so the
+      model knows <em>which</em> object it must reconstruct. Now nothing about that object's past
+      is available. The only route to its state is through <b>the other objects</b>: if the red
+      ball is hidden but the blue one suddenly changes direction, something collided with it.
+    </p>
+    <div class="card">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px">
+        <button id="maskBtn" class="btn" type="button" aria-pressed="false">Mask object C</button>
+        <span class="cap" style="margin:0" id="maskLbl">Masking off — the predictor can see everything.</span>
+      </div>
+      <svg id="figMask" viewBox="0 0 940 300" role="img"
+           aria-label="A grid of object slots over five timesteps. Toggling the mask replaces one object's cells with question marks except an identity anchor, and draws inference arrows from the other objects' cells."></svg>
+      <div class="legend">
+        <span><i style="background:var(--obj-a)"></i>object A</span>
+        <span><i style="background:var(--obj-b)"></i>object B</span>
+        <span><i style="background:var(--obj-c)"></i>object C</span>
+        <span><i style="background:var(--obj-d)"></i>auxiliaries (actions)</span>
+      </div>
+    </div>
+    <p class="cap">
+      Toggle the mask. With it on, C's cells become unknowns (the ringed cell is the identity
+      anchor <code>z̃ = φ(z<sub>t0</sub>) + e<sub>τ</sub></code>), and the model's only evidence
+      is the arrows — other objects and the actions. The paper's phrase for this is a
+      <em>counterfactual-like query</em>: “given everything else, what must C have been doing?”
+      Future tokens (t+1) are always masked; that part is ordinary forward prediction.
+    </p>
+  </div>
+</section>
+
+<section id="theory">
+  <div class="wrap">
+    <p class="eyebrow">3 · Why it works</p>
+    <h2>The theorem, in one sentence</h2>
+    <p class="prose">
+      Define an object's <b>influence neighborhood</b>: the smallest set of <em>other</em> entities
+      whose history fully determines what you can know about the hidden object (a Markov-blanket
+      flavoured notion). <b>Theorem 1:</b> the predictor that minimises the masked loss <em>must</em>
+      use that neighborhood — any model that ignores it pays strictly higher loss. Interaction use
+      stops being a nice-to-have and becomes arithmetic: it is the only way down the loss surface.
+    </p>
+    <div class="callout warn">
+      <p><b>What “causal” does and does not mean here — their own words.</b> Remark 1 of the paper
+      is explicitly modest: “causal” means temporally directed predictive dependencies that stay
+      stable under masking, <em>“rather than claims of causal identifiability.”</em> The model
+      learns <em>who predicts whom under intervention on observability</em>, not a verified causal
+      graph. Quote them at that strength and no stronger.</p>
+    </div>
+  </div>
+</section>
+
+<section id="vsa">
+  <div class="wrap">
+    <p class="eyebrow">4 · Why this matters to the VSA work</p>
+    <h2>Three places their story and ours are the same story</h2>
+    <div class="vsa">
+      <div class="card">
+        <h3>1 · Entity granularity — their premise, our measurement</h3>
+        <p class="prose" style="font-size:.92rem">
+          C-JEPA's founding claim is that patch/frame tokens are the wrong unit and object latents
+          are the right one. We measured the memory-side version of exactly that: a frame-level
+          embedding makes per-object cueing <em>impossible in principle</em> (88.6% of our
+          detections share their vector with another class), and per-object crops retrieve at
+          0.720 where frames manage 0.435. Their training argument and our storage measurement
+          are two views of one claim.
+        </p>
+      </div>
+      <div class="card">
+        <h3>2 · Masked completion ≡ partial-cue retrieval</h3>
+        <p class="prose" style="font-size:.92rem">
+          “Infer the hidden object from the visible context objects” is precisely the query type
+          of the episodic-memory pivot (“the thing that was next to the kettle”). C-JEPA
+          <em>trains a predictor</em> to answer it; a VSA memory <em>computes</em> it by unbinding
+          the context from a superposition — no training. Same question, opposite mechanisms:
+          learned dynamics vs algebraic recall. That contrast is a paragraph, not a rivalry.
+        </p>
+      </div>
+      <div class="card">
+        <h3>3 · Their identity anchor is binding, done additively</h3>
+        <p class="prose" style="font-size:.92rem">
+          Slots are permutation-equivariant, so a masked cell must be told <em>which</em> object it
+          stands for: <code>z̃ = φ(identity) + e<sub>time</sub></code> — identity <em>added</em> to
+          a time code. A VSA gets the same guarantee by construction:
+          <code>identity ⊗ state</code>, with an exact inverse. Where they engineer identity
+          preservation into the architecture, binding supplies it as algebra.
+        </p>
+      </div>
+      <div class="card">
+        <h3>4 · A contrast our WP4 result makes sharp</h3>
+        <p class="prose" style="font-size:.92rem">
+          Our SIGReg head failed off-distribution because its BatchNorm statistics were
+          distribution-bound (the latent's shared mean reappeared, χ 94 vs 80 raw). C-JEPA never
+          risks that failure: it predicts <em>in the frozen encoder's own space</em> and applies no
+          trained normalisation to anything downstream. A useful sentence for the mechanism
+          section — and a reason their slot latents are a clean candidate for our geometry
+          measurements (χ, Timkey, held-out) once the draft is frozen.
+        </p>
+      </div>
+    </div>
+    <p class="cap" style="margin-top:14px">
+      Full source note with the do-not-claim list:
+      <code>wiki/sources/2026-08-03-cjepa-object-level-masking.md</code>. Their code is stated
+      public at <code>github.com/galilai-group/cjepa</code> (not yet verified live from here).
+    </p>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>
+      Source: arXiv:2602.11389v2, ICML 2026 (PMLR 306). Encoders: VideoSAUR (Slot Attention over
+      frozen DINOv2), SAVi for baseline comparability. Benchmarks: CLEVRER (via ALOE, SlotFormer
+      protocol), Push-T MPC vs DINO-WM. This page paraphrases the paper's figures; the numbers
+      shown are the paper's own headline results.
+    </p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+  var NS = "http://www.w3.org/2000/svg";
+  function el(t, a, parent) { var e = document.createElementNS(NS, t); for (var k in a) e.setAttribute(k, a[k]); if (parent) parent.appendChild(e); return e; }
+  function css(v) { return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+  var redraws = [];
+
+  /* ---------- fig 1: pipeline ---------- */
+  function drawPipe() {
+    var svg = document.getElementById("figPipe");
+    svg.textContent = "";
+    var stages = [
+      { x: 20,  w: 150, title: "video frames", kind: "frames" },
+      { x: 205, w: 170, title: "frozen encoder", sub: "Slot Attention / DINOv2", kind: "enc" },
+      { x: 410, w: 170, title: "object slots", sub: "N vectors per step", kind: "slots" },
+      { x: 615, w: 150, title: "predictor", sub: "masked transformer", kind: "pred" },
+      { x: 800, w: 120, title: "L2 loss", sub: "vs frozen targets", kind: "loss" }
+    ];
+    stages.forEach(function (s, i) {
+      var box = el("rect", { x: s.x, y: 60, width: s.w, height: 120, rx: 12,
+        fill: css(s.kind === "enc" ? "--panel" : "--card"),
+        stroke: css(s.kind === "loss" ? "--good" : "--line2"), "stroke-width": 1.4 }, svg);
+      if (s.kind === "enc") el("text", { x: s.x + s.w / 2, y: 176, "text-anchor": "middle", class: "tk" }, svg)
+        .textContent = "❄ frozen";
+      var t = el("text", { x: s.x + s.w / 2, y: 88, "text-anchor": "middle", class: "lbl" }, svg);
+      t.textContent = s.title;
+      if (s.sub) el("text", { x: s.x + s.w / 2, y: 106, "text-anchor": "middle", class: "small" }, svg).textContent = s.sub;
+      if (i < stages.length - 1)
+        el("path", { d: "M" + (s.x + s.w + 6) + " 120 h" + (stages[i + 1].x - s.x - s.w - 16) + " m-8 -6 l10 6 l-10 6",
+          stroke: css("--muted"), "stroke-width": 1.6, fill: "none" }, svg);
+    });
+    /* frames */
+    for (var f = 0; f < 3; f++)
+      el("rect", { x: 40 + f * 14, y: 96 + f * 10, width: 74, height: 48, rx: 5,
+        fill: css("--accent-soft"), stroke: css("--line2") }, svg);
+    /* slots: 4 colored dots x 3 timesteps */
+    var cols = ["--obj-a", "--obj-b", "--obj-c", "--obj-d"];
+    for (var tt = 0; tt < 3; tt++)
+      for (var o = 0; o < 4; o++)
+        el("circle", { cx: 445 + tt * 42, cy: 96 + o * 22, r: 7,
+          fill: css(cols[o]), opacity: 0.9 }, svg);
+    el("text", { x: 495, y: 205, "text-anchor": "middle", class: "small" }, svg)
+      .textContent = "t−2 · t−1 · t  (plus action tokens)";
+  }
+  redraws.push(drawPipe);
+
+  /* ---------- fig 2: masking grid ---------- */
+  var masked = false;
+  function drawMask() {
+    var svg = document.getElementById("figMask");
+    svg.textContent = "";
+    var cols = ["--obj-a", "--obj-b", "--obj-c", "--obj-d"];
+    var names = ["A", "B", "C", "aux"];
+    var T = 5, x0 = 150, dx = 128, y0 = 46, dy = 56;
+    var times = ["t−3", "t−2", "t−1", "t", "t+1"];
+    for (var c = 0; c < T; c++) {
+      el("text", { x: x0 + c * dx + 26, y: 26, "text-anchor": "middle", class: "tk" }, svg)
+        .textContent = times[c];
+      if (c === T - 1)
+        el("rect", { x: x0 + c * dx - 12, y: 12, width: 78, height: 268, rx: 10,
+          fill: css("--panel"), opacity: 0.55 }, svg);
+    }
+    el("text", { x: x0 + (T - 1) * dx + 26, y: 292, "text-anchor": "middle", class: "small" }, svg)
+      .textContent = "future: always masked";
+    for (var r = 0; r < 4; r++) {
+      el("text", { x: 20, y: y0 + r * dy + 22, class: "lbl" }, svg).textContent =
+        r === 3 ? "actions" : "object " + names[r];
+      for (var t = 0; t < T; t++) {
+        var cx = x0 + t * dx, cy = y0 + r * dy;
+        var isFuture = t === T - 1;
+        var isMaskedCell = (masked && r === 2 && t > 0) || (isFuture && r < 3);
+        var isAnchor = masked && r === 2 && t === 0;
+        var g = el("g", {}, svg);
+        el("rect", { x: cx, y: cy, width: 52, height: 36, rx: 8,
+          fill: isMaskedCell ? css("--bad-soft") : css("--card"),
+          stroke: isAnchor ? css("--warn") : css("--line2"),
+          "stroke-width": isAnchor ? 2.4 : 1.2,
+          "stroke-dasharray": isMaskedCell ? "4 3" : "none" }, g);
+        if (isMaskedCell) {
+          el("text", { x: cx + 26, y: cy + 24, "text-anchor": "middle", class: "lbl",
+            fill: css("--bad") }, g).textContent = "?";
+        } else {
+          el("circle", { cx: cx + 26, cy: cy + 18, r: 9, fill: css(cols[r]),
+            opacity: r === 3 ? 0.75 : 0.95 }, g);
+        }
+        if (isAnchor)
+          el("text", { x: cx + 26, y: cy + 50, "text-anchor": "middle", class: "small",
+            fill: css("--warn") }, svg).textContent = "identity anchor";
+      }
+    }
+    if (masked) {
+      /* inference arrows from context rows into C's masked cell at t */
+      var tx = x0 + 3 * dx + 26, ty = y0 + 2 * dy + 18;
+      [[0, 3], [1, 3], [3, 3], [0, 2], [1, 2]].forEach(function (p) {
+        var sx = x0 + p[1] * dx + 26, sy = y0 + p[0] * dy + 18;
+        el("path", { d: "M" + sx + " " + (sy + (p[0] < 2 ? 12 : -12)) +
+            " Q " + ((sx + tx) / 2) + " " + ((sy + ty) / 2) + " " + (tx - 20) + " " + ty,
+          stroke: css("--accent"), "stroke-width": 1.6, fill: "none",
+          opacity: 0.75, "marker-end": "" }, svg);
+        el("circle", { cx: tx - 20, cy: ty, r: 2.6, fill: css("--accent") }, svg);
+      });
+      el("text", { x: x0 + 3 * dx + 26, y: 292, "text-anchor": "middle", class: "small",
+        fill: css("--accent") }, svg).textContent = "C at t must be inferred from A, B and the actions";
+    }
+  }
+  redraws.push(drawMask);
+
+  document.getElementById("maskBtn").addEventListener("click", function () {
+    masked = !masked;
+    this.setAttribute("aria-pressed", masked ? "true" : "false");
+    document.getElementById("maskLbl").textContent = masked
+      ? "Masking on — C's history is gone except the identity anchor; only interactions remain."
+      : "Masking off — the predictor can see everything.";
+    drawMask();
+  });
+
+  function drawAll() { redraws.forEach(function (f) { try { f(); } catch (e) {} }); }
+  drawAll();
+  window.addEventListener("resize", drawAll);
+  document.getElementById("themeBtn").addEventListener("click", function () {
+    var cur = document.documentElement.getAttribute("data-theme");
+    if (!cur) cur = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    document.documentElement.setAttribute("data-theme", cur === "dark" ? "light" : "dark");
+    drawAll();
+  });
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", drawAll);
+})();
+</script>

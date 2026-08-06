@@ -15,12 +15,14 @@ This requires numpy, scipy, nengo, nengo-ocl, and nengo-spa (tensorflow is optio
 pip install -r requirements.txt
 pip install .
 ```
-Example usage is in the experiments folder. Experiments require matplotlib.
+Example usage is in the `experiments/` folder; see [`experiments/README.md`](experiments/README.md) for a concise map. Optional and dataset-specific scripts live under [`archive/`](archive/README.md). Notebook builders sit in [`tools/`](tools/README.md). **SNN–HDC** scripts (`snnhdc*.py`) live at the repo root; see [`SNHDC_README.md`](SNHDC_README.md). Experiments require matplotlib.
 
-#### Plotting requirements
-To run scripts in `make_plots` there additional requirements: you need GhostScript installed (the gs executable must be in your PATH), and an installation of TeXlive in your PATH that includes siunitx.sty, libertine.sty, libertinust1math.sty, mathrsfs.sty and amssymb.sty. If you are unable to install these, try commenting out lies 18-29 in `figure_utils.py`  and uncommenting lines 9-15. This will remove some of these requirements.
+#### Plotting requirements (optional paper figures)
+Extra figure pipelines (for example a standalone `make_plots` folder if you keep one alongside this repo) may need GhostScript (`gs` on your `PATH`) and a TeXLive install with `siunitx.sty`, `libertine.sty`, `libertinust1math.sty`, `mathrsfs.sty`, and `amssymb.sty`. If those are unavailable, you can comment out lines 18-29 in [`sspslam/utils/figure_utils.py`](sspslam/utils/figure_utils.py) and uncomment lines 9-15 to relax some of the requirements.
 
 ## Usage
+The `example_paths/` directory referenced in some historical examples is not part of this checkout. Use your own `.npy` trajectories, omit `--path-data` where the script supports random paths, or use files under [`data/`](data/) (for example `data/3d/` for the feature-SLAM pipeline).
+
 An example of running the SSP-PI model on a randomly generated 2-D path:
 ```
 python experiments/run_pathint.py --backend ocl --limit 0.1 --pi-n-neurons 1000 --save --plot

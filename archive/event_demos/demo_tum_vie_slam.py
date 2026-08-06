@@ -9,7 +9,10 @@ import nengo
 import sys, os, time
 import matplotlib.pyplot as plt
 
-sys.path.insert(1, os.path.dirname(os.getcwd()) if 'experiments' in os.getcwd() else os.getcwd())
+_REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+if _REPO_ROOT not in sys.path:
+    sys.path.insert(0, _REPO_ROOT)
+
 import sspslam
 from sspslam.networks import SLAMNetwork, get_slam_input_functions_from_features
 from sspslam.perception import ImageFeatureEncoder
@@ -38,11 +41,14 @@ def stretch_array(arr, orig_dt, new_dt):
 # Instantiating the HDF5 parser mapped to the real neuromorphic camera array file.
 
 # %%
-dataset_path = os.path.join(os.path.dirname(os.getcwd()) if 'experiments' in os.getcwd() else os.getcwd(), "data", "tum_vie_synthetic.h5")
+dataset_path = os.path.join(_REPO_ROOT, "data", "tum_vie_synthetic.h5")
 
 # Check if data exists
 if not os.path.exists(dataset_path):
-    print(f"Dataset not found at {dataset_path}. Run 'download_tum_vie_sample.py' first.")
+    print(
+        f"Dataset not found at {dataset_path}. "
+        "Run: python archive/event_demos/download_tum_vie_sample.py"
+    )
     sys.exit(1)
 
 parser = TumVieParser(h5_filepath=dataset_path)

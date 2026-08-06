@@ -43,5 +43,7 @@ def create_synthetic_tum_vie_subset(output_path, num_events=50000, duration=2.0)
     print("For full benchamrks, download genuine sequence 'mocap-1d-trans-events_left.h5' via the TUM-VIE portal.")
 
 if __name__ == "__main__":
-    target = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "tum_vie_synthetic.h5")
+    # Script lives in archive/event_demos/ — repo root is three levels up
+    _ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    target = os.path.join(_ROOT, "data", "tum_vie_synthetic.h5")
     create_synthetic_tum_vie_subset(target)

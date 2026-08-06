@@ -10,16 +10,16 @@ Full end-to-end pipeline:
                               └─► SSP-SLAM network  →  map + path
 
 Can also skip straight to SLAM if you have already collected data with
-``collect_habitat_data.py`` (pass ``--data-dir``).
+``archive/habitat_optional/collect_habitat_data.py`` (pass ``--data-dir``).
 
 Usage (collect fresh data then run SLAM):
-    python experiments/run_habitat_event_slam.py \\
+    python archive/habitat_optional/run_habitat_event_slam.py \\
         --scene path/to/scene.glb \\
         --n-steps 2000 \\
         --save-dir data/habitat
 
 Usage (SLAM on already-collected data):
-    python experiments/run_habitat_event_slam.py \\
+    python archive/habitat_optional/run_habitat_event_slam.py \\
         --data-dir data/habitat \\
         --save-dir data/habitat
 
@@ -46,7 +46,7 @@ parser.add_argument("--scene", default=None,
                     help="Habitat scene file (.glb). If set, data is collected live.")
 parser.add_argument("--data-dir", default=None,
                     help="Directory with pre-collected .npy files from "
-                         "collect_habitat_data.py (or collect_3d_data.py).")
+                         "archive/habitat_optional/collect_habitat_data.py (or collect_3d_data.py).")
 
 # --- collection params (used when --scene is set) ---
 parser.add_argument("--n-steps", default=2000, type=int)

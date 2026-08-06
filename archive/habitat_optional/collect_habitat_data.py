@@ -4,11 +4,11 @@ collect_habitat_data.py
 Collect trajectory and RGB frames from a Habitat-sim scene, convert frames
 to synthetic DVS events, and save everything in the same format used by
 ``collect_3d_data.py`` so the data can be fed directly into
-``run_slam_features.py`` or ``run_habitat_event_slam.py``.
+``run_slam_features.py`` or ``archive/habitat_optional/run_habitat_event_slam.py``.
 
 Usage
 -----
-    python experiments/collect_habitat_data.py \\
+    python archive/habitat_optional/collect_habitat_data.py \\
         --scene path/to/scene.glb \\
         --n-steps 2000 \\
         --feat-method hog \\

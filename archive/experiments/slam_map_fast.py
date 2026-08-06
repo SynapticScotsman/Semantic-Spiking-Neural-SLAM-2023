@@ -148,7 +148,7 @@ for i in np.arange(n_walls):
 plt.xlim([-1.2,1.2])
 plt.ylim([-1.2,1.2])
 plt.title("SLAM env")
-plt.show()
+plt.savefig('slam_plot_env.png')
 #plt.savefig('a_slam_env.pdf')
 
 pathlen = path.shape[0]
@@ -339,7 +339,8 @@ axs[0].legend()
 axs[1].plot(sim.trange()[::100], np.linalg.norm(path[::100,:]-slam_path,axis=-1),label='ssp-slam')
 axs[1].plot(sim.trange()[::100], np.linalg.norm(path[::100,:]-pi_path,axis=-1),label='ssp-pi')
 axs[1].set_ylabel("Distance error")
-fig.show()
+fig.savefig('slam_plot_results.png')
+plt.close('all')
 
 # ==========================================
 # 7. ASSOCIATIVE MEMORY QUERIES
@@ -458,7 +459,8 @@ fig.text(0.6, 0.93, "Blue triangle", va="baseline", ha="center", fontsize=11)
 fig.text(0.82, 0.93, "All blue objects", va="baseline", ha="center", fontsize=11)
 fig.text(0.6, 0.45, "All triangles", va="baseline", ha="center", fontsize=11)
 fig.text(0.82, 0.45, "Walls", va="baseline", ha="center", fontsize=11)
-fig.show()
+fig.savefig('slam_plot_results.png')
+plt.close('all')
 # utils.save(fig, "wall_env_obj_queries.pdf")
 # fig.savefig("wall_env_obj_queries.pdf")
 ############################################################################
@@ -474,7 +476,7 @@ def get_sims_for_area(query_area):
     query_ssp = ssp_space.encode(np.vstack([qX.reshape(-1), qY.reshape(-1)]).T)
     query_ssp = ssp_space.normalize(np.sum(query_ssp, axis=0))
     # ssp_space.similarity_plot(query_ssp)
-    # plt.show()
+    # plt.savefig('slam_plot_env.png')
     item_sp_hat = get_mem_out2(query_ssp.reshape(1,-1))
 
     item_sims = item_sp_hat @ item_sps.T
@@ -556,7 +558,8 @@ fig.text(0.52, 0.93, 'B  Distance error of landmark queries', size=11, va="basel
 fig.text(0.08, 0.43, "C  Environment & query area", va="baseline", ha="left", fontsize=11, fontweight='bold')
 fig.text(0.65, 0.43, "D  Similarity between area query & landmarks", va="baseline", ha="center", fontsize=11, fontweight='bold')
 fig.tight_layout()
-fig.show()
+fig.savefig('slam_plot_results.png')
+plt.close('all')
 fig
 # utils.save(fig, "wall_env_area_queries.pdf")
 # fig.savefig("wall_env_area_queries.pdf")
