@@ -1,0 +1,207 @@
+<meta charset="utf-8">
+<meta name="color-scheme" content="dark light">
+<title>How VSAs work — the original primer, reviewed with today's evidence</title>
+<style>
+:root{--bg:#05070A;--bg2:#0D1319;--panel:#080C11;--ink:#E9EFF3;--ink2:#9DAEB9;
+--muted:#6C7C87;--line:#1B242C;--blue:#3B9BFF;--blue-dim:#1E4E80;--amber:#FFC65C;
+--mag:#FF5FD0;--mint:#7CE0C0;--off:#FF8C42;
+--serif:Charter,"Bitstream Charter","Sitka Text",Cambria,Georgia,serif;
+--sans:-apple-system,"Segoe UI Variable Text","Segoe UI",Roboto,system-ui,sans-serif;
+--mono:ui-monospace,"Cascadia Mono","SF Mono",Menlo,Consolas,monospace}
+:root[data-theme="light"]{--bg:#F3F5F7;--bg2:#FFFFFF;--panel:#E9EDF0;
+--ink:#0D1418;--ink2:#48585F;--muted:#7A8994;--line:#D6DEE4;--blue:#1668C4;
+--blue-dim:#9FC2E8;--amber:#8A5F0A;--mag:#AC1D88;--mint:#17836A;--off:#BF5814}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.68 var(--sans)}
+.wrap{max-width:940px;margin:0 auto;padding:0 22px}
+header{border-bottom:1px solid var(--line);background:var(--bg2);padding:44px 0 36px}
+.kicker{font-family:var(--mono);font-size:.72rem;letter-spacing:.22em;
+text-transform:uppercase;color:var(--blue);margin:0 0 14px}
+h1{font-family:var(--serif);font-weight:600;font-size:clamp(1.6rem,4.2vw,2.5rem);
+line-height:1.16;margin:0 0 14px;letter-spacing:-.015em;max-width:26ch;text-wrap:balance}
+h1 b{color:var(--blue);font-style:italic}
+.lede{color:var(--ink2);max-width:76ch;margin:0}
+section{padding:40px 0;border-bottom:1px solid var(--line)}
+.secHead{display:flex;align-items:baseline;gap:14px;margin-bottom:8px}
+.dial{font-family:var(--mono);color:var(--blue);font-size:.95rem;white-space:nowrap}
+h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.25rem,2.7vw,1.75rem);
+margin:0;letter-spacing:-.01em;text-wrap:balance}
+.prose{color:var(--ink2);max-width:78ch}
+.then{border-left:3px solid var(--muted);padding:10px 16px;margin:16px 0 8px;
+background:var(--panel);border-radius:0 10px 10px 0;max-width:76ch}
+.then .tag{font-family:var(--mono);font-size:.66rem;letter-spacing:.18em;
+text-transform:uppercase;color:var(--muted);display:block;margin-bottom:4px}
+.then p{margin:0;color:var(--ink2);font-style:italic}
+.now{border-left:3px solid var(--mint);padding:10px 16px;margin:0 0 8px;
+background:var(--panel);border-radius:0 10px 10px 0;max-width:76ch}
+.now.scoped{border-left-color:var(--amber)}
+.now.revised{border-left-color:var(--off)}
+.now .tag{font-family:var(--mono);font-size:.66rem;letter-spacing:.18em;
+text-transform:uppercase;display:block;margin-bottom:4px}
+.now .tag{color:var(--mint)}
+.now.scoped .tag{color:var(--amber)}
+.now.revised .tag{color:var(--off)}
+.now p{margin:0;color:var(--ink)}
+code{font-family:var(--mono);font-size:.86em;background:var(--panel);
+border-radius:5px;padding:1px 6px}
+a{color:var(--blue)}
+.mono{font-family:var(--mono)}
+footer{padding:28px 0 60px;color:var(--muted);font-family:var(--mono);font-size:.75rem}
+.btn{display:inline-block;background:var(--panel);color:var(--ink);
+border:1px solid var(--line);border-radius:9px;padding:8px 16px;
+font-family:var(--mono);font-size:.8rem;text-decoration:none;margin-top:14px}
+.btn:hover{border-color:var(--blue)}
+</style>
+<header><div class="wrap">
+<p class="kicker">vsa primer · original demo reviewed · august 2026</p>
+<h1>“Every dimension is a clock” — the original explainer, <b>re-judged</b> against two months of measurement</h1>
+<p class="lede">The Telluride-era demo page taught the whole mechanism with live widgets:
+position as phase patterns, heading as a circular base, bind/bundle/unbind and their
+costs, English sentences as keys. That page is preserved unchanged below. This page walks
+through each of its claims and stamps them with what the benchmarks since did to them:
+<span class="mono" style="color:var(--mint)">STANDS</span>,
+<span class="mono" style="color:var(--amber)">SCOPED</span>, or
+<span class="mono" style="color:var(--off)">REVISED</span>.</p>
+<a class="btn" href="vsa_primer_2025.html">open the original demo page (live widgets) →</a>
+</div></header>
+<main>
+
+<section><div class="wrap">
+<div class="secHead"><span class="dial">1 ·</span><h2>Position: every dimension is a clock</h2></div>
+<div class="then"><span class="tag">the original said</span><p>"Every one of the 8192
+dimensions is a little clock, each turning at its own fixed rate as you move. No single
+number holds the position: it is held in the pattern of phases. S(a) ⊗ S(b) = S(a+b)
+exactly — displacement is native, to floating-point rounding."</p></div>
+<div class="now"><span class="tag">stands — and became load-bearing</span><p>This
+homomorphism is now the engine of the two strongest measured results. The VSA Kalman
+filter (predict = one bind) bounds drift at 0.364 ± 0.051 m over ten seeds because
+displacement really is one multiply. And the exact-merge property — four robots' maps
+added, bit-identical to jointly built, 10⁻¹² — is this same exactness at map scale. What
+the primer showed as a widget curiosity is the paper's sharpest edge.</p></div>
+</div></section>
+
+<section><div class="wrap">
+<div class="secHead"><span class="dial">2 ·</span><h2>Heading: a circular base, not a ring attractor</h2></div>
+<div class="then"><span class="tag">the original said</span><p>"Heading uses the same
+fractional power encoding with one change: each dimension gets a random INTEGER frequency
+k ∈ {−3,−2,−1,1,2,3}. Integer frequencies make the code exactly periodic — turn a full
+circle and you are back, to floating-point precision, where an ordinary base thinks you
+are somewhere new. The similarity curve has several lobes (hence the lumpy petals in the
+replay). No ring attractor network runs anywhere here; the attractor is the natural
+hardware route for this algebra, not its implementation."</p></div>
+<div class="now"><span class="tag">stands — the construction</span><p>All still exactly
+right, including two subtleties worth saying out loud when presenting: (i) the frequency
+set has <b>no zero</b> — no DC term — which is why marginalising over a full turn of
+heading annihilates every dimension: "any heading" integrates to nothing rather than to a
+bias. (ii) The multi-lobe similarity curve is not a bug; it is the price of packing a
+circle into few integer frequencies, and it is why heading readouts look like petals.
+The ring-attractor positioning (same family as GC-VSA, Krausse et al. NICE 2025; we
+compute directly what a CAN would settle into) remains the right careful sentence.</p></div>
+<div class="now scoped"><span class="tag">scoped — when to BIND heading at all</span>
+<p>What the primer could not know: whether heading should be a factor in the memory turns
+out to be an empirical, trajectory- and content-dependent decision — measured three ways.
+On TUM's desk orbit with ill-conditioned crop descriptors, binding heading RESCUED recall
+(it phase-scatters the descriptor mean — key diversity substituting for conditioning).
+On the classroom with viewpoint-invariant EigenPlaces content it HURT (0.35 → 1.00 m):
+the heading factor was pure added crosstalk. On chess's orbit it mildly helped the tail.
+The rule we now state: <b>content conditioning and key diversity are substitutes — use
+exactly one rescue</b>. The heading machinery is always available in the algebra; whether
+you bind it is a measured choice, not a default.</p></div>
+</div></section>
+
+<section><div class="wrap">
+<div class="secHead"><span class="dial">3 ·</span><h2>Bind, bundle, unbind — and what it costs</h2></div>
+<div class="then"><span class="tag">the original said</span><p>"Three operations are the
+entire vocabulary. Bundling is a mean: signal falls like 1/k, crosstalk like 1/√(kD), so
+the margin closes like √(2D/k). That one curve is the capacity of the entire scheme."</p></div>
+<div class="now scoped"><span class="tag">scoped — it was the special case</span><p>The
+√(2D/k) law is correct for what the widget simulated: <b>random, clean, uncorrelated
+atoms</b>. Real encoders broke every one of those assumptions, and the measured capacity
+law grew three terms the primer's curve cannot see: χ(N) = a<sub>μ</sub>N (a MEAN term —
+real embeddings share a common direction, and its crosstalk grows linearly and never
+reverts; kill it by centring or scatter it by key diversity) + √N·√(α/PR + γ/hd) (the
+primer's floor, now with a prefactor set by the content's participation ratio in
+quadrature with a projection-noise floor that no treatment can remove) × h(N,τ)
+(temporally correlated frames add coherently for N≲τ before √-reverting). The old curve
+is the α/PR-only, τ=0, μ=0 slice. Out-of-sample prediction of the full law: 1.4%. The
+class-imbalance failure on Replica (1,150 couch observations drowning 5 book
+observations) is the μ-term at class level — predicted, then fixed by bounded
+insertion.</p></div>
+</div></section>
+
+<section><div class="wrap">
+<div class="secHead"><span class="dial">4 ·</span><h2>Whitening: the claim that split in two</h2></div>
+<div class="then"><span class="tag">the original said</span><p>"The whitening is not
+cosmetic: raw sentence embeddings are strongly anisotropic, and without isotropising them
+first the projected phasors are too mutually similar to unbind cleanly." (The language
+pipeline whitened a 241-word vocabulary by PCA before projecting.)</p></div>
+<div class="now scoped"><span class="tag">scoped — right for atoms, wrong for streams</span>
+<p>Both halves of today's verdict were hiding in this one sentence. <b>For a small,
+closed ATOM VOCABULARY the primer is still right</b>: atoms must be mutually
+discriminable, the vocabulary is fixed and tiny, whitening it costs nothing and there is
+nothing to leak — whiten away. <b>For OBSERVATION STREAMS it is the opposite</b>:
+whitening the frames going into the memory was catastrophic on the classroom (−47.6%
+signal across 5 seeds — worse than ignoring the query), roughly neutral on chess, and
+never better than plain centring/z-scoring anywhere. The law explains why: whitening
+buys you the removal of the content term α/PR, but the projection floor γ/hd remains
+(the measured encoder-independent whitened floor), and on streams whitening amplifies
+noise directions and temporal persistence. The unified rule we now teach:
+<b>whiten vocabularies, centre streams.</b></p></div>
+</div></section>
+
+<section><div class="wrap">
+<div class="secHead"><span class="dial">5 ·</span><h2>One memory, many questions — where / when / what-moved / English</h2></div>
+<div class="then"><span class="tag">the original said</span><p>"One fixed-size memory
+answering where-given-when, when-given-where and what-changed, all by division and
+correlation, never by scanning a log. A time range costs about what a time point costs.
+Abstentions are visible rather than hidden. A phrase the map has never seen lands near
+the atoms of semantically similar class names and unbinding just works."</p></div>
+<div class="now"><span class="tag">stands — now benchmark-tested</span><p>The composite
+query story survived contact with public data: the same algebra ran localisation on
+7-Scenes (0.36 m from 32 KB), object grounding on all 8 Replica scenes (at its
+perception's ceiling, zero memory-attributable misses), and episodic time recall at 11k
+frames with an exact two-robot time merge. The abstention discipline grew into the
+z-score/chance-anchor/CDF reporting rules. The English-as-key pipeline is untested at
+benchmark scale — it remains the honest "demonstrated, not yet scored" item, and its
+open-vocabulary successor (CLIP relabeling into the Replica vocabulary) is in the
+student's head-to-head package now.</p></div>
+<div class="now revised"><span class="tag">revised — what the demo could not see</span>
+<p>Two things the old page's classroom could never surface. (i) <b>Instance blindness</b>:
+class ⊗ position gives every chair the same key, so on multi-instance scenes recall is
+class-correct-but-wrong-instance 72% of the time — the associative fix (each
+observation's own appearance as the key) nearly doubles instance accuracy, and beyond
+that, identical twins are a spatial problem no appearance can solve. (ii) <b>The metric
+lesson</b>: the demo judged itself with its own z-scores; the standing rule now is to
+adopt the target benchmark's own metric and scorer verbatim — self-defined numbers are
+diagnostics, never results.</p></div>
+</div></section>
+
+<section><div class="wrap">
+<div class="secHead"><span class="dial">6 ·</span><h2>Merging two maps is addition</h2></div>
+<div class="then"><span class="tag">the original said</span><p>A one-widget aside: split
+the walk in half, build two memories, add them, get the joint map back exactly.</p></div>
+<div class="now"><span class="tag">stands — and became a first</span><p>The throwaway
+demo grew into the project's most defensible novelty: 4 real sessions and 8 scenes of
+measured head-to-head where the addition-merge (zero association decisions, 10⁻¹² exact)
+beats the scene-graph-style associative merge (622 decisions, up to 16 points lost to
+wrong matches), a literature survey finding no prior use of bundling as a between-robot
+map merge, and the standing caveat attached: the shared coordinate frame is assumed, not
+solved.</p></div>
+</div></section>
+
+<section><div class="wrap">
+<div class="secHead"><span class="dial">·</span><h2>The one-paragraph version for a talk</h2></div>
+<p class="prose">The 2025 primer taught the mechanism and it all still runs: phases as
+clocks, heading as an exactly-periodic circular base (no attractor network, no DC term),
+three operations total. What two months of benchmarks changed is <i>the boundary
+conditions</i>: the clean-atom capacity curve became a three-term law with a 1.4%
+out-of-sample prediction; "whitening makes it work" split into whiten-vocabularies /
+centre-streams; heading-binding went from default to a measured substitute for content
+conditioning; and the merge aside became the headline. Nothing in the primer had to be
+retracted — it had to be <b>scoped</b>, which is what measurement is for.</p>
+</div></section>
+</main>
+<footer><div class="wrap">original demo preserved unchanged at vsa_primer_2025.html
+(live widgets: clocks, heading petals, margin-vs-k, English keys) · provenance: the
+Telluride/neuromorphs VSACognitiveMapping astm branch demo · verdict sources: wiki
+tracker entries (aa)–(bf) · style: Ecology design system</footer>
