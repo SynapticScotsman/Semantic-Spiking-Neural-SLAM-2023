@@ -1,0 +1,67 @@
+{
+  "designs": {
+    "V": {
+      "wrong": 11,
+      "wrong_instance": 5,
+      "instance": 41
+    },
+    "V+A": {
+      "wrong": 29,
+      "instance": 26,
+      "wrong_instance": 2
+    },
+    "V|A": {
+      "wrong": 12,
+      "wrong_instance": 6,
+      "instance": 39
+    }
+  },
+  "rescue_damage": {
+    "V": {
+      "still_wrong": 16,
+      "kept_right": 41,
+      "damaged_when_right": 0,
+      "rescued_when_wrong": 0
+    },
+    "V+A": {
+      "still_wrong": 12,
+      "kept_right": 22,
+      "damaged_when_right": 19,
+      "rescued_when_wrong": 4
+    },
+    "V|A": {
+      "still_wrong": 15,
+      "kept_right": 38,
+      "damaged_when_right": 3,
+      "rescued_when_wrong": 1
+    }
+  },
+  "rule": "V|A rule: answer = appearance-field argmax UNLESS the anchor field's value at that argmax is below the anchor field's own median over the grid; then answer = product argmax. The median is scale-free - a decision rule, not a tuned threshold.",
+  "fallback_views": 25,
+  "total_views": 57,
+  "per_scene": [
+    {
+      "scene": "room2",
+      "queries_with_views": 6
+    },
+    {
+      "scene": "office4",
+      "queries_with_views": 5
+    },
+    {
+      "scene": "room0",
+      "queries_with_views": 2
+    },
+    {
+      "scene": "office2",
+      "queries_with_views": 2
+    },
+    {
+      "scene": "office3",
+      "queries_with_views": 4
+    }
+  ],
+  "discarded_ambiguous": 40,
+  "radius": 0.75,
+  "margin": 0.5
+}

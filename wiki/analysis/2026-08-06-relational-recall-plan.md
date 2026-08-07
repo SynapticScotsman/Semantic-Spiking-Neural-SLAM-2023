@@ -103,6 +103,44 @@ Fork (Paul's call) before more decode work:
      (clusters), VSA supplies the fields — mirrors how FARM uses symbols,
      concedes pure-algebra purity.
 
+## R2 + C-scout results (2026-08-08, multi-agent): the fork RESOLVED
+
+All on the identical R1 battery (identity-checked: class rerun reproduces
+29/71/0 bit-for-bit).
+
+| design | instance-correct | wrong-inst | wrong |
+|---|---|---|---|
+| R1 class / product (recorded) | 29% / 46% | 71% / 21% | 0% / 33% |
+| CLUSTER (observation clusters + Euclidean) | **71%** | 17% | 12% |
+| PURSUIT (trace candidates + field-value sel.) | 25% | 50% | 25% |
+| **PURSUIT-EUCLID (trace candidates + Euclidean)** | **67%** | 21% | 12% |
+
+R2 (view+statement, n=57): verbal anchors do NOT rescue appearance keys via
+field values — product rescues 4 / damages 19 (net −15); scale-free
+conditional rule contains damage (3) but recovers ~nothing (net −2).
+
+**The unified mechanism finding (three independent confirmations):**
+field-VALUE ranking is blind beyond the kernel's ~1 m support — R1's
+selector, R2's anchors, and PURSUIT's selection all fail for this one
+reason. Selection must be METRIC. And the metric layer need not be stored:
+matching pursuit enumerates 85% of instances from the 32 KB trace alone,
+and Euclidean selection over those candidates hits 67% vs the 71%
+observation-cluster ceiling (gap = enumeration misses in the two sparsest
+scenes).
+
+**Resolution: paths A and C merge.** The architecture: ONE additive trace
+(mergeable, O(1) updates, capacity-law-governed) + a tiny derivable index
+(pursuit candidates, ~16 B/instance, reconstructable after any merge or
+loss — an index, not a second source of truth). Relational queries run
+metrically over candidates; displacement predicates stay exact algebra
+(R3); nothing FARM-like is stored. Concession vs FARM, stated: relational
+SELECTION is metric/symbolic, not binding algebra; relations still computed
+at query time from positions, store still one vector.
+
+Remaining in this thread: R3 figure (agent in flight), the R2 follow-up
+with metric anchoring (view answer snapped to nearest pursuit candidate,
+anchor via candidate distances), R4 z-axis, R5 language, R6 deliverables.
+
 ## Honest bounds to carry
 
 Field blur sets relational precision (approximate by design); "left of"

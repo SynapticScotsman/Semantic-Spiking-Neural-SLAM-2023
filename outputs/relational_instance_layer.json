@@ -1,0 +1,213 @@
+{
+  "designs": {
+    "class_rerun": {
+      "wrong_instance": 17,
+      "instance": 7,
+      "wrong": 0
+    },
+    "cluster": {
+      "instance": 17,
+      "wrong": 3,
+      "wrong_instance": 4
+    },
+    "pursuit": {
+      "wrong_instance": 12,
+      "wrong": 6,
+      "instance": 6
+    },
+    "pursuit_k+1": {
+      "wrong_instance": 8,
+      "wrong": 10,
+      "instance": 6
+    },
+    "pursuit_euclid": {
+      "instance": 16,
+      "wrong_instance": 5,
+      "wrong": 3
+    }
+  },
+  "r1_recorded": {
+    "R1 class": {
+      "instance": 29,
+      "wrong_instance": 71,
+      "wrong": 0
+    },
+    "R1 product": {
+      "instance": 46,
+      "wrong_instance": 21,
+      "wrong": 33
+    },
+    "R1 selector": {
+      "instance": 29,
+      "wrong_instance": 58,
+      "wrong": 12
+    }
+  },
+  "per_scene": [
+    {
+      "scene": "room2",
+      "queries": 6,
+      "results": {
+        "class_rerun": {
+          "wrong_instance": 4,
+          "instance": 2
+        },
+        "cluster": {
+          "instance": 6
+        },
+        "pursuit": {
+          "wrong_instance": 4,
+          "wrong": 1,
+          "instance": 1
+        },
+        "pursuit_k+1": {
+          "wrong_instance": 2,
+          "wrong": 4
+        },
+        "pursuit_euclid": {
+          "instance": 6
+        }
+      }
+    },
+    {
+      "scene": "office4",
+      "queries": 5,
+      "results": {
+        "class_rerun": {
+          "wrong_instance": 4,
+          "instance": 1
+        },
+        "cluster": {
+          "wrong": 2,
+          "instance": 3
+        },
+        "pursuit": {
+          "wrong_instance": 4,
+          "instance": 1
+        },
+        "pursuit_k+1": {
+          "wrong_instance": 4,
+          "instance": 1
+        },
+        "pursuit_euclid": {
+          "wrong_instance": 2,
+          "instance": 3
+        }
+      }
+    },
+    {
+      "scene": "room0",
+      "queries": 2,
+      "results": {
+        "class_rerun": {
+          "instance": 1,
+          "wrong_instance": 1
+        },
+        "cluster": {
+          "instance": 2
+        },
+        "pursuit": {
+          "wrong": 1,
+          "instance": 1
+        },
+        "pursuit_k+1": {
+          "wrong": 1,
+          "instance": 1
+        },
+        "pursuit_euclid": {
+          "instance": 2
+        }
+      }
+    },
+    {
+      "scene": "office2",
+      "queries": 3,
+      "results": {
+        "class_rerun": {
+          "wrong_instance": 2,
+          "instance": 1
+        },
+        "cluster": {
+          "instance": 2,
+          "wrong": 1
+        },
+        "pursuit": {
+          "wrong": 2,
+          "instance": 1
+        },
+        "pursuit_k+1": {
+          "instance": 2,
+          "wrong": 1
+        },
+        "pursuit_euclid": {
+          "wrong": 2,
+          "instance": 1
+        }
+      }
+    },
+    {
+      "scene": "office3",
+      "queries": 8,
+      "results": {
+        "class_rerun": {
+          "wrong_instance": 6,
+          "instance": 2
+        },
+        "cluster": {
+          "wrong_instance": 4,
+          "instance": 4
+        },
+        "pursuit": {
+          "wrong": 2,
+          "instance": 2,
+          "wrong_instance": 4
+        },
+        "pursuit_k+1": {
+          "wrong": 4,
+          "instance": 2,
+          "wrong_instance": 2
+        },
+        "pursuit_euclid": {
+          "wrong_instance": 3,
+          "instance": 4,
+          "wrong": 1
+        }
+      }
+    }
+  ],
+  "enumeration": {
+    "covered": 44,
+    "total": 52,
+    "by_scene": {
+      "room2": {
+        "covered": 15,
+        "total": 15
+      },
+      "office4": {
+        "covered": 12,
+        "total": 12
+      },
+      "room0": {
+        "covered": 5,
+        "total": 9
+      },
+      "office2": {
+        "covered": 1,
+        "total": 3
+      },
+      "office3": {
+        "covered": 11,
+        "total": 13
+      }
+    }
+  },
+  "cluster_failures": {
+    "no_target_cluster": 0,
+    "no_anchor_cluster": 2
+  },
+  "cluster_radius": 0.6,
+  "min_count": 4,
+  "discarded_ambiguous": 40,
+  "radius": 0.75,
+  "margin": 0.5
+}
