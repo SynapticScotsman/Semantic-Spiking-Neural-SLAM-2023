@@ -32,13 +32,33 @@ else
 fi
 pip install open_clip_torch supervision open3d scipy
 
-# SAM checkpoint (their default vit_h; vit_b fallback for small GPUs is in
-# the README Troubleshooting section)
+# ---- VRAM-aware segmentation backbone choice ------------------------------
+# ConceptGraphs supports light variants (MobileSAM / FastSAM) officially.
+# Pick from measured VRAM; record the choice for stage 2 and the report.
+VRAM_MB=$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits 2>/dev/null | head -1 || echo 0)
+if [ "$VRAM_MB" -ge 10000 ]; then GSA_CHOICE="sam_vit_h"
+elif [ "$VRAM_MB" -ge 4000 ]; then GSA_CHOICE="mobilesam"
+else GSA_CHOICE="mobilesam"; echo "WARN: <4 GB VRAM — stage 2 may still OOM; see README VRAM tiers"; fi
+echo "VRAM ${VRAM_MB} MB -> segmentation backbone: $GSA_CHOICE"
+echo "$GSA_CHOICE" > ../gsa_choice.txt
+
+dl(){ [ -f "$2" ] || { if command -v wget >/dev/null; then wget -O "$2" "$1"; else curl -L -o "$2" "$1"; fi; }; }
 mkdir -p checkpoints
-if [ ! -f checkpoints/sam_vit_h_4b8939.pth ]; then
-  URL=https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth
-  if command -v wget >/dev/null; then wget -O checkpoints/sam_vit_h_4b8939.pth "$URL"
-  else curl -L -o checkpoints/sam_vit_h_4b8939.pth "$URL"; fi
+# MobileSAM is tiny — always fetch (it is also the fallback if vit_h OOMs)
+dl https://github.com/ChaoningZhang/MobileSAM/raw/master/weights/mobile_sam.pt \
+   checkpoints/mobile_sam.pt
+if [ "$GSA_CHOICE" = "sam_vit_h" ]; then
+  dl https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth \
+     checkpoints/sam_vit_h_4b8939.pth
+fi
+# Their SEMANTIC pipeline (Grounded-SAM) also wants these two; big on disk
+# (~6 GB), modest in VRAM. Skip with SKIP_GROUNDED=1 if disk is tight — the
+# class-agnostic mode (gsa_variant=none) then still works.
+if [ "${SKIP_GROUNDED:-0}" != "1" ]; then
+  dl https://github.com/IDEA-Research/GroundingDINO/releases/download/v0.1.0-alpha/groundingdino_swint_ogc.pth \
+     checkpoints/groundingdino_swint_ogc.pth
+  dl https://huggingface.co/spaces/xinyu1205/recognize-anything/resolve/main/ram_swin_large_14m.pth \
+     checkpoints/ram_swin_large_14m.pth
 fi
 cd ..
 

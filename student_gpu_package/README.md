@@ -12,9 +12,22 @@ Everything below is scripted; run the stages in order. Each stage prints
 
 ## Walkthrough from zero (nothing installed yet)
 
-You need: a Linux machine with an NVIDIA GPU (≥10 GB VRAM ideal; ≥6 GB works
-with the SAM vit_b swap in Troubleshooting), ~30 GB free disk, and internet
-on the machine (model checkpoints download at setup).
+You need: a Linux machine with an NVIDIA GPU, ~40 GB free disk, and internet
+on the machine (data and model checkpoints download at setup). Check your
+VRAM first — it decides the segmentation backbone, automatically:
+
+```bash
+nvidia-smi --query-gpu=name,memory.total --format=csv
+```
+
+| your VRAM | what happens (no action needed) |
+|---|---|
+| ≥ 10 GB | full SAM ViT-H — their default configuration |
+| 4–10 GB (typical laptop GPU) | **MobileSAM** — an *officially supported* ConceptGraphs variant; setup picks it automatically and stage 2 passes `sam_variant=mobilesam`. Quality is slightly below ViT-H; the run log records the choice so the comparison states it. |
+| < 4 GB | MobileSAM is still tried, but stage 2 may OOM — tell Paul before spending time |
+
+The choice is written to `gsa_choice.txt` and `environment.txt` so the final
+report always states which backbone produced their numbers.
 
 **1. Install the two prerequisites** (skip any you have):
 
@@ -44,37 +57,23 @@ says otherwise. Sanity check you are in the right place:
 ls   # you should see: 00_setup.sh 01_check_data.py 02_run_conceptgraphs.sh ...
 ```
 
-**3. Get the scene data** (not in git — too big). Two options:
-
-- *Copy from Paul* (fastest): he has, per scene, `data/replica/<scene>/`
-  (~5 GB: frame*.jpg, depth*.png, traj.txt, poses.csv),
-  `data/replica/<scene'>_vmap/` (~0.4 GB GT renders), and
-  `outputs/replica_<scene>/` (object_points.json + detections_crops.csv,
-  tiny). Place them at the SAME paths inside your clone
-  (`Semantic-Spiking-Neural-SLAM-2023/data/replica/...` and
-  `.../outputs/replica_...`). `scp -r` or a OneDrive share both work.
-- *Fetch yourself* (no Paul needed, ~30-60 min/scene): from the repo root,
+**3. Collect the scene data — one command, nothing needed from Paul:**
 
 ```bash
-cd ..                                           # repo root
-pip install numpy pillow                        # tiny deps for the fetchers
-python tools/prepare_replica.py --scene room0   # RGB-D + poses (range-fetch)
-python tools/replica_gt_from_renders.py --scene room0   # GT renders
-# our observations (CPU, ~1-2 h — or just copy outputs/replica_room0/ from Paul):
-pip install ultralytics torch --index-url https://download.pytorch.org/whl/cpu
-python -m vsa_cognitive_mapping.classroom_pipeline embed-crops \
-    --dataset vsa_cognitive_mapping/configs/replica_room0.json
-python -m vsa_cognitive_mapping.object_grounding \
-    --dataset vsa_cognitive_mapping/configs/replica_room0.json \
-    --gt-json outputs/replica_room0/gt_instances.json
-cd student_gpu_package
+bash 00_setup.sh                # env first (once, ~15 min + checkpoint downloads)
+bash 01_get_data.sh room0       # fetch RGB-D + GT, build our detections (~1 h)
 ```
 
-**4. Run the stages in order** (each prints `STAGE OK`):
+`01_get_data.sh` downloads the rendered sequence (~5 GB, range-fetch that
+resumes if the network drops), the GT semantic renders (~0.4 GB), runs YOLO
+over the 2,000 frames (fast on your GPU), places every detection in world
+coordinates, and finishes by running the stage-1 checks — it ends with
+`STAGE OK` when the scene is fully ready. Re-running it is always safe: every
+step skips what already exists.
+
+**4. Run the comparison stages** (each prints `STAGE OK`):
 
 ```bash
-bash 00_setup.sh                         # once, ~15 min
-python 01_check_data.py --scene room0    # seconds; fixes layout for their code
 bash 02_run_conceptgraphs.sh room0       # GPU, ~30-90 min
 python 03_export_cg.py --scene room0     # seconds
 python 04_vsa_labels.py --scene room0    # minutes on GPU
@@ -222,9 +221,10 @@ invented subset.
 | `conda: command not found` | conda not on PATH | `source ~/miniconda3/etc/profile.d/conda.sh` then re-run 00 |
 | torch reports no CUDA / wrong CUDA | wheel/driver mismatch | 00 auto-picks cu121/cu118 from `nvidia-smi`; if drivers are older, `pip install torch --index-url .../cu118` |
 | `pip install -e .` fails in their repo | their deps drifted | follow THEIR README install section verbatim, then re-run 00 (idempotent) |
-| SAM/CLIP download hangs | no internet on compute node | run 00 on the login node, or pre-download the two checkpoints and drop them in `concept-graphs/checkpoints/` |
+| checkpoint downloads hang | no internet on compute node | run 00 on the login node, or pre-download to `concept-graphs/checkpoints/`; the RAM tagger is ~5.6 GB on disk — `SKIP_GROUNDED=1 bash 00_setup.sh` skips it (class-agnostic mode still works) |
 | stage 2: "none of the candidate entry points import" | their code moved again | their README 'Usage' has the current Replica command — add its module name to `CANDIDATES` in 02 (top of file) |
-| stage 2: CUDA out of memory | SAM vit_h needs ~10 GB | switch their config to `sam_vit_b` (checkpoint: `sam_vit_b_01ec64.pth`, same URL pattern) — record the change in environment.txt |
+| stage 2: CUDA out of memory | backbone too big for the GPU | 00 should have picked MobileSAM (check `gsa_choice.txt`); if it says `sam_vit_h`, write `mobilesam` into `gsa_choice.txt` and re-run 02 — MobileSAM is an officially supported ConceptGraphs variant, checkpoint already downloaded |
+| stage 2: `sam_variant` key rejected | their config grammar drifted | find the variant key in their README (historically `sam_variant` / `gsa_variant`) and adjust the `EXTRA=` line in 02 |
 | stage 2: dataloader can't find frames | ran without stage 1 | `python 01_check_data.py --scene <s>` builds `cg_dataset/<scene>/results/` |
 | stage 2: hydra/config name errors | their CLI grammar changed | copy the exact command from their README; only `dataset_root`/`scene_id`/`save_dir` matter to later stages |
 | stage 3: "cannot find point data" | result pkl schema drifted | the script prints the first object's keys — send that log to Paul, do not guess |

@@ -41,9 +41,16 @@ done
 }
 echo "entry point: $ENTRY"
 
+# VRAM-appropriate backbone chosen by 00_setup (sam_vit_h >=10 GB VRAM,
+# mobilesam otherwise — an OFFICIALLY supported ConceptGraphs variant).
+GSA=$(cat ../gsa_choice.txt 2>/dev/null || echo sam_vit_h)
+echo "segmentation backbone: $GSA  (from gsa_choice.txt)"
+EXTRA=""
+[ "$GSA" = "mobilesam" ] && EXTRA="sam_variant=mobilesam"
+
 SECONDS=0
 python -m "$ENTRY" \
-    dataset_root="$CG_DATA" scene_id="$SCENE" \
+    dataset_root="$CG_DATA" scene_id="$SCENE" $EXTRA \
     save_dir="$OUT" 2>&1 | tee "$OUT/run.log" || {
   echo "---------------------------------------------------------------"
   echo "The run itself failed. Last 30 log lines:"
