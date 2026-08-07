@@ -33,7 +33,7 @@ dependencies + SAM/CLIP checkpoints, and writes `environment.txt`.
 Their README's install section is authoritative if anything conflicts;
 record any deviation in `environment.txt`.
 
-## Stage 1 — data
+## Stage 1 — data + verification (ALWAYS run this before stage 2)
 
 You need the same rendered sequences Paul ran (NICE-SLAM/vMAP Replica pack).
 Fastest: copy `data/replica/<scene>/` from Paul's machine (rgb + depth +
@@ -46,6 +46,18 @@ python tools/prepare_replica.py --scene room0     # from the main repo
 Also copy `outputs/replica_<scene>/object_points.json` and
 `outputs/replica_<scene>/detections_crops.csv` (tiny) — our frontend's
 observations, so stage 4 uses the identical perception Paul measured.
+
+Then:
+
+```bash
+python 01_check_data.py --scene room0
+```
+
+This verifies every file the later stages need (with the exact fix command
+per missing item) AND builds `cg_dataset/<scene>/results/` — the directory
+layout ConceptGraphs' Replica dataloader expects (frame%06d naming, traj.txt
+beside it, camera params json). Our extraction is flat, theirs is nested;
+without this shim stage 2 fails on data loading, guaranteed.
 
 ## Stage 2 — run ConceptGraphs (their code, unmodified)
 
@@ -119,6 +131,25 @@ record which class list their function uses. If they score all classes, our
 honest headline under their metric is low and we say so; the object-classes
 slice is then reported ONLY as their own eval reports it, never as our own
 invented subset.
+
+## Troubleshooting — the known fail points, in the order you'll hit them
+
+| symptom | cause | fix |
+|---|---|---|
+| `conda: command not found` | conda not on PATH | `source ~/miniconda3/etc/profile.d/conda.sh` then re-run 00 |
+| torch reports no CUDA / wrong CUDA | wheel/driver mismatch | 00 auto-picks cu121/cu118 from `nvidia-smi`; if drivers are older, `pip install torch --index-url .../cu118` |
+| `pip install -e .` fails in their repo | their deps drifted | follow THEIR README install section verbatim, then re-run 00 (idempotent) |
+| SAM/CLIP download hangs | no internet on compute node | run 00 on the login node, or pre-download the two checkpoints and drop them in `concept-graphs/checkpoints/` |
+| stage 2: "none of the candidate entry points import" | their code moved again | their README 'Usage' has the current Replica command — add its module name to `CANDIDATES` in 02 (top of file) |
+| stage 2: CUDA out of memory | SAM vit_h needs ~10 GB | switch their config to `sam_vit_b` (checkpoint: `sam_vit_b_01ec64.pth`, same URL pattern) — record the change in environment.txt |
+| stage 2: dataloader can't find frames | ran without stage 1 | `python 01_check_data.py --scene <s>` builds `cg_dataset/<scene>/results/` |
+| stage 2: hydra/config name errors | their CLI grammar changed | copy the exact command from their README; only `dataset_root`/`scene_id`/`save_dir` matter to later stages |
+| stage 3: "cannot find point data" | result pkl schema drifted | the script prints the first object's keys — send that log to Paul, do not guess |
+| stage 5: MemoryError | scipy missing (brute-force path) | `pip install scipy` (00 installs it; check you're in `cgraphs`) |
+| their room0 mAcc lands far from ~0.40 | config drift in stage 2 | stop; send `cg_out/<scene>/run.log` — do not tune toward the paper number |
+
+Rule for anything not in this table: stop at the first failed stage, send the
+stage log. A partial handoff with a clear log is worth more than a guessed fix.
 
 ## Notes that will save you time
 

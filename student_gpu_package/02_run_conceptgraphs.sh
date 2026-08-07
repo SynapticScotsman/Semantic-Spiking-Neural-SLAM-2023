@@ -7,31 +7,51 @@ SCENE=${1:-room0}
 
 # ---- the only two lines you may need to edit ------------------------------
 CG_REPO="$(pwd)/concept-graphs"
-REPLICA_ROOT="$(pwd)/../data/replica"        # contains <scene>/frame*.jpg etc.
+CG_DATA="$(pwd)/cg_dataset"      # built by 01_check_data.py (their layout)
 # ---------------------------------------------------------------------------
 
 eval "$(conda shell.bash hook)"; conda activate cgraphs
 OUT="$(pwd)/cg_out/$SCENE"; mkdir -p "$OUT"
 
 echo "== ConceptGraphs on $SCENE =="
-echo "repo: $CG_REPO"
-echo "data: $REPLICA_ROOT/$SCENE"
-test -d "$REPLICA_ROOT/$SCENE" || { echo "FAIL: scene data missing"; exit 1; }
+test -d "$CG_DATA/$SCENE/results" || {
+  echo "FAIL: $CG_DATA/$SCENE/results missing — run: python 01_check_data.py --scene $SCENE"; exit 1; }
 
-# Their documented Replica entry point (README 'Run' section). Their demo
-# scene IS room0; the dataset config ships with the repo. If module paths
-# have drifted, run  python -m pip show concept-graphs  and check their
-# README — edit only the module name below.
+# Their entry points have moved between releases. Try the known candidates in
+# order; the first that exists as a module is used. If ALL fail, follow their
+# README 'Usage' section and put the working module name FIRST in this list.
+CANDIDATES=(
+  "conceptgraph.slam.cfslam_pipeline_batch"
+  "conceptgraph.slam.rerun_realtime_mapping"
+  "conceptgraph.scripts.run_slam"
+)
 cd "$CG_REPO"
+ENTRY=""
+for m in "${CANDIDATES[@]}"; do
+  python -c "import importlib,sys; importlib.import_module('$m')" 2>/dev/null \
+    && { ENTRY="$m"; break; }
+done
+[ -n "$ENTRY" ] || {
+  echo "---------------------------------------------------------------"
+  echo "FAIL: none of the candidate entry points import. Their layout:"
+  find conceptgraph -name "*.py" | xargs grep -l "__main__" 2>/dev/null | head -20
+  echo "Open their README 'Usage', find the Replica run command, add its"
+  echo "module name to CANDIDATES at the top of this script, re-run."
+  exit 1
+}
+echo "entry point: $ENTRY"
+
 SECONDS=0
-python -m conceptgraph.slam.rerun_realtime_mapping \
-    dataset_root="$REPLICA_ROOT" scene_id="$SCENE" \
+python -m "$ENTRY" \
+    dataset_root="$CG_DATA" scene_id="$SCENE" \
     save_dir="$OUT" 2>&1 | tee "$OUT/run.log" || {
   echo "---------------------------------------------------------------"
-  echo "Entry point drifted from this script's assumption."
-  echo "Found these candidate mains in their repo:"
-  grep -rl "__main__" conceptgraph --include="*.py" | head -20
-  echo "Consult their README 'Usage' section, update the python -m line."
+  echo "The run itself failed. Last 30 log lines:"
+  tail -30 "$OUT/run.log"
+  echo "Common causes + fixes are in README 'Troubleshooting' (CUDA OOM ->"
+  echo "SAM vit_b; hydra config name -> their README's exact CLI; missing"
+  echo "cam params -> cg_dataset/$SCENE/cam_params.json exists, point their"
+  echo "dataset config at it)."
   exit 1
 }
 echo "wall-clock: ${SECONDS}s  (record this — it goes in the systems table)"

@@ -23,22 +23,33 @@ import numpy as np
 
 
 def transfer(pred_xyz, pred_lab, eval_xyz, bound=0.05):
-    """Nearest-neighbour label transfer onto the eval points (chunked)."""
-    out = np.full(len(eval_xyz), None, dtype=object)
-    dmin = np.full(len(eval_xyz), np.inf)
-    for s in range(0, len(pred_xyz), 20000):
-        P = pred_xyz[s:s + 20000]
-        Lb = pred_lab[s:s + 20000]
-        for t in range(0, len(eval_xyz), 4000):
-            E = eval_xyz[t:t + 4000]
-            d = np.linalg.norm(E[:, None] - P[None], axis=2)
-            j = d.argmin(1)
-            dv = d[np.arange(len(E)), j]
-            m = dv < dmin[t:t + 4000]
-            dmin[t:t + 4000][m] = dv[m]
-            out[t:t + 4000][m] = Lb[j[m]]
-    out[dmin > bound] = None
-    return out
+    """Nearest-neighbour label transfer onto the eval points.
+    KD-tree (scipy) — O(N log N) and memory-safe at 200k+ points. The naive
+    pairwise matrix would need >100 GB at this size; do not 'simplify' this
+    back. Falls back to small-block brute force only if scipy is absent."""
+    try:
+        from scipy.spatial import cKDTree
+        d, j = cKDTree(pred_xyz).query(eval_xyz, k=1)
+        out = pred_lab[j].astype(object)
+        out[d > bound] = None
+        return out
+    except ImportError:
+        print("WARN: scipy missing (pip install scipy) — slow fallback")
+        out = np.full(len(eval_xyz), None, dtype=object)
+        dmin = np.full(len(eval_xyz), np.inf)
+        for s in range(0, len(pred_xyz), 4000):
+            P = pred_xyz[s:s + 4000]
+            Lb = pred_lab[s:s + 4000]
+            for t in range(0, len(eval_xyz), 1000):
+                E = eval_xyz[t:t + 1000]
+                d = np.linalg.norm(E[:, None] - P[None], axis=2)
+                jj = d.argmin(1)
+                dv = d[np.arange(len(E)), jj]
+                m = dv < dmin[t:t + 1000]
+                dmin[t:t + 1000][m] = dv[m]
+                out[t:t + 1000][m] = Lb[jj[m]]
+        out[dmin > bound] = None
+        return out
 
 
 def macc_fmiou(gt, pred):

@@ -50,19 +50,35 @@ def main():
     out_dir = os.path.join("handoff", args.scene)
     os.makedirs(out_dir, exist_ok=True)
 
+    def sniff(ob, keys, default):
+        """Try many key spellings; works for dicts and attribute objects."""
+        for k in keys:
+            if hasattr(ob, "get") and ob.get(k) is not None:
+                return ob.get(k)
+            if hasattr(ob, k) and getattr(ob, k) is not None:
+                return getattr(ob, k)
+        return default
+
     obj_rows, obs_rows = [], []
     pts_all, lab_all = [], []
     for oid, ob in enumerate(objects):
-        # per their schema: 'pcd'/'points', 'class_name'/'class_id', 'conf',
-        # 'image_idx' (frames the object was seen in)
-        if hasattr(ob, "get"):
-            pts = np.asarray(ob.get("pcd_np", ob.get("points",
-                             getattr(ob.get("pcd", None), "points", []))))
-            cname = ob.get("class_name", ob.get("most_common_class", "unknown"))
-            frames = ob.get("image_idx", [])
-        else:
-            raise SystemExit(f"FAIL: object entry type {type(ob)} — send this "
-                             f"log + {src} layout to Paul")
+        # schema drifts between releases — sniff the known spellings and,
+        # on total failure, print what IS there instead of guessing
+        raw_pts = sniff(ob, ["pcd_np", "points", "pcd_points"], None)
+        if raw_pts is None:
+            pcd = sniff(ob, ["pcd"], None)
+            raw_pts = getattr(pcd, "points", None)
+        pts = np.asarray(raw_pts) if raw_pts is not None else np.empty((0, 3))
+        cname = sniff(ob, ["class_name", "most_common_class", "object_tag",
+                           "caption", "class_id"], "unknown")
+        frames = sniff(ob, ["image_idx", "frame_idx", "obs_frames"], [])
+        if oid == 0:
+            avail = (list(ob.keys()) if hasattr(ob, "keys")
+                     else [a for a in dir(ob) if not a.startswith("_")])
+            print(f"first object's available keys/attrs: {avail[:30]}")
+        if pts.size == 0 and oid == 0:
+            raise SystemExit("FAIL: cannot find point data on their objects — "
+                             "send the printed key list above to Paul")
         if isinstance(cname, (list, np.ndarray)):
             cname = max(set(map(str, cname)), key=list(map(str, cname)).count)
         if len(pts) == 0:
