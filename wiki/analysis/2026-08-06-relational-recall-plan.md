@@ -1,5 +1,58 @@
 # Relational recall from the map — execution plan (2026-08-06)
 
+> **INTERNAL DIAGNOSTIC BATTERY — every number on this page is from a
+> bespoke, self-defined protocol. None is comparable to FARM /
+> ConceptGraphs / any external benchmark (standing no-invented-metrics
+> rule). External claims wait for the R5 their-protocol run.**
+
+## SKEPTIC-PANEL CORRECTIONS (2026-08-08, three adversarial reviews — all upheld)
+
+1. **Provenance (fixed):** the 46/21/33 product row had been quoted while
+   the code that produced it was edited away; relational_recall.py now
+   computes product AND selector as separate named designs and the rerun
+   REPRODUCES 46/21/33 (plus app+product 46/4/51, app+selector 47/23/30)
+   in outputs/relational_recall.json.
+2. **Statistics:** headline n's are inflated — 24 queries = 17 distinct
+   targets; 57 view-rows = 14 distinct targets × repeated views. CIs
+   overlap heavily (46% is [26,67]; 72% is ~[49,91] at target level);
+   cluster-vs-pursuit_euclid is ONE query (p≈1.0); ~10 decode designs were
+   scored post-hoc on the same 24 queries. **No cross-design ordering on
+   this battery is statistically established.** All orderings are
+   hypotheses for a bigger battery, not findings.
+3. **Oracle-k:** every pursuit number (85% enumeration, 67% euclid) uses
+   GT instance counts at query time, twice for euclid. "From the trace
+   alone" / "fully trace-derived" are RETRACTED until a stopping rule is
+   implemented and k±1 sensitivity is measured (pursuit_k+1 already shows
+   wrong 25→42% for one over-count on the field-value variant).
+4. **Circularity:** the metric decoders execute the battery's own
+   generative min-min rule on estimated positions — 67/71% measure
+   instance-POSITION RECOVERY under the battery's referent semantics, not
+   relational inference. "Field values fail / metric wins" is near-
+   tautological under this battery; a non-min-min query family is needed.
+5. **The easy 37.5%:** the 0.5 m margin filter discards 40/64 queries —
+   exactly the near-twin regime that motivated the sprint. Kept-query
+   margins (median 1.29 m) mostly exceed the 0.75 m scoring radius. The
+   twin-pair stratification promised in this plan was never delivered.
+6. **"Between" envelope:** works for 2 of 15 measured pairs (kernels must
+   overlap, |AB| ≲ 1 m at ℓ=0.6); the figure pair is degenerate (plant
+   0.25 m from a table centroid). Shift-exactness stands (1.5e-16) but is
+   an identity check of the homomorphism — code-correctness evidence, not
+   a capability result. Anchor "peaks" of multi-instance class fields make
+   segment geometry ill-defined.
+7. **Memory-side GT usage:** detections GT-filtered into the trace
+   (assign radius 1.0), split keyed by GT ids, appearance mu/sd computed
+   transductively — all numbers are a GT-associated UPPER BOUND on
+   deployed behaviour; label them so.
+8. **V|A "not tuned":** the median rule was designed after observing the
+   failure it addresses, on the same 57 views — post-hoc, in-sample; the
+   negative outcome caps the damage but the framing is withdrawn.
+
+What SURVIVES skepticism: the R2 negative (anchor field-values damage
+view answers) is robust; shift exactness as an implementation check;
+pursuit as a promising enumeration mechanism PENDING a legal stopping
+rule; and the battery machinery itself as scaffolding for a properly
+powered, non-circular evaluation.
+
 ## The idea (Paul's, this date)
 
 SOTA spatial memories (FARM, ConceptGraphs) answer "the box near the lamp"

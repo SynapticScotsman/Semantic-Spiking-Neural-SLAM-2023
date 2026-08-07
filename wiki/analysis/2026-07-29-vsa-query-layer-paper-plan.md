@@ -584,6 +584,32 @@ comparison claims).
   tools: relational_view_battery.py, relational_instance_layer.py,
   tools/relational_displacement.py. Tasks #33-35, #39 complete; queued:
   metric-anchored R2 follow-up, R4 z-axis, R5 language, R6 deliverables.
+
+- **2026-08-08 (bi)** — **SKEPTIC PANEL on the relational sprint (3
+  adversarial agents; all major findings upheld; corrections applied).**
+  Full corrections block now heads the relational plan page. Summary:
+  (1) the 46% product row was UNREPRODUCIBLE (decode edited away after
+  recording) — restored as a named design, rerun reproduces 46/21/33
+  exactly, artifact now on disk; (2) entry (bh)'s "from the trace alone /
+  fully trace-derived" RETRACTED — every pursuit number uses GT instance
+  counts (twice for euclid), stopping rule unimplemented, k+1 sensitivity
+  unmeasured on the headline design; (3) cross-design orderings on the
+  n=24 battery are statistically unestablished (17 distinct targets; ~10
+  post-hoc designs; cluster-vs-euclid = one query) — all downgraded to
+  hypotheses; (4) circularity: the metric decoders execute the battery's
+  own generative min-min rule — 67/71% measure position recovery, not
+  relational inference; (5) the margin filter excludes the near-twin
+  regime that motivated the sprint (kept-margin median 1.29 m > scoring
+  radius); (6) "between" works 2/15 pairs (kernel-overlap envelope),
+  figure pair degenerate; shift exactness stands but is an identity
+  check, not a capability; (7) all numbers are GT-associated upper bounds
+  (memory-side GT filtering, transductive normalisation). The relational
+  thread is now banner-labelled INTERNAL DIAGNOSTIC per the
+  no-invented-metrics rule. Survives: the R2 negative, exactness as
+  implementation check, pursuit-as-mechanism pending a legal stopping
+  rule.
+
+- **2026-08-06 (bf)** — **INSTANCE vs SEMANTIC recall measured (Paul's
   diagnosis confirmed) + the 2025 primer restored and reviewed.**
   New `vsa_cognitive_mapping/instance_recall.py`: 1,309 held-out
   instance queries over 5 Replica scenes, three memory designs, per-instance

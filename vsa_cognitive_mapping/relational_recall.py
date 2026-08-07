@@ -62,8 +62,9 @@ def main():
     args = ap.parse_args()
 
     enc = ClassroomEncoders(HD, 0, LS, 20.0)
-    agg = {k: defaultdict(int) for k in ("class", "relational", "app",
-                                         "app+rel")}
+    agg = {k: defaultdict(int) for k in ("class", "product", "selector",
+                                         "app", "app+product",
+                                         "app+selector")}
     n_amb = 0
     per_scene = []
 
@@ -191,12 +192,17 @@ def main():
             Fc = field(M, sem[c])
             Fa = field(M, sem[ac])
             agg["class"][score_argmax(Fc, tid, c)] += 1
-            agg["relational"][score_selected(Fc, Fa, tid, c)] += 1
+            # BOTH relational decodes, as separate named designs, so every
+            # quoted number has a reproducing artifact (skeptic-panel fix:
+            # the product row had been edited out after being recorded)
+            agg["product"][score_argmax(Fc * Fa, tid, c)] += 1
+            agg["selector"][score_selected(Fc, Fa, tid, c)] += 1
             if tid in qview:
                 for k in qview[tid][:3]:
                     Fapp = field(Mapp, APP[k])
                     agg["app"][score_argmax(Fapp, tid, c)] += 1
-                    agg["app+rel"][score_selected(Fapp, Fa, tid, c)] += 1
+                    agg["app+product"][score_argmax(Fapp * Fa, tid, c)] += 1
+                    agg["app+selector"][score_selected(Fapp, Fa, tid, c)] += 1
             n_sc += 1
         per_scene.append(dict(scene=scene, queries=n_sc))
         print(f"{scene}: {n_sc} unambiguous relational queries "
@@ -208,7 +214,8 @@ def main():
            f"{'class-ok wrong-inst':>20}{'wrong':>8}")
     print("\n" + hdr)
     print("-" * len(hdr))
-    for name in ("class", "relational", "app", "app+rel"):
+    for name in ("class", "product", "selector", "app", "app+product",
+                 "app+selector"):
         tot = sum(agg[name].values()) or 1
         print(f"{name:<14}{tot:>6}{agg[name]['instance'] / tot:>17.0%}"
               f"{agg[name]['wrong_instance'] / tot:>20.0%}"

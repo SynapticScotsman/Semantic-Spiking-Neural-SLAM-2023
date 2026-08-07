@@ -5,7 +5,12 @@
       "instance": 7,
       "wrong": 0
     },
-    "relational": {
+    "product": {
+      "wrong_instance": 5,
+      "instance": 11,
+      "wrong": 8
+    },
+    "selector": {
       "wrong_instance": 14,
       "instance": 7,
       "wrong": 3
@@ -15,7 +20,12 @@
       "wrong_instance": 5,
       "instance": 41
     },
-    "app+rel": {
+    "app+product": {
+      "wrong": 29,
+      "instance": 26,
+      "wrong_instance": 2
+    },
+    "app+selector": {
       "instance": 27,
       "wrong": 17,
       "wrong_instance": 13
