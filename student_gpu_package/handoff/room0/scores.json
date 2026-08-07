@@ -1,0 +1,11 @@
+{
+  "scene": "room0",
+  "scorer": "reimplementation (formulas identical to their eval)",
+  "n_points": 30000,
+  "vsa": {
+    "mAcc": 0.0757,
+    "fmiou": 0.0336,
+    "gt_classes": 29,
+    "unmatched_frac": 0.0
+  }
+}
