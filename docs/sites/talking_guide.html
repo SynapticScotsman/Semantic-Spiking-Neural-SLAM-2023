@@ -1,0 +1,322 @@
+<meta charset="utf-8">
+<title>SSN-SLAM — the talking guide</title>
+<style>
+:root{--bg:#05080f;--bg2:#0a0f1a;--panel:#0d1524;--ink:#e8eef6;--ink2:#aab8c8;
+--muted:#64748b;--line:#1b2740;--cyan:#57e6d4;--cyan-dim:#1d5d56;--amber:#ffb454;
+--mag:#ff5fd0;--good:#57e6a0;--bad:#ff7a6e;
+--serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+--mono:ui-monospace,"Cascadia Code",Consolas,Menlo,monospace}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 var(--serif)}
+.wrap{max-width:1000px;margin:0 auto;padding:0 22px}
+.mono{font-family:var(--mono)}
+header{border-bottom:1px solid var(--line);padding:44px 0 36px;background:var(--bg2)}
+.kicker{font-family:var(--mono);font-size:.72rem;letter-spacing:.22em;
+text-transform:uppercase;color:var(--cyan);margin:0 0 14px}
+h1{font-size:clamp(1.7rem,4.4vw,2.7rem);line-height:1.14;margin:0 0 14px;
+letter-spacing:-.015em;font-weight:400;max-width:24ch;text-wrap:balance}
+h1 b{color:var(--cyan);font-style:italic;font-weight:400}
+.lede{color:var(--ink2);max-width:76ch;margin:0}
+nav{font-family:var(--mono);font-size:.74rem;letter-spacing:.06em;margin-top:22px;
+display:flex;flex-wrap:wrap;gap:8px}
+nav a{color:var(--ink2);text-decoration:none;border:1px solid var(--line);
+border-radius:99px;padding:3px 12px}
+nav a:hover{color:var(--cyan);border-color:var(--cyan)}
+section{padding:44px 0;border-bottom:1px solid var(--line)}
+.secHead{display:flex;align-items:baseline;gap:16px;margin-bottom:6px}
+.dial{font-family:var(--mono);color:var(--cyan);font-size:.95rem;white-space:nowrap}
+h2{font-size:clamp(1.3rem,2.8vw,1.85rem);margin:0;font-weight:400;letter-spacing:-.01em;
+text-wrap:balance}
+h3{font-size:1.05rem;margin:22px 0 8px;font-weight:700}
+.prose{color:var(--ink2);max-width:78ch}
+.say{border-left:3px solid var(--cyan);padding:10px 16px;margin:18px 0;
+background:var(--panel);border-radius:0 10px 10px 0;max-width:74ch}
+.say .tag{font-family:var(--mono);font-size:.68rem;letter-spacing:.18em;
+text-transform:uppercase;color:var(--cyan);display:block;margin-bottom:4px}
+.say p{margin:0;font-style:italic;color:var(--ink)}
+.card{background:var(--bg2);border:1px solid var(--line);border-radius:13px;
+padding:16px 18px;margin:16px 0;overflow-x:auto}
+table{border-collapse:collapse;font-size:.88rem;font-variant-numeric:tabular-nums;
+min-width:660px;width:100%}
+th,td{text-align:left;padding:7px 11px;border-bottom:1px solid var(--line);
+vertical-align:top}
+th{font-family:var(--mono);font-size:.7rem;letter-spacing:.08em;
+text-transform:uppercase;color:var(--muted)}
+td.num{font-family:var(--mono);font-size:.84rem}
+.us td{background:rgba(87,230,212,.06)}
+.pill{display:inline-block;border-radius:99px;padding:0 9px;font-family:var(--mono);
+font-size:.66rem;font-weight:700;letter-spacing:.05em;vertical-align:middle}
+.pill.same{background:rgba(87,230,160,.14);color:var(--good)}
+.pill.ctx{background:rgba(255,180,84,.14);color:var(--amber)}
+.pill.diag{background:rgba(255,122,110,.14);color:var(--bad)}
+.pill.done{background:rgba(87,230,212,.13);color:var(--cyan)}
+.pill.open{background:rgba(100,116,139,.2);color:var(--ink2)}
+.statgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+gap:12px;margin:18px 0 0}
+.stat{border-left:2px solid var(--cyan-dim);padding-left:12px}
+.stat b{font-family:var(--mono);font-size:1.55rem;color:var(--cyan);display:block;
+line-height:1.15}
+.stat span{font-family:var(--mono);font-size:.72rem;color:var(--muted)}
+.timeline{list-style:none;margin:16px 0 0;padding:0;position:relative}
+.timeline:before{content:"";position:absolute;left:7px;top:6px;bottom:6px;
+width:2px;background:var(--line)}
+.timeline li{position:relative;padding:0 0 18px 30px}
+.timeline li:before{content:"";position:absolute;left:1px;top:6px;width:11px;
+height:11px;border-radius:50%;background:var(--bg);border:2.5px solid var(--cyan)}
+.timeline li.warn:before{border-color:var(--amber)}
+.timeline b{color:var(--ink)}
+.timeline .when{font-family:var(--mono);font-size:.7rem;color:var(--muted);
+letter-spacing:.08em;text-transform:uppercase}
+.timeline p{margin:2px 0 0;color:var(--ink2);max-width:72ch;font-size:.95rem}
+ul.limits{max-width:78ch}
+ul.limits li{margin:8px 0;color:var(--ink2)}
+ul.limits b{color:var(--ink)}
+a{color:var(--cyan)}
+.links{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
+.links a{display:block;background:var(--panel);border:1px solid var(--line);
+border-radius:11px;padding:11px 14px;text-decoration:none;color:var(--ink)}
+.links a:hover{border-color:var(--cyan)}
+.links b{display:block;font-size:.95rem}
+.links span{font-family:var(--mono);font-size:.7rem;color:var(--muted)}
+footer{padding:28px 0 60px;color:var(--muted);font-family:var(--mono);font-size:.76rem}
+</style>
+
+<header><div class="wrap">
+<p class="kicker">semantic spiking-neural slam · talking guide · august 2026</p>
+<h1>One vector that remembers <b>what, where and when</b> — the work so far, honestly scored</h1>
+<p class="lede">This page is the walkthrough: every dataset and model we tested, what each
+arc found, how it stacks against the state of the art, and exactly what to claim and what
+not to. Each section has a <span class="mono" style="color:var(--cyan)">SAY THIS</span> box
+— the one sentence that survives scrutiny.</p>
+<nav>
+<a href="#frame">frame</a><a href="#data">datasets</a><a href="#models">models</a>
+<a href="#arcs">findings</a><a href="#score">scoreboard</a><a href="#law">the law</a>
+<a href="#merge">merging</a><a href="#limits">limits</a><a href="#next">open</a>
+<a href="#sites">deep dives</a>
+</nav>
+</div></header>
+<main>
+
+<section id="frame"><div class="wrap">
+<div class="secHead"><span class="dial">01 ·</span><h2>The frame — what this project actually claims</h2></div>
+<p class="prose">A Vector Symbolic Architecture memory: every observation is
+<i>bound</i> (element-wise complex multiply) to a grid-cell-style position code and
+<i>added</i> into one 4096-dimensional phasor vector. The map never grows; updating is one
+addition; merging two robots' maps is one addition; and unbinding a concept renders a
+belief field over the whole floor. We are <b>not</b> claiming better accuracy than the
+state of the art — we claim a different, measured trade: a memory ~1000× smaller that
+reaches the accuracy ceiling of its own perception, with capabilities (exact merge, one
+algebra for what/where/when) that no established map representation has.</p>
+<div class="say"><span class="tag">say this</span><p>"VSAs are the algebraic composition
+layer for robotic memory: we buy constant size, one-add updates and exact merging, and we
+measured that it costs essentially nothing against the perception we feed it."</p></div>
+<div class="statgrid">
+<div class="stat"><b>12</b><span>datasets/scenes tested end-to-end</span></div>
+<div class="stat"><b>7</b><span>vision models compared as frontends</span></div>
+<div class="stat"><b>32 KB</b><span>map state, constant in observations</span></div>
+<div class="stat"><b>10⁻¹²</b><span>merge error, 4 robots, zero association</span></div>
+</div>
+</div></section>
+
+<section id="data"><div class="wrap">
+<div class="secHead"><span class="dial">02 ·</span><h2>Every dataset we tested — and why each one was chosen</h2></div>
+<div class="card"><table>
+<thead><tr><th>dataset</th><th>scale</th><th>why it's in the study</th><th>headline outcome</th></tr></thead>
+<tbody>
+<tr><td><b>Classroom</b> (Boston Dynamics Spot, HuggingFace)</td><td class="num">2,478 frames · 6.9 m room</td><td>real robot, real odometry — the development scene</td><td>conditioning rescue measured live: raw 3.12 m → z-scored 0.35 m (seed-0; 0.84 m across 5 seeds — always quoted together)</td></tr>
+<tr><td><b>school_run1</b> (handheld walk)</td><td class="num">11,211 frames · 455 s</td><td>10× scale; positions unusable → honest TIME testbed</td><td>episodic recall 43.5% signal; two-robot time-merge exact (10⁻¹⁵), 117/117 identical answers</td></tr>
+<tr><td><b>TUM fr1/desk</b></td><td class="num">613 frames · 2.4 m desk</td><td>public RGB-D standard; stress-test at desk scale</td><td>honest negative: street-trained VPR descriptors treat the whole desk as one place (kNN ceiling 0.82 m) — scale-mismatch finding, reported not buried</td></tr>
+<tr class="us"><td><b>7-Scenes chess</b> (Microsoft)</td><td class="num">4,000 train + 2,000 test frames</td><td>THE relocalisation benchmark; official separate train/test walks — kills every split caveat</td><td>0.36 m median 3D from 32 KB vs kNN ceiling 0.29 m (33 MB); published DenseVLAD 0.21 m</td></tr>
+<tr class="us"><td><b>Replica ×8</b> (room0-2, office0-4)</td><td class="num">16,000 frames · ~50k detections</td><td>the scene-graph community's benchmark — same renders ConceptGraphs evaluates on</td><td>object grounding at perception ceiling on all 8 scenes; 0 memory-attributable misses; merge + backend studies</td></tr>
+<tr><td><b>Synthetic geometry</b></td><td class="num">N → 10⁶ · hd 1024 &amp; 4096</td><td>controlled mean/spectrum/correlation dials — where the capacity law was pinned</td><td>χ(N) law with out-of-sample prediction to 1.4%</td></tr>
+</tbody></table>
+<p class="prose" style="font-size:.9rem">Also along the way: COIL-20 multiview probes and
+DVS event sets from the earlier spiking arc — background, not in the current claims.</p></div>
+<div class="say"><span class="tag">say this</span><p>"We moved from self-collected walks to
+the community's own benchmarks precisely because our early numbers weren't comparable —
+everything headline now lives on 7-Scenes and Replica."</p></div>
+</div></section>
+
+<section id="models"><div class="wrap">
+<div class="secHead"><span class="dial">03 ·</span><h2>Every model we compared — the frontend is the free variable</h2></div>
+<p class="prose">The memory accepts any embedding. That made the encoder a controlled
+variable, and the comparison produced one of the project's central findings: <b>the
+frontend's geometry decides everything downstream</b> — and simple conditioning
+(centre / z-score) is worth more than model size.</p>
+<div class="card"><table>
+<thead><tr><th>model</th><th>role</th><th>what we learned from it</th></tr></thead>
+<tbody>
+<tr><td><b>YOLOv8n</b></td><td>detector + crop embedder</td><td>detections are the semantic bottleneck: every grounding miss traces to it (mislabels, missed classes) — never to the memory</td></tr>
+<tr><td><b>DINOv2-small</b></td><td>crop embedder (objects)</td><td>best object-level content; 0.769 class retrieval at gap 300; whitening multiplier 8.1× (vs 19.9× YOLO — never quote one without its encoder)</td></tr>
+<tr><td><b>ResNet50 / untrained ResNet50</b></td><td>encoder ladder rungs</td><td>trained-vs-untrained separates learning from architecture; untrained ≈ YOLO-level geometry</td></tr>
+<tr><td><b>SigReg (LeJEPA)</b></td><td>isotropy-regularised student encoder</td><td>the train-the-encoder-for-the-algebra direction; student's GPU line</td></tr>
+<tr class="us"><td><b>EigenPlaces</b> (ICCV'23 VPR)</td><td>place-level frontend</td><td>the frontend swap Paul called: kNN ceiling 0.78→0.43 m on classroom; made bind-yaw redundant-then-harmful (key-diversity substitution law); desk-scale limit found on TUM</td></tr>
+<tr><td><b>CLIP ViT-B/32</b></td><td>independent second labeler / open-vocab relabeler</td><td>agreement filtering killed the phantom classes (toilet/sink/oven/person all vanished); relabels our crops into ConceptGraphs' vocabulary for the same-metric head-to-head</td></tr>
+<tr><td><b>C-JEPA</b> (ICML'26)</td><td>conceptual input, not run</td><td>object-level latent masking supports the granularity-matches-query principle; identity anchor = additive binding — cited, six connections documented</td></tr>
+</tbody></table></div>
+<div class="say"><span class="tag">say this</span><p>"Model choice matters less than
+representation conditioning: subtracting a mean took one encoder from 3.1 m to 0.35 m.
+That's the capacity law acting, not a hyperparameter accident."</p></div>
+</div></section>
+
+<section id="arcs"><div class="wrap">
+<div class="secHead"><span class="dial">04 ·</span><h2>The findings, in the order we earned them</h2></div>
+<ul class="timeline">
+<li><span class="when">arc 1 · treatments</span><br><b>Centre, don't whiten — scoped.</b>
+<p>Mean-removal carries 40–83% of whitening's benefit depending on encoder (12% for
+EigenPlaces); whitening was catastrophic on the classroom (−47.6% signal, 5 seeds) yet
+neutral on chess. Claims are scoped per encoder × scene, never universal.</p></li>
+<li><span class="when">arc 2 · the capacity law</span><br><b>χ(N) = a<sub>μ</sub>N + √N·√(α/PR + γ/hd)·h(N,τ).</b>
+<p>Mean term exactly linear to 3×10⁵; two-source quadrature prefactor predicted a held-out
+cell to 1.4% and explains the encoder-independent whitened floor; temporal persistence
+coherent for N≲τ then √-reverting to √(1+τ/τ₀). The mean term is the τ→∞ limit — which
+unifies why centring and key-diversity (yaw binding) are interchangeable rescues.</p></li>
+<li><span class="when">arc 3 · the yaw/key law</span><br><b>Content conditioning and key diversity are substitutes.</b>
+<p>Bind-yaw rescued ill-conditioned crops on TUM, became harmful with viewpoint-invariant
+EigenPlaces on the classroom (0.35→1.00 m), then mildly helped chess's orbit tail —
+trajectory-dependent, exactly as the law predicts.</p></li>
+<li><span class="when">arc 4 · the frontend verdict</span><br><b>Paul's hypothesis confirmed: the descriptor was the bottleneck.</b>
+<p>EigenPlaces lifted the classroom kNN ceiling 0.78→0.43 m and the VSA followed to
+0.35 m (seed-0) — the memory tracks its ceiling; and raw-vs-z-scored demonstrated the
+mean-term mechanism live on a brand-new encoder.</p></li>
+<li><span class="when">arc 5 · dual granularity</span><br><b>The 2×2 double dissociation, all four cells measured.</b>
+<p>Object task: crops 0.769 vs place-vectors 0.429 (chance 0.312). Place task: crops
+0.96 m vs EigenPlaces 0.35 m. Each representation wins its own task — "granularity
+matches query" is measured, and both coexist in one trace.</p></li>
+<li><span class="when">arc 6 · public benchmarks</span><br><b>7-Scenes chess + all 8 Replica scenes.</b>
+<p>Chess: 0.36 m median 3D at 32 KB (ceiling 0.29 m; PQ cannot exist below its 2 MB
+codebook). Replica: grounding at the perception ceiling on every scene, zero
+memory-attributable misses, bounded per-class insertion fixing the imbalance failure the
+law predicted (44→62% on the internal diagnostic).</p></li>
+<li><span class="when">arc 7 · map joining</span><br><b>Merge = addition beats merge = association, measured.</b>
+<p>8 scenes × 4 robots: VSA addition 89% mean (worst 80%), zero association decisions,
+10⁻¹² exact; the scene-graph-style associative merge 84% (worst 67%) after 622 decisions.
+Survey: bundling as a between-robot map-merge operator appears to be novel.</p></li>
+<li class="warn"><span class="when">arc 8 · the metric correction</span><br><b>Paul's standing rule: no invented metrics.</b>
+<p>Our grounding "truth-R@1 @ 1 m" was a bespoke protocol → demoted to internal
+diagnostic. The student package now scores both systems under ConceptGraphs' own
+mAcc/F-mIoU with their scorer — including the pre-registered honest expectation that an
+object memory scores low when walls/floor dominate the metric.</p></li>
+</ul>
+</div></section>
+
+<section id="score"><div class="wrap">
+<div class="secHead"><span class="dial">05 ·</span><h2>The scoreboard — us vs the models people will ask about</h2></div>
+<h3>Relocalisation · 7-Scenes chess <span class="pill same">SAME DATA &amp; METRIC</span></h3>
+<div class="card"><table>
+<thead><tr><th>system</th><th>map size</th><th>3D median</th><th>note</th></tr></thead>
+<tbody>
+<tr><td>DSAC* / ACE (cited)</td><td class="num">4–28 MB</td><td class="num">~0.02 m</td><td>geometry class: per-scene GPU training, no update/merge — different tool</td></tr>
+<tr><td>DenseVLAD (published, same split)</td><td class="num">10s MB</td><td class="num">0.21 m</td><td>retrieval SOTA anchor</td></tr>
+<tr><td>kNN on EigenPlaces (ours)</td><td class="num">32.8 MB</td><td class="num">0.29 m</td><td>exact search = our frontend's ceiling</td></tr>
+<tr><td>PQ database (ours)</td><td class="num">2.1 MB</td><td class="num">0.29 m</td><td>codebook alone is 2 MB — nothing classical exists at 32 KB</td></tr>
+<tr class="us"><td><b>VSA trace</b></td><td class="num"><b>32 KB</b></td><td class="num"><b>0.36 m</b></td><td>0.07 m from ceiling at 1/1000th the bytes; top-3 readout reaches the ceiling</td></tr>
+</tbody></table></div>
+<h3>Semantics · Replica ×8 <span class="pill same">SAME DATA</span> <span class="pill ctx">THEIR METRIC PENDING</span></h3>
+<div class="card"><table>
+<thead><tr><th>system</th><th>metric</th><th>score</th><th>status</th></tr></thead>
+<tbody>
+<tr><td>ConceptFusion / HOV-SG / ConceptGraphs / KeySG</td><td>dense seg. mAcc (their eval)</td><td class="num">24.2 / 38.1 / 40.6 / 45.8</td><td>published; label error is the whole field's bottleneck</td></tr>
+<tr><td>ConceptGraphs query eval</td><td>R@1 (their protocol)</td><td class="num">0.59</td><td>the protocol class our use case matches</td></tr>
+<tr class="us"><td><b>VSA trace</b></td><td>their mAcc/F-mIoU, their scorer</td><td class="num">pending student run</td><td>package shipped &amp; smoke-tested; pre-registered: all-classes mAcc will be low (an object memory can't label walls) and we say so</td></tr>
+<tr><td>VSA internal diagnostic <span class="pill diag">NOT COMPARABLE</span></td><td>grounding within 1 m (bespoke)</td><td class="num">88% pooled · chance 18%</td><td>diagnostic only — demoted per the no-invented-metrics rule; shows the memory ≈ its perception ceiling, 0 memory-attributable misses</td></tr>
+</tbody></table></div>
+<h3>Map merging · measured head-to-head <span class="pill same">SAME OBSERVATIONS</span></h3>
+<div class="card"><table>
+<thead><tr><th>join method</th><th>mean / worst</th><th>assoc. decisions</th><th>bytes/robot</th><th>exactness</th></tr></thead>
+<tbody>
+<tr class="us"><td><b>VSA + addition</b></td><td class="num"><b>89% / 80%</b></td><td class="num"><b>0</b></td><td class="num">32 KB</td><td class="num">~10⁻¹²</td></tr>
+<tr><td>instance lists + association (scene-graph style)</td><td class="num">84% / 67%</td><td class="num">622</td><td class="num">0.3 KB</td><td>3–8 classes drift/scene</td></tr>
+<tr><td>count grids + addition</td><td class="num">82% / 67%</td><td class="num">0</td><td class="num">~95 KB</td><td>exact, quantised</td></tr>
+<tr><td>raw union</td><td class="num">85% / 60%</td><td class="num">0</td><td class="num">grows forever</td><td>exact, unbounded</td></tr>
+</tbody></table>
+<p class="prose" style="font-size:.9rem">Field scale bar: Kimera-Multi exchanges
+24–146 MB per experiment for an optimiser's estimate; DOOR-SLAM ~60 KB per loop-closure
+candidate. Our robots exchange one 32 KB vector, once, for a bit-identical result.</p></div>
+<div class="say"><span class="tag">say this</span><p>"On accuracy we are honest: geometry
+methods win relocalisation and SAM pipelines win dense labelling. Our rows are the ones
+nobody else occupies — constant bytes, exact merge, and the ceiling of our own perception
+reached on both tasks."</p></div>
+</div></section>
+
+<section id="law"><div class="wrap">
+<div class="secHead"><span class="dial">06 ·</span><h2>The theory column — a law that predicts, not decorates</h2></div>
+<p class="prose">Three verified predictions: (1) the quadrature prefactor
+√(α/PR + γ/hd) hit a held-out synthetic cell to <b>1.4%</b>; (2) it retro-explains the
+encoder-independent whitened floor measured months earlier (that's the γ/hd
+projection-noise term — no treatment can remove it, only more dimensions); (3) it
+forecast the class-imbalance failure on Replica (couch×1150 drowning book×5 is the mean
+term at class level) and the fix's direction (bounded insertion). Persistence:
+correlated frames add coherently for N≲τ then √-revert to a permanent √(1+τ/τ₀)
+elevation — the mean term is the τ→∞ limit, unifying the two rescue mechanisms.</p>
+<div class="say"><span class="tag">say this</span><p>"We can tell you before deployment
+how much a given encoder, scene and duration will crosstalk — and the law has already
+called two real failures in advance."</p></div>
+</div></section>
+
+<section id="merge"><div class="wrap">
+<div class="secHead"><span class="dial">07 ·</span><h2>The merge story — the paper's sharpest edge</h2></div>
+<p class="prose">Every established family merges by inference: occupancy grids search for
+a transform, pose graphs need loop closures + NP-hard outlier rejection + distributed
+optimisation, scene graphs add semantic node association on top, neural maps run consensus
+optimisation over weights. All produce estimates; none are order-independent. Ours is a
+commutative, associative addition — bit-identical to the jointly-built map, and the
+literature survey found no prior use of bundling as the between-robot map-merge operator.
+The honest caveat rides on every claim: <b>a shared coordinate frame is assumed, not
+solved</b> — frame recovery by correlation sweep exists in the repo, its robustness study
+is queued.</p>
+<div class="say"><span class="tag">say this</span><p>"Their merge is an algorithm; ours is
+an arithmetic operation. We measured what that's worth: the association-based merge lost
+16 points on its worst scene to wrong matches; ours cannot make a wrong match."</p></div>
+</div></section>
+
+<section id="limits"><div class="wrap">
+<div class="secHead"><span class="dial">08 ·</span><h2>What we do not claim — lead with these before anyone asks</h2></div>
+<ul class="limits">
+<li><b>Not SOTA accuracy, anywhere.</b> DSAC* is 10× better at relocalisation; SAM
+pipelines label scenes we cannot. Our claim is the trade, not the crown.</li>
+<li><b>Perception-bound.</b> Every measured miss is the frontend's (mislabels, missed
+detections, depth-through-glass). The memory adds ~nothing — and fixes nothing.</li>
+<li><b>Vocabulary-bound.</b> COCO-80 sees 9–31% of Replica's GT instances; open-vocab
+frontends are the extension, partially built (CLIP relabeling).</li>
+<li><b>Shared frame assumed.</b> Alignment remains the classical problem.</li>
+<li><b>Bounded capacity, characterised.</b> Beyond the law's crossover, growing databases
+win on accuracy (measured: kNN overtakes at N≈800 on class retrieval).</li>
+<li><b>Seed honesty.</b> Single-split headline numbers carry their seed tags
+(0.35 m seed-0 vs 0.84 m 5-seed median, always together).</li>
+</ul>
+</div></section>
+
+<section id="next"><div class="wrap">
+<div class="secHead"><span class="dial">09 ·</span><h2>Open items — what's in flight and whose move it is</h2></div>
+<div class="card"><table>
+<thead><tr><th>item</th><th>status</th><th>whose move</th></tr></thead>
+<tbody>
+<tr><td>ConceptGraphs head-to-head under THEIR metric (the 2×2 completion)</td><td><span class="pill done">PACKAGE SHIPPED</span> 6 self-checking stages, VRAM-aware (MobileSAM tier for laptop GPUs), fully self-collecting data, smoke-tested</td><td>student (GPU)</td></tr>
+<tr><td>χ-law constants derivation + real-cell closure (T1)</td><td><span class="pill open">STRUCTURE PINNED</span> empirics done, formal write-up pending</td><td>Claude/Paul</td></tr>
+<tr><td>frame-recovery robustness (merge caveat → studied component)</td><td><span class="pill open">QUEUED</span> success rate vs overlap fraction</td><td>Claude</td></tr>
+<tr><td>K-scaling merge (2–16 robots)</td><td><span class="pill open">QUEUED</span></td><td>Claude</td></tr>
+<tr><td>evaluation-battery write-up (T5)</td><td><span class="pill open">QUEUED</span></td><td>Claude</td></tr>
+<tr><td>decisions: D1a workshop pick · <b>D2 authorship (now blocking prose)</b> · D3 Kalman placement · D4 ICRA framing</td><td><span class="pill open">DECISIONS</span></td><td><b>Paul</b></td></tr>
+</tbody></table></div>
+</div></section>
+
+<section id="sites"><div class="wrap">
+<div class="secHead"><span class="dial">10 ·</span><h2>Deep dives — show, don't tell</h2></div>
+<p class="prose">Every claim above has a browsable page behind it (photos, live belief
+fields, playable walks — no curated examples anywhere):</p>
+<div class="links" style="margin-top:14px">
+<a href="results_vs_sota.html"><b>The visual showcase</b><span>live fields · playable walks · merge animation</span></a>
+<a href="replica_truth_summary.html"><b>8-scene tables</b><span>stratified, chance-anchored, miss taxonomy</span></a>
+<a href="cross_inspector_7scenes_chess.html"><b>Chess inspector</b><span>every held-out query as photos</span></a>
+<a href="recall_inspector.html"><b>School + classroom</b><span>time merge & place recall, photo-judged</span></a>
+<a href="grounding_inspector_room0.html"><b>room0 fields</b><span>incl. the honest vase miss</span></a>
+<a href="results_tum.html"><b>TUM finding</b><span>the scale-mismatch negative, in full</span></a>
+</div>
+</div></section>
+</main>
+<footer><div class="wrap">sources for cited numbers: 7-Scenes tables (arXiv:1903.07504
+and successors) · Replica mAcc (ConceptGraphs, OSMa-Bench, KeySG) · bandwidth
+(Kimera-Multi T-RO'22 Table II, DOOR-SLAM RA-L'20) · full provenance and per-arc tracker
+entries: wiki/analysis/2026-07-29-vsa-query-layer-paper-plan.md (entries a–be)</footer>
