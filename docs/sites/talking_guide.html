@@ -163,7 +163,7 @@ the tables you'll be asked about.</p>
 <nav>
 <a href="#frame">frame</a><a href="#data">datasets</a><a href="#work1">localise</a>
 <a href="#work2">ground</a><a href="#work3">remember</a><a href="#work4">merge</a>
-<a href="#law">the law</a><a href="#score">scoreboard</a><a href="#fails">failures</a>
+<a href="#law">the law</a><a href="#score">scoreboard</a><a href="#compare">comparisons</a><a href="#fails">failures</a>
 <a href="#models">models</a><a href="#arcs">history</a><a href="#next">open</a>
 <a href="#sites">deep dives</a>
 <a href="#" onclick="var r=document.documentElement,c=r.getAttribute('data-theme')||'dark';r.setAttribute('data-theme',c==='dark'?'light':'dark');return false">dark / light</a>
@@ -394,7 +394,7 @@ two real failures in advance."</p></div>
 <tbody>
 <tr><td>ConceptFusion / HOV-SG / ConceptGraphs / KeySG</td><td>dense seg. mAcc (their eval)</td><td class="num">24.2 / 38.1 / 40.6 / 45.8</td><td>published; label error is the field's bottleneck</td></tr>
 <tr><td>ConceptGraphs query eval</td><td>R@1 (their protocol)</td><td class="num">0.59</td><td>the protocol class our use case matches</td></tr>
-<tr class="us"><td><b>VSA trace</b></td><td>their mAcc/F-mIoU, their scorer</td><td class="num">pending student run</td><td>package shipped &amp; smoke-tested; pre-registered: all-classes mAcc will be low (an object memory can't label walls) — and we say so</td></tr>
+<tr class="us"><td><b>VSA trace</b></td><td>their mAcc/F-mIoU, their scorer</td><td class="num">GPU run pending</td><td>harness ready &amp; smoke-tested; pre-registered: all-classes mAcc will be low (an object memory can't label walls) — and we say so</td></tr>
 <tr><td>VSA internal diagnostic <span class="pill diag">NOT COMPARABLE</span></td><td>grounding within 1 m (bespoke)</td><td class="num">88% pooled · chance 18%</td><td>diagnostic only, demoted per the no-invented-metrics rule</td></tr>
 </tbody></table></div>
 <h3>Map merging · measured head-to-head <span class="pill same">SAME OBSERVATIONS</span></h3>
@@ -411,8 +411,44 @@ two real failures in advance."</p></div>
 vector, once, for a bit-identical result.</p></div>
 </div></section>
 
+<section id="compare"><div class="wrap">
+<div class="secHead"><span class="dial">09 ·</span><h2>The comparison problem — what benchmarking against new datasets and models actually cost us</h2></div>
+<p class="prose">Every fair comparison had to be fought for. These are the concrete
+issues we hit — worth stating to collaborators because each one shaped the protocol:</p>
+<div class="card"><table>
+<thead><tr><th>issue hit</th><th>where</th><th>how it was resolved</th></tr></thead>
+<tbody>
+<tr><td><b>Invented metrics don't compare.</b> Our own grounding score (R@1 within a radius we chose) could not sit next to anyone's numbers</td><td>Replica semantics</td><td>standing rule: adopt the target benchmark's own metric, scorer and GT verbatim; homemade numbers demoted to internal diagnostics</td></tr>
+<tr><td><b>Task-class mismatch.</b> Published semantic scores are dense point-labelling; an object memory cannot label walls/floor (most of every scene)</td><td>vs ConceptGraphs et al.</td><td>made our memory emit the same output type their scorer consumes (dense labels from class fields), pre-registering that the all-classes score will be low — honesty over optics</td></tr>
+<tr><td><b>Vocabulary mismatch.</b> COCO-80 detectors see only 9–31% of GT instances; their systems speak open vocabularies</td><td>Replica ×8</td><td>coverage stated on every table; CLIP relabeling into THEIR class list with their prompt style closes the gap for the head-to-head</td></tr>
+<tr><td><b>Frontend confounds the comparison.</b> System-vs-system mixes perception quality with memory design</td><td>everywhere</td><td>the same-frontend / different-backend protocol: identical observation stream into every memory; differences attributable to the map alone</td></tr>
+<tr><td><b>Pretrained models carry domain scale.</b> Street-trained place descriptors blur a 2.4 m desk; YOLO hallucinates classes on renders; identical furniture models defeat appearance keys</td><td>TUM · Replica</td><td>reported as scoped findings (scale-mismatch, phantom classes, instance limits) rather than tuned away; second-labeler agreement filtering</td></tr>
+<tr><td><b>Split legality.</b> Random splits leak neighbouring frames; blocked splits are seed-sensitive (0.35 vs 0.84 m)</td><td>classroom → chess</td><td>moved headline claims to benchmarks with OFFICIAL separate train/test traverses; seed tags mandatory elsewhere</td></tr>
+<tr><td><b>Data plumbing is real work.</b> 12 GB monolithic zips, nested per-sequence archives, three different depth scales, drifting third-party entry points</td><td>7-Scenes · Replica · vMAP · CG repo</td><td>range-request extraction (5 of 12 GB), auto depth-scale detection, self-checking staged harnesses with candidate entry-point lists</td></tr>
+<tr><td><b>Ground truth locked in heavy toolchains.</b> Semantic GT normally needs Habitat/GPU stacks</td><td>Replica</td><td>backprojected instance centroids from the public semantic renders on CPU, with a frame-alignment gate before any truth number is quoted</td></tr>
+</tbody></table></div>
+<h3>The task matrix — what the VSA memory can do today</h3>
+<div class="card"><table>
+<thead><tr><th>task</th><th>can it?</th><th>evidence / limit</th></tr></thead>
+<tbody>
+<tr class="us"><td>place localisation (retrieval class)</td><td><span class="pill same">YES</span></td><td>0.36 m median on chess from 32 KB — 0.07 m off its own ceiling</td></tr>
+<tr class="us"><td>object grounding, closed vocabulary</td><td><span class="pill same">YES</span></td><td>at perception ceiling on all 8 Replica scenes; 0 memory-attributable misses</td></tr>
+<tr class="us"><td>episodic recall ("when did I see this?") + time-range queries</td><td><span class="pill same">YES</span></td><td>11k-frame walk; range costs ≈ a point query; exact two-robot time merge</td></tr>
+<tr class="us"><td>multi-robot map merging</td><td><span class="pill same">YES — uniquely</span></td><td>exact addition, zero association, 32 KB exchanged; shared frame assumed</td></tr>
+<tr class="us"><td>lifelong bounded-memory operation</td><td><span class="pill same">YES</span></td><td>constant size with a predictive capacity law (1.4% out-of-sample)</td></tr>
+<tr><td>instance-specific recall ("THIS chair")</td><td><span class="pill ctx">PARTIAL</span></td><td>25→43% with appearance keys; identical twins need spatial/contextual keys — active thread</td></tr>
+<tr><td>change detection ("what moved?")</td><td><span class="pill ctx">DEMONSTRATED</span></td><td>ASTM two-window queries with honest abstentions; unscored vs any benchmark</td></tr>
+<tr><td>open-vocabulary / language queries</td><td><span class="pill ctx">DEMONSTRATED</span></td><td>sentence-as-key pipeline works; benchmark-scale scoring pending</td></tr>
+<tr><td>dense semantic labelling (walls, floors, stuff)</td><td><span class="pill diag">NO</span></td><td>an object memory cannot label what its detector never boxes — needs a dense frontend</td></tr>
+<tr><td>centimetre 6-DoF pose</td><td><span class="pill diag">NO</span></td><td>retrieval class; geometry methods are ~10× better where GPU training is acceptable</td></tr>
+</tbody></table></div>
+<div class="say"><span class="tag">say this</span><p>"Half our engineering went into making
+comparisons legal: same data, their metric, one shared frontend. The task matrix is the
+honest deliverable — five yeses, three maybes, two nos, every cell measured."</p></div>
+</div></section>
+
 <section id="fails"><div class="wrap">
-<div class="secHead"><span class="dial">09 ·</span><h2>Where it fails — the actual pictures</h2></div>
+<div class="secHead"><span class="dial">10 ·</span><h2>Where it fails — the actual pictures</h2></div>
 <p class="prose">Every truth-scored miss across the 8 Replica scenes, with the photos.
 The pattern is the finding: <b>the memory never misplaced a correctly-observed instance —
 every miss happens before the memory</b> (a detector mislabel, a never-seen class, a
@@ -426,14 +462,14 @@ the risk item."</p></div>
 </div></section>
 
 <section id="models"><div class="wrap">
-<div class="secHead"><span class="dial">10 ·</span><h2>Models compared — conditioning beats size</h2></div>
+<div class="secHead"><span class="dial">11 ·</span><h2>Models compared — conditioning beats size</h2></div>
 <div class="card"><table>
 <thead><tr><th>model</th><th>role</th><th>what we learned</th></tr></thead>
 <tbody>
 <tr><td><b>YOLOv8n</b></td><td>detector + crops</td><td>the semantic bottleneck — every grounding miss traces to it, none to the memory</td></tr>
 <tr><td><b>DINOv2-small</b></td><td>object content</td><td>best crops (0.769 class retrieval); whitening multiplier 8.1× (19.9× on YOLO — never quote one without its encoder)</td></tr>
 <tr><td><b>ResNet50 / untrained</b></td><td>encoder ladder</td><td>separates learning from architecture; untrained ≈ YOLO-level geometry</td></tr>
-<tr><td><b>SigReg (LeJEPA)</b></td><td>isotropy-trained student line</td><td>train-the-encoder-for-the-algebra direction</td></tr>
+<tr><td><b>SigReg (LeJEPA)</b></td><td>isotropy-regularised encoder</td><td>train-the-encoder-for-the-algebra direction</td></tr>
 <tr class="us"><td><b>EigenPlaces</b></td><td>place content</td><td>the frontend swap: classroom ceiling 0.78→0.43 m; made yaw-binding redundant-then-harmful (substitution law); desk-scale limit found on TUM</td></tr>
 <tr><td><b>CLIP ViT-B/32</b></td><td>independent second labeler</td><td>killed the phantom classes; relabels crops into ConceptGraphs' vocabulary for the same-metric test</td></tr>
 <tr><td><b>C-JEPA</b> (cited)</td><td>conceptual input</td><td>object-level masking supports granularity-matches-query; identity anchor = additive binding</td></tr>
@@ -441,7 +477,7 @@ the risk item."</p></div>
 </div></section>
 
 <section id="arcs"><div class="wrap">
-<div class="secHead"><span class="dial">11 ·</span><h2>How we got here — eight arcs, in order</h2></div>
+<div class="secHead"><span class="dial">12 ·</span><h2>How we got here — eight arcs, in order</h2></div>
 <ul class="timeline">
 <li><span class="when">arc 1</span><br><b>Centre, don't whiten — scoped.</b><p>Mean-removal
 carries 40–83% of whitening's benefit by encoder; whitening catastrophic on the classroom
@@ -465,13 +501,13 @@ imbalance failure the law predicted.</p></li>
 <p>89%/0-decisions vs 84%/622-decisions; survey: bundling as between-robot map merge
 appears novel; shared-frame caveat always attached.</p></li>
 <li class="warn"><span class="when">arc 8</span><br><b>The metric correction.</b><p>"Don't
-invent metrics" — bespoke grounding numbers demoted to diagnostics; the student package
+invent metrics" — bespoke grounding numbers demoted to diagnostics; the head-to-head harness
 scores both systems under ConceptGraphs' own eval, honest expectation pre-registered.</p></li>
 </ul>
 </div></section>
 
 <section id="limits"><div class="wrap">
-<div class="secHead"><span class="dial">12 ·</span><h2>What we do not claim — say these first</h2></div>
+<div class="secHead"><span class="dial">13 ·</span><h2>What we do not claim — say these first</h2></div>
 <ul class="limits">
 <li><b>Not SOTA accuracy anywhere.</b> DSAC* is 10× better at relocalisation; SAM
 pipelines label scenes we cannot. The claim is the trade, not the crown.</li>
@@ -489,19 +525,22 @@ association</b>, answering <b>where, what and when</b> in a single algebra.</p>
 </div></section>
 
 <section id="next"><div class="wrap">
-<div class="secHead"><span class="dial">13 ·</span><h2>Open items — whose move</h2></div>
+<div class="secHead"><span class="dial">14 ·</span><h2>Open work</h2></div>
 <div class="card"><table>
-<thead><tr><th>item</th><th>status</th><th>whose move</th></tr></thead>
+<thead><tr><th>open item</th><th>status</th></tr></thead>
 <tbody>
-<tr><td>ConceptGraphs head-to-head under THEIR metric</td><td><span class="pill done">PACKAGE SHIPPED</span> 6 self-checking stages, VRAM-aware, self-collecting data</td><td>student (GPU)</td></tr>
-<tr><td>χ-law constants derivation + real-cell closure (T1)</td><td><span class="pill open">STRUCTURE PINNED</span></td><td>Claude/Paul</td></tr>
-<tr><td>frame-recovery robustness · K-scaling merge · T5 write-up</td><td><span class="pill open">QUEUED</span></td><td>Claude</td></tr>
-<tr><td>D1a workshop · <b>D2 authorship (blocking prose)</b> · D3 · D4</td><td><span class="pill open">DECISIONS</span></td><td><b>Paul</b></td></tr>
+<tr><td><b>Same-metric semantic head-to-head</b> — ConceptGraphs and our memory scored by their own mAcc/F-mIoU evaluation on the same 8 scenes; completes the frontend × backend 2×2</td><td><span class="pill done">IN PROGRESS</span> harness ready and smoke-tested; GPU run pending</td></tr>
+<tr><td><b>Capacity-law derivation</b> — formal constants for χ(N) and closure on the 16 measured real cells with no per-cell fitting</td><td><span class="pill open">EMPIRICS DONE</span> write-up pending</td></tr>
+<tr><td><b>Frame-recovery robustness</b> — success rate of correlation-sweep alignment vs map overlap; converts the shared-frame caveat into a studied component</td><td><span class="pill open">QUEUED</span></td></tr>
+<tr><td><b>Multi-robot scaling</b> — merge quality from 2 to 16 robots: additive crosstalk growth vs association-error growth</td><td><span class="pill open">QUEUED</span></td></tr>
+<tr><td><b>Instance-level memory</b> — appearance keys with a stronger encoder; instance tokens for countability and "the second chair" queries</td><td><span class="pill open">FIRST RESULTS IN</span> 25→43% instance accuracy measured</td></tr>
+<tr><td><b>Open-vocabulary queries</b> — language-keyed recall at benchmark scale (CLIP relabeling built, unscored)</td><td><span class="pill open">QUEUED</span></td></tr>
+<tr><td><b>Publication decisions</b> — workshop venue, authorship, Kalman placement, ICRA framing</td><td><span class="pill open">OPEN</span> authorship now gates the writing</td></tr>
 </tbody></table></div>
 </div></section>
 
 <section id="sites"><div class="wrap">
-<div class="secHead"><span class="dial">14 ·</span><h2>Deep dives</h2></div>
+<div class="secHead"><span class="dial">15 ·</span><h2>Deep dives</h2></div>
 <p class="readout" id="linkNote" style="margin-top:10px"></p>
 <div class="links" style="margin-top:10px">
 <a href="results_vs_sota.html" data-art="600bba05-fc73-4943-aa69-18e4635f3b8c"><b>The visual showcase</b><span>the standalone demo page</span></a>
@@ -509,6 +548,8 @@ association</b>, answering <b>where, what and when</b> in a single algebra.</p>
 <a href="cross_inspector_7scenes_chess.html" data-art="b3b4010a-d3b0-410f-83e6-2a0169ce13e8"><b>Chess inspector</b><span>every held-out query as photos</span></a>
 <a href="recall_inspector.html" data-art="5e19782a-8b0e-40a6-ace6-3934792870a3"><b>School + classroom</b><span>time merge &amp; place recall</span></a>
 <a href="grounding_inspector_room0.html" data-art="506ec46c-492f-4cf7-9ec2-3ca4f58918f4"><b>room0 fields</b><span>incl. the honest vase miss</span></a>
+<a href="vsa_primer_review.html" data-art="0c469127-694c-4439-89b5-1e8e673a60ab"><b>How VSAs work — the primer, re-judged</b><span>heading &amp; circular bases · whitening verdict · STANDS/SCOPED/REVISED</span></a>
+<a href="vsa_primer_2025.html" data-art="11b2dbac-c484-44fe-a14b-9dbdef0e761e"><b>The original 2025 demo (preserved)</b><span>live widgets: clocks · petals · margin-vs-k · English keys</span></a>
 <a href="results_tum.html" data-gh="1"><b>TUM finding</b><span>the scale-mismatch negative in full</span></a>
 </div>
 </div></section>
