@@ -165,3 +165,9 @@ data/3d/slam_features_sspdim_97_featdim_9576_pinneurons_500_*.npz
 
 # Test output
 test_output.txt
+
+# Local FHRR suite YAML (machine-specific paths; use snnhdc_fhrr_suite.example.yaml as template)
+snnhdc_fhrr_suite.yaml
+
+student_gpu_package/cg_dataset/
+student_gpu_package/cg_out/
