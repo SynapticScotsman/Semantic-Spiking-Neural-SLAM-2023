@@ -1,7 +1,7 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>SSN-SLAM Â· results sites</title>
+<title>SSN-SLAM · results sites</title>
 <style>
 :root{--bg:#05080f;--panel:#0d1524;--ink:#e8eef6;--ink2:#aab8c8;--muted:#64748b;
 --line:#1b2740;--cyan:#57e6d4;--amber:#ffb454;
@@ -23,43 +23,42 @@ a.card span{font-family:var(--mono);font-size:.75rem;color:var(--ink2)}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
 .grid a.card{margin:0}
 </style></head><body><div class="wrap">
-<h1>The <b>32-kilobyte map</b> â€” results sites</h1>
-<p class="sub">semantic spiking-neural SLAM Â· every page self-contained, every number
-measured Â· rebuilt from tools/ in this repo</p>
+<h1>The <b>32-kilobyte map</b> — results sites</h1>
+<p class="sub">semantic spiking-neural SLAM · every page self-contained, every number
+measured · rebuilt from tools/ in this repo</p>
 
 <h2>start here</h2>
 <a class="card" href="talking_guide.html"><b>The talking guide — walk anyone through the project</b>
 <span>all datasets &amp; models tested · findings in order · honest scoreboard vs SOTA ·
 "say this" per section · open items</span></a>
-<a class="card" href="results_vs_sota.html"><b>Results vs the state of the art â€” the visual showcase</b>
-<span>live belief fields Â· playable chess &amp; classroom walks Â· two-robot time merge Â·
-4-robot merge animation Â· the Ï‡ law Â· honest limits</span></a>
-<a class="card" href="replica_truth_summary.html"><b>8-scene Replica truth run â€” the tables</b>
-<span>pooled 88.1% R@1 at 1 m (chance 18.2%) Â· per-scene stratification Â· miss taxonomy Â·
-backend &amp; joining comparisons</span></a>
+<a class="card" href="results_vs_sota.html"><b>Results vs the state of the art — the visual showcase</b>
+<span>live belief fields · playable chess &amp; classroom walks · two-robot time merge ·
+4-robot merge animation · the χ law · honest limits</span></a>
+<a class="card" href="replica_truth_summary.html"><b>8-scene Replica truth run — the tables</b>
+<span>internal-diagnostic grounding tables (see talking guide §05 for metric status) ·
+per-scene stratification · miss taxonomy · backend &amp; joining comparisons</span></a>
 
-<h2>photo inspectors â€” judge every query yourself</h2>
-<a class="card" href="cross_inspector_7scenes_chess.html"><b>7-Scenes chess Â· cross-traverse localisation</b>
-<span>memory = 4 training walks Â· queries = 2 unseen walks Â· VSA vs kNN photos on the map</span></a>
-<a class="card" href="recall_inspector.html"><b>School run &amp; classroom Â· time recall + place recall</b>
-<span>two-robot time merge with photos Â· classroom EigenPlaces battery Â· CDF header</span></a>
+<h2>photo inspectors — judge every query yourself</h2>
+<a class="card" href="cross_inspector_7scenes_chess.html"><b>7-Scenes chess · cross-traverse localisation</b>
+<span>memory = 4 training walks · queries = 2 unseen walks · VSA vs kNN photos on the map</span></a>
+<a class="card" href="recall_inspector.html"><b>School run &amp; classroom · time recall + place recall</b>
+<span>two-robot time merge with photos · classroom EigenPlaces battery · CDF header</span></a>
 
 <h2>replica belief-field inspectors (per scene)</h2>
 <div class="grid">
-<a class="card" href="grounding_inspector_room0.html"><b>room0</b><span>83% Â· the honest vase miss</span></a>
-<a class="card" href="grounding_inspector_room1.html"><b>room1</b><span>100%</span></a>
-<a class="card" href="grounding_inspector_room2.html"><b>room2</b><span>83% Â· densest scene</span></a>
-<a class="card" href="grounding_inspector_office0.html"><b>office0</b><span>83%</span></a>
-<a class="card" href="grounding_inspector_office1.html"><b>office1</b><span>100% Â· 1-observation table</span></a>
-<a class="card" href="grounding_inspector_office2.html"><b>office2</b><span>100%</span></a>
-<a class="card" href="grounding_inspector_office3.html"><b>office3</b><span>83% Â· bench &amp; clock</span></a>
-<a class="card" href="grounding_inspector_office4.html"><b>office4</b><span>80% Â· desk confusion</span></a>
+<a class="card" href="grounding_inspector_room0.html"><b>room0</b><span>the honest vase miss</span></a>
+<a class="card" href="grounding_inspector_room1.html"><b>room1</b><span>all classes grounded</span></a>
+<a class="card" href="grounding_inspector_room2.html"><b>room2</b><span>densest scene</span></a>
+<a class="card" href="grounding_inspector_office0.html"><b>office0</b><span>clock never detected</span></a>
+<a class="card" href="grounding_inspector_office1.html"><b>office1</b><span>1-observation table</span></a>
+<a class="card" href="grounding_inspector_office2.html"><b>office2</b><span>all classes grounded</span></a>
+<a class="card" href="grounding_inspector_office3.html"><b>office3</b><span>bench &amp; clock hits</span></a>
+<a class="card" href="grounding_inspector_office4.html"><b>office4</b><span>desk confusion</span></a>
 </div>
 
 <h2>background</h2>
-<a class="card" href="results_tum.html"><b>TUM fr1/desk â€” the scale-mismatch finding</b>
+<a class="card" href="results_tum.html"><b>TUM fr1/desk — the scale-mismatch finding</b>
 <span>why street-scale descriptors blur a 2.4 m desk orbit</span></a>
 <a class="card" href="cjepa_explainer.html"><b>C-JEPA explainer</b>
 <span>object-level latent masking and what we borrow from it</span></a>
 </div></body></html>
-
