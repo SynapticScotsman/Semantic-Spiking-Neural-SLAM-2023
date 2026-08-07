@@ -1,0 +1,856 @@
+<meta charset="utf-8">
+<meta name="color-scheme" content="dark light">
+<title>SSN-SLAM — the talking guide</title>
+<style>
+/* Style tokens imported from the Ecology project design system
+   (Ecology/analysis/build_combined.py + site/index.html; EventLab inherits).
+   Colour semantics, per that guide: signal magenta #FF5FD0 = the thing under
+   scrutiny (the memory's answers), truth mint #7CE0C0 = ground truth,
+   blue #3B9BFF = data/ON (the belief fields), amber = caution/clutter,
+   #05070A = instrument ground every figure sits on. */
+:root{--bg:#05070A;--bg2:#0D1319;--panel:#080C11;--ink:#E9EFF3;--ink2:#9DAEB9;
+--muted:#6C7C87;--line:#1B242C;--blue:#3B9BFF;--blue-dim:#1E4E80;--amber:#FFC65C;
+--mag:#FF5FD0;--mint:#7CE0C0;--off:#FF8C42;
+--serif:Charter,"Bitstream Charter","Sitka Text",Cambria,Georgia,serif;
+--sans:-apple-system,"Segoe UI Variable Text","Segoe UI",Roboto,system-ui,sans-serif;
+--mono:ui-monospace,"Cascadia Mono","SF Mono",Menlo,Consolas,monospace}
+:root[data-theme="light"]{--bg:#F3F5F7;--bg2:#FFFFFF;--panel:#E9EDF0;
+--ink:#0D1418;--ink2:#48585F;--muted:#7A8994;--line:#D6DEE4;--blue:#1668C4;
+--blue-dim:#9FC2E8;--amber:#8A5F0A;--mag:#AC1D88;--mint:#17836A;--off:#BF5814}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 var(--sans)}
+.wrap{max-width:1020px;margin:0 auto;padding:0 22px}
+.mono{font-family:var(--mono)}
+header{border-bottom:1px solid var(--line);background:var(--bg2);position:relative;
+overflow:hidden}
+#heroCv{position:absolute;inset:0;width:100%;height:100%;opacity:.6}
+.headInner{position:relative;padding:46px 0 38px;
+background:linear-gradient(to top,var(--bg2) 18%,transparent 90%)}
+.kicker{font-family:var(--mono);font-size:.72rem;letter-spacing:.22em;
+text-transform:uppercase;color:var(--blue);margin:0 0 14px}
+h1{font-family:var(--serif);font-weight:600;font-size:clamp(1.7rem,4.4vw,2.7rem);
+line-height:1.14;margin:0 0 14px;letter-spacing:-.015em;max-width:24ch;text-wrap:balance}
+h1 b{color:var(--blue);font-style:italic}
+.lede{color:var(--ink2);max-width:76ch;margin:0}
+nav{font-family:var(--mono);font-size:.72rem;letter-spacing:.05em;margin-top:22px;
+display:flex;flex-wrap:wrap;gap:7px}
+nav a{color:var(--ink2);text-decoration:none;border:1px solid var(--line);
+border-radius:99px;padding:3px 11px;background:var(--bg2)}
+nav a:hover{color:var(--blue);border-color:var(--blue)}
+#heroCls{position:absolute;top:18px;right:20px;font-family:var(--mono);
+font-size:.75rem;color:var(--blue);letter-spacing:.12em;text-transform:uppercase;
+border:1px solid var(--blue-dim);border-radius:99px;padding:3px 13px;
+background:var(--bg2);z-index:2}
+section{padding:44px 0;border-bottom:1px solid var(--line)}
+.secHead{display:flex;align-items:baseline;gap:16px;margin-bottom:6px}
+.dial{font-family:var(--mono);color:var(--blue);font-size:.95rem;white-space:nowrap}
+h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.3rem,2.8vw,1.85rem);
+margin:0;letter-spacing:-.01em;text-wrap:balance}
+h3{font-family:var(--serif);font-weight:600;font-size:1.05rem;margin:22px 0 8px}
+.prose{color:var(--ink2);max-width:78ch}
+.say{border-left:3px solid var(--blue);padding:10px 16px;margin:18px 0;
+background:var(--panel);border-radius:0 10px 10px 0;max-width:74ch}
+.say .tag{font-family:var(--mono);font-size:.68rem;letter-spacing:.18em;
+text-transform:uppercase;color:var(--blue);display:block;margin-bottom:4px}
+.say p{margin:0;font-style:italic;color:var(--ink);font-family:var(--serif)}
+.card,.pane{background:var(--bg2);border:1px solid var(--line);border-radius:13px;
+padding:15px 17px;margin:16px 0;overflow-x:auto}
+table{border-collapse:collapse;font-size:.87rem;font-variant-numeric:tabular-nums;
+min-width:660px;width:100%}
+th,td{text-align:left;padding:7px 11px;border-bottom:1px solid var(--line);
+vertical-align:top}
+th{font-family:var(--mono);font-size:.69rem;letter-spacing:.08em;
+text-transform:uppercase;color:var(--muted)}
+td.num{font-family:var(--mono);font-size:.83rem}
+.us td{background:color-mix(in srgb,var(--blue) 7%,transparent)}
+.pill{display:inline-block;border-radius:99px;padding:0 9px;font-family:var(--mono);
+font-size:.65rem;font-weight:700;letter-spacing:.05em;vertical-align:middle}
+.pill.same{background:color-mix(in srgb,var(--mint) 16%,transparent);color:var(--mint)}
+.pill.ctx{background:color-mix(in srgb,var(--amber) 16%,transparent);color:var(--amber)}
+.pill.diag{background:color-mix(in srgb,var(--off) 16%,transparent);color:var(--off)}
+.pill.done{background:color-mix(in srgb,var(--blue) 14%,transparent);color:var(--blue)}
+.pill.open{background:color-mix(in srgb,var(--muted) 22%,transparent);color:var(--ink2)}
+.statgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));
+gap:12px;margin:18px 0 0}
+.stat{border-left:2px solid var(--blue-dim);padding-left:12px}
+.stat b{font-family:var(--mono);font-size:1.5rem;color:var(--blue);display:block;
+line-height:1.15}
+.stat span{font-family:var(--mono);font-size:.7rem;color:var(--muted)}
+canvas{display:block;width:100%;border-radius:9px;background:var(--panel)}
+.ctrl{display:flex;gap:10px;align-items:center;margin:10px 0 2px;flex-wrap:wrap}
+.btn{background:var(--panel);color:var(--ink);border:1px solid var(--line);
+border-radius:8px;padding:6px 14px;font-family:var(--mono);font-size:.78rem;
+cursor:pointer}
+.btn:hover{border-color:var(--blue)}
+.btn.on{background:var(--blue);color:#fff;border-color:var(--blue);font-weight:700}
+input[type=range]{flex:1;min-width:120px;accent-color:var(--blue)}
+.grid2{display:grid;grid-template-columns:1.22fr 1fr;gap:18px;align-items:start}
+@media (max-width:840px){.grid2{grid-template-columns:1fr}}
+.photos{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.photos.two{grid-template-columns:1fr 1fr}
+.ph{text-align:center}
+.ph img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;
+background:#05070A}
+.ph.q img{border-color:var(--blue)}
+.ph.a img{border-color:var(--mag)}
+.ph figcaption{font-family:var(--mono);font-size:.66rem;color:var(--muted);
+margin-top:5px;letter-spacing:.04em}
+.readout{font-family:var(--mono);font-size:.8rem;color:var(--muted)}
+.bignum{font-family:var(--mono);font-size:clamp(1.7rem,4.4vw,2.6rem);
+color:var(--blue);line-height:1.05}
+.bignum small{font-size:.4em;color:var(--muted);letter-spacing:.1em}
+.legend{font-family:var(--mono);font-size:.68rem;color:var(--muted);
+letter-spacing:.03em;margin-top:8px}
+.lg-bl{color:var(--blue)}.lg-mi{color:var(--mint)}.lg-mg{color:var(--mag)}
+.lg-am{color:var(--amber)}.lg-of{color:var(--off)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 0}
+.chip{font-family:var(--mono);font-size:.68rem;letter-spacing:.05em;padding:3px 10px;
+border:1px solid var(--line);border-radius:99px;cursor:pointer;color:var(--ink2)}
+.chip.on{border-color:var(--blue);color:var(--blue)}
+.chip.miss{border-color:var(--off);color:var(--off)}
+.thumbs{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+gap:10px;margin-top:14px}
+.thumbs figure{margin:0;text-align:center}
+.thumbs img{width:100%;border-radius:8px;border:1px solid var(--line);display:block}
+.thumbs figcaption{font-family:var(--mono);font-size:.66rem;color:var(--muted);
+margin-top:4px}
+.failgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+gap:14px;margin-top:14px}
+.fail{background:var(--bg2);border:1px solid var(--line);border-left:3px solid var(--off);
+border-radius:11px;padding:12px}
+.fail .fhead{font-family:var(--mono);font-size:.72rem;color:var(--off);
+letter-spacing:.06em;margin-bottom:8px}
+.fail .fpair{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.fail p{font-size:.83rem;color:var(--ink2);margin:8px 0 0}
+.timeline{list-style:none;margin:16px 0 0;padding:0;position:relative}
+.timeline:before{content:"";position:absolute;left:7px;top:6px;bottom:6px;
+width:2px;background:var(--line)}
+.timeline li{position:relative;padding:0 0 16px 30px}
+.timeline li:before{content:"";position:absolute;left:1px;top:6px;width:11px;
+height:11px;border-radius:50%;background:var(--bg);border:2.5px solid var(--blue)}
+.timeline li.warn:before{border-color:var(--amber)}
+.timeline b{color:var(--ink)}
+.timeline .when{font-family:var(--mono);font-size:.68rem;color:var(--muted);
+letter-spacing:.08em;text-transform:uppercase}
+.timeline p{margin:2px 0 0;color:var(--ink2);max-width:72ch;font-size:.93rem}
+ul.limits{max-width:78ch;padding-left:22px}
+ul.limits li{margin:8px 0;color:var(--ink2)}
+ul.limits b{color:var(--ink)}
+.claim{font-family:var(--serif);font-size:clamp(1.1rem,2.5vw,1.5rem);
+line-height:1.5;max-width:36em;font-style:italic;color:var(--ink)}
+.claim b{color:var(--blue);font-style:normal}
+a{color:var(--blue)}
+.links{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:10px}
+.links a{display:block;background:var(--panel);border:1px solid var(--line);
+border-radius:11px;padding:11px 14px;text-decoration:none;color:var(--ink)}
+.links a:hover{border-color:var(--blue)}
+.links b{display:block;font-size:.93rem}
+.links span{font-family:var(--mono);font-size:.68rem;color:var(--muted)}
+footer{padding:28px 0 60px;color:var(--muted);font-family:var(--mono);font-size:.74rem}
+</style>
+
+<header>
+<canvas id="heroCv"></canvas>
+<div id="heroCls" class="mono">query: —</div>
+<div class="headInner"><div class="wrap">
+<p class="kicker">semantic spiking-neural slam · talking guide · august 2026</p>
+<h1>One vector that remembers <b>what, where and when</b> — shown working, shown failing</h1>
+<p class="lede">The banner behind this text is live: real belief fields decoded from the
+room0 trace, cycling class by class. Every section below pairs the talk track with the
+actual system running — playable walks, real photos, the honest failure gallery — plus
+the tables you'll be asked about.</p>
+<nav>
+<a href="#frame">frame</a><a href="#data">datasets</a><a href="#work1">localise</a>
+<a href="#work2">ground</a><a href="#work3">remember</a><a href="#work4">merge</a>
+<a href="#law">the law</a><a href="#score">scoreboard</a><a href="#fails">failures</a>
+<a href="#models">models</a><a href="#arcs">history</a><a href="#next">open</a>
+<a href="#sites">deep dives</a>
+<a href="#" onclick="var r=document.documentElement,c=r.getAttribute('data-theme')||'dark';r.setAttribute('data-theme',c==='dark'?'light':'dark');return false">dark / light</a>
+</nav>
+</div></div>
+</header>
+<main>
+
+<section id="frame"><div class="wrap">
+<div class="secHead"><span class="dial">01 ·</span><h2>The frame — what this project actually claims</h2></div>
+<p class="prose">Every observation is <i>bound</i> to a grid-cell-style position code and
+<i>added</i> into one 4096-dimensional phasor vector. The map never grows; updating is one
+addition; merging robots is one addition; unbinding a concept renders a belief field over
+the floor. We do <b>not</b> claim better accuracy than the state of the art — we claim a
+measured trade: ~1000× less memory at the accuracy ceiling of our own perception, plus
+capabilities (exact merge, one algebra for what/where/when) no established map has.</p>
+<div class="say"><span class="tag">say this</span><p>"VSAs are the algebraic composition
+layer for robotic memory: constant size, one-add updates, exact merging — and we measured
+that it costs essentially nothing against the perception we feed it."</p></div>
+<div class="statgrid">
+<div class="stat"><b>12</b><span>datasets/scenes tested end-to-end</span></div>
+<div class="stat"><b>7</b><span>vision models compared as frontends</span></div>
+<div class="stat"><b>32 KB</b><span>map state, constant in observations</span></div>
+<div class="stat"><b>10⁻¹²</b><span>merge error, 4 robots, zero association</span></div>
+</div>
+</div></section>
+
+<section id="data"><div class="wrap">
+<div class="secHead"><span class="dial">02 ·</span><h2>The data — real frames from every source we tested</h2></div>
+<div class="thumbs" id="thumbStrip"></div>
+<div class="card"><table>
+<thead><tr><th>dataset</th><th>scale</th><th>why it's in</th><th>headline outcome</th></tr></thead>
+<tbody>
+<tr><td><b>Classroom</b> (Spot robot)</td><td class="num">2,478 frames · 6.9 m</td><td>real robot, real odometry — development scene</td><td>conditioning rescue: raw 3.12 m → z-scored 0.35 m (seed-0; 0.84 m over 5 seeds)</td></tr>
+<tr><td><b>school_run1</b></td><td class="num">11,211 frames · 455 s</td><td>10× scale; positions void → honest TIME testbed</td><td>episodic recall + exact two-robot time merge (117/117)</td></tr>
+<tr><td><b>TUM fr1/desk</b></td><td class="num">613 frames · 2.4 m</td><td>public RGB-D; desk-scale stress test</td><td>honest negative: street-trained descriptors blur the desk (see failures)</td></tr>
+<tr class="us"><td><b>7-Scenes chess</b></td><td class="num">4k train + 2k test</td><td>THE relocalisation benchmark, official split</td><td>0.36 m median from 32 KB vs 0.29 m ceiling from 33 MB</td></tr>
+<tr class="us"><td><b>Replica ×8</b></td><td class="num">16k frames · ~50k detections</td><td>the scene-graph community's benchmark</td><td>grounding at perception ceiling, 0 memory-attributable misses</td></tr>
+<tr><td><b>Synthetic</b></td><td class="num">N → 10⁶</td><td>controlled dials for the capacity law</td><td>χ(N) law, out-of-sample prediction to 1.4%</td></tr>
+</tbody></table></div>
+</div></section>
+
+<section id="work1"><div class="wrap">
+<div class="secHead"><span class="dial">03 ·</span><h2>Working: localise — a route the memory never saw</h2></div>
+<p class="prose">7-Scenes chess. Memory = the 4 official training walks in one 32 KB
+trace; queries = the 2 official test walks. Press play: <i class="lg-mi">mint ring</i> =
+where the camera truly is, <i class="lg-mg">magenta cross</i> = the memory's answer,
+photos update live.</p>
+<div class="grid2">
+<div class="pane">
+<canvas id="chessCv" height="330"></canvas>
+<div class="ctrl">
+<button id="chPlay" class="btn">&#9654; play walk</button>
+<input id="chSl" type="range" min="0" max="0" value="0" step="1">
+<span class="readout" id="chLbl"></span>
+</div>
+<p class="legend">grey <i>training walks</i> · <i class="lg-mi">◯ truth</i> ·
+<i class="lg-mg">✕ memory answer</i> · trail fades with time</p>
+</div>
+<div class="pane">
+<div class="photos">
+<figure class="ph q"><img id="chQ"><figcaption>query view (held-out walk)</figcaption></figure>
+<figure class="ph a"><img id="chA"><figcaption>VSA answer's stored frame</figcaption></figure>
+<figure class="ph"><img id="chN"><figcaption>kNN (33 MB database)</figcaption></figure>
+</div>
+<div class="statgrid">
+<div class="stat"><div class="bignum" id="chErr">—</div><div class="readout">this query's error · battery median 0.27 m</div></div>
+<div class="stat"><div class="bignum">0.36<small> M</small></div><div class="readout">full-battery 3D median · DenseVLAD 0.21 · our kNN ceiling 0.29</div></div>
+</div>
+<canvas id="sizeCv" height="120" style="margin-top:14px"></canvas>
+<p class="legend">map bytes, log scale — the trace is the dot you can barely see</p>
+</div>
+</div>
+<div class="grid2" style="margin-top:16px">
+<div class="pane">
+<canvas id="clsCv" height="270"></canvas>
+<div class="ctrl">
+<button id="clPlay" class="btn">&#9654; play</button>
+<input id="clSl" type="range" min="0" max="0" value="0" step="1">
+<span class="readout" id="clLbl"></span>
+</div>
+<p class="legend">real robot (Spot, classroom) · <i class="lg-mi">◯ truth</i> ·
+<i class="lg-mg">✕ answer</i></p>
+</div>
+<div>
+<h3>…and on a real robot's own camera</h3>
+<p class="prose" style="font-size:.94rem">Same memory, messier world. The conditioning
+result lives here: <b>raw descriptors decode at 3.12 m; subtract the mean, divide by the
+standard deviation — nothing else — and the same trace decodes at 0.35 m</b> (seed-0
+battery; 0.84 m across 5 seeds, both always quoted). That is §07's law acting, live.</p>
+<div class="photos two">
+<figure class="ph q"><img id="clQ"><figcaption>held-out query view</figcaption></figure>
+<figure class="ph a"><img id="clA"><figcaption>stored frame at the decoded spot</figcaption></figure>
+</div>
+</div>
+</div>
+<div class="say"><span class="tag">say this</span><p>"The memory sits 0.07 m from exact
+search over its own descriptors, from one-thousandth of the bytes — and the readout is a
+field, so you can see its uncertainty rather than trust an argmax."</p></div>
+</div></section>
+
+<section id="work2"><div class="wrap">
+<div class="secHead"><span class="dial">04 ·</span><h2>Working: ground — "where is the couch?" as a belief field</h2></div>
+<p class="prose">Replica, all 8 scenes, scored against real ground truth. Pick a class:
+its field renders live from that scene's single trace. <i class="lg-mi">Mint squares</i>
+are ground-truth instances, <i class="lg-mg">crosses</i> the field's top-3 peaks. Classes
+in <i class="lg-of">orange</i> are the misses — shown, not hidden.</p>
+<div id="gallery" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:16px;margin-top:14px"></div>
+<div class="grid2" style="margin-top:16px">
+<div class="pane" id="missPane">
+<div class="photos two">
+<figure class="ph q"><img id="msQ"><figcaption id="msQc"></figcaption></figure>
+<figure class="ph a"><img id="msA"><figcaption id="msAc"></figcaption></figure>
+</div>
+</div>
+<div class="statgrid" style="align-content:center">
+<div class="stat"><div class="bignum" style="color:var(--mint)">0</div><div class="readout">misses attributable to the memory across 42 GT classes (5 misses total — all perception; see failures)</div></div>
+<div class="stat"><div class="bignum">≈ tie</div><div class="readout">VSA trace vs explicit instance list vs raw store — the memory gives nothing away to its own perception ceiling</div></div>
+</div>
+</div>
+<div class="say"><span class="tag">say this</span><p>"One unbinding renders the whole
+map for a concept. The memory stores queryable fields, not answer lists — argmax is just
+a readout, and its uncertainty stays visible."</p></div>
+</div></section>
+
+<section id="work3"><div class="wrap">
+<div class="secHead"><span class="dial">05 ·</span><h2>Working: remember when — two robots' clocks, added</h2></div>
+<p class="prose">The same algebra with time instead of position, on the 11,211-frame
+school walk. Robot A holds the first half, robot B the second; added, they answer like a
+robot that walked all of it — and you can check each answer's photo yourself.</p>
+<div class="grid2">
+<div class="pane">
+<canvas id="schCv" height="170"></canvas>
+<div class="ctrl">
+<button id="scPlay" class="btn">&#9654; play</button>
+<input id="scSl" type="range" min="0" max="0" value="0" step="1">
+<span class="readout" id="scLbl"></span>
+</div>
+<p class="legend"><i class="lg-bl">■ robot A's era</i> · <i class="lg-am">■ robot B's
+era</i> · marks: <i class="lg-mi">truth</i> / <i class="lg-mg">merged answer</i> /
+<i style="color:var(--muted)">A · B alone</i></p>
+<div class="statgrid" style="margin-top:12px">
+<div class="stat"><div class="bignum">10<small>−15</small></div><div class="readout">|merged − joint| over 4096 dims</div></div>
+<div class="stat"><div class="bignum" id="scIdent">—</div><div class="readout">identical answers, merged vs jointly-built</div></div>
+</div>
+</div>
+<div class="photos two">
+<figure class="ph q"><img id="scQ"><figcaption id="scQc">query view</figcaption></figure>
+<figure class="ph a"><img id="scM"><figcaption id="scMc">merged memory's answer</figcaption></figure>
+<figure class="ph"><img id="scA"><figcaption id="scAc">robot A alone</figcaption></figure>
+<figure class="ph"><img id="scB"><figcaption id="scBc">robot B alone</figcaption></figure>
+</div>
+</div>
+</div></section>
+
+<section id="work4"><div class="wrap">
+<div class="secHead"><span class="dial">06 ·</span><h2>Working: merge — four robots, one addition</h2></div>
+<p class="prose">Each robot maps a quarter of the walk alone. Scene-graph systems now
+face "is your chair my chair?" — 622 association decisions across our 8-scene test, wrong
+ones costing up to 16 points. Watch our merge instead:</p>
+<div class="grid2">
+<div class="pane">
+<canvas id="mergeCv" height="330"></canvas>
+<div class="ctrl"><button id="mgBtn" class="btn">&#9654; run the merge</button>
+<span class="readout" id="mgLbl">four traces, built independently</span></div>
+</div>
+<div>
+<div class="statgrid">
+<div class="stat"><div class="bignum">Σ</div><div class="readout">the entire merge algorithm: element-wise addition of four 32 KB vectors</div></div>
+<div class="stat"><div class="bignum">89<small>%</small></div><div class="readout">mean truth-score after merge (worst 80%) vs associative merge 84% (worst 67%)</div></div>
+<div class="stat"><div class="bignum" style="color:var(--mint)">0</div><div class="readout">association decisions (theirs: 622)</div></div>
+</div>
+<canvas id="bwCv" height="130" style="margin-top:16px"></canvas>
+<p class="legend">inter-robot bandwidth to merge, log scale — Kimera-Multi vs one trace each</p>
+</div>
+</div>
+<div class="say"><span class="tag">say this</span><p>"Their merge is an algorithm; ours
+is an arithmetic operation. The association-based merge lost 16 points on its worst scene
+to wrong matches; ours cannot make a wrong match."</p></div>
+</div></section>
+
+<section id="law"><div class="wrap">
+<div class="secHead"><span class="dial">07 ·</span><h2>The law underneath — real sweep data, three regimes</h2></div>
+<p class="prose">Crosstalk χ(N) on controlled synthetic geometry to a million stored
+items. The <i class="lg-of">mean term never bends</i> — kill it (centring) or scatter it
+(key diversity) or it kills you. Clean content rides the <i class="lg-bl">√N floor</i>;
+persistent correlation bumps then √-reverts. The quadrature prefactor predicted a held-out
+cell to <span class="mono" style="color:var(--blue)">1.4%</span> — and it called the
+class-imbalance failure in §04 and its fix in advance.</p>
+<div class="pane"><canvas id="chiCv" height="340"></canvas>
+<p class="legend"><i class="lg-of">■ mean-dominated</i> · <i class="lg-bl">■ isotropic
+floor</i> · <i class="lg-am">■ persistent correlation</i> ·
+<i style="color:var(--ink2)">■ low-rank content</i> · log–log, χ vs items stored</p></div>
+<div class="say"><span class="tag">say this</span><p>"We can tell you before deployment
+how much a given encoder, scene and duration will crosstalk — the law has already called
+two real failures in advance."</p></div>
+</div></section>
+
+<section id="score"><div class="wrap">
+<div class="secHead"><span class="dial">08 ·</span><h2>The scoreboard — every comparison class labelled</h2></div>
+<h3>Relocalisation · 7-Scenes chess <span class="pill same">SAME DATA &amp; METRIC</span></h3>
+<div class="card"><table>
+<thead><tr><th>system</th><th>map size</th><th>3D median</th><th>note</th></tr></thead>
+<tbody>
+<tr><td>DSAC* / ACE (cited)</td><td class="num">4–28 MB</td><td class="num">~0.02 m</td><td>geometry class: per-scene GPU training, no update/merge</td></tr>
+<tr><td>DenseVLAD (published, same split)</td><td class="num">10s MB</td><td class="num">0.21 m</td><td>retrieval SOTA anchor</td></tr>
+<tr><td>kNN on EigenPlaces (ours)</td><td class="num">32.8 MB</td><td class="num">0.29 m</td><td>exact search = our frontend's ceiling</td></tr>
+<tr><td>PQ database (ours)</td><td class="num">2.1 MB</td><td class="num">0.29 m</td><td>codebook alone is 2 MB — nothing classical exists at 32 KB</td></tr>
+<tr class="us"><td><b>VSA trace</b></td><td class="num"><b>32 KB</b></td><td class="num"><b>0.36 m</b></td><td>0.07 m from ceiling at 1/1000th the bytes</td></tr>
+</tbody></table></div>
+<h3>Semantics · Replica ×8 <span class="pill same">SAME DATA</span> <span class="pill ctx">THEIR METRIC PENDING</span></h3>
+<div class="card"><table>
+<thead><tr><th>system</th><th>metric</th><th>score</th><th>status</th></tr></thead>
+<tbody>
+<tr><td>ConceptFusion / HOV-SG / ConceptGraphs / KeySG</td><td>dense seg. mAcc (their eval)</td><td class="num">24.2 / 38.1 / 40.6 / 45.8</td><td>published; label error is the field's bottleneck</td></tr>
+<tr><td>ConceptGraphs query eval</td><td>R@1 (their protocol)</td><td class="num">0.59</td><td>the protocol class our use case matches</td></tr>
+<tr class="us"><td><b>VSA trace</b></td><td>their mAcc/F-mIoU, their scorer</td><td class="num">pending student run</td><td>package shipped &amp; smoke-tested; pre-registered: all-classes mAcc will be low (an object memory can't label walls) — and we say so</td></tr>
+<tr><td>VSA internal diagnostic <span class="pill diag">NOT COMPARABLE</span></td><td>grounding within 1 m (bespoke)</td><td class="num">88% pooled · chance 18%</td><td>diagnostic only, demoted per the no-invented-metrics rule</td></tr>
+</tbody></table></div>
+<h3>Map merging · measured head-to-head <span class="pill same">SAME OBSERVATIONS</span></h3>
+<div class="card"><table>
+<thead><tr><th>join method</th><th>mean / worst</th><th>assoc.</th><th>bytes/robot</th><th>exactness</th></tr></thead>
+<tbody>
+<tr class="us"><td><b>VSA + addition</b></td><td class="num"><b>89% / 80%</b></td><td class="num"><b>0</b></td><td class="num">32 KB</td><td class="num">~10⁻¹²</td></tr>
+<tr><td>instance lists + association</td><td class="num">84% / 67%</td><td class="num">622</td><td class="num">0.3 KB</td><td>3–8 classes drift/scene</td></tr>
+<tr><td>count grids + addition</td><td class="num">82% / 67%</td><td class="num">0</td><td class="num">~95 KB</td><td>exact, quantised</td></tr>
+<tr><td>raw union</td><td class="num">85% / 60%</td><td class="num">0</td><td class="num">grows</td><td>exact, unbounded</td></tr>
+</tbody></table>
+<p class="prose" style="font-size:.9rem">Field scale bar: Kimera-Multi exchanges
+24–146 MB per experiment for an optimiser's estimate; our robots exchange one 32 KB
+vector, once, for a bit-identical result.</p></div>
+</div></section>
+
+<section id="fails"><div class="wrap">
+<div class="secHead"><span class="dial">09 ·</span><h2>Where it fails — the actual pictures</h2></div>
+<p class="prose">Every truth-scored miss across the 8 Replica scenes, with the photos.
+The pattern is the finding: <b>the memory never misplaced a correctly-observed instance —
+every miss happens before the memory</b> (a detector mislabel, a never-seen class, a
+depth error through glass). Plus the TUM negative: a street-trained place descriptor
+cannot separate views of a 2.4 m desk.</p>
+<div class="failgrid" id="failGrid"></div>
+<div class="say"><span class="tag">say this</span><p>"A wrong location from the trace is
+almost always a right memory of a wrong perception. When the observations are correct,
+recall lands within centimetres — so the fix lives in the frontend, and the memory is not
+the risk item."</p></div>
+</div></section>
+
+<section id="models"><div class="wrap">
+<div class="secHead"><span class="dial">10 ·</span><h2>Models compared — conditioning beats size</h2></div>
+<div class="card"><table>
+<thead><tr><th>model</th><th>role</th><th>what we learned</th></tr></thead>
+<tbody>
+<tr><td><b>YOLOv8n</b></td><td>detector + crops</td><td>the semantic bottleneck — every grounding miss traces to it, none to the memory</td></tr>
+<tr><td><b>DINOv2-small</b></td><td>object content</td><td>best crops (0.769 class retrieval); whitening multiplier 8.1× (19.9× on YOLO — never quote one without its encoder)</td></tr>
+<tr><td><b>ResNet50 / untrained</b></td><td>encoder ladder</td><td>separates learning from architecture; untrained ≈ YOLO-level geometry</td></tr>
+<tr><td><b>SigReg (LeJEPA)</b></td><td>isotropy-trained student line</td><td>train-the-encoder-for-the-algebra direction</td></tr>
+<tr class="us"><td><b>EigenPlaces</b></td><td>place content</td><td>the frontend swap: classroom ceiling 0.78→0.43 m; made yaw-binding redundant-then-harmful (substitution law); desk-scale limit found on TUM</td></tr>
+<tr><td><b>CLIP ViT-B/32</b></td><td>independent second labeler</td><td>killed the phantom classes; relabels crops into ConceptGraphs' vocabulary for the same-metric test</td></tr>
+<tr><td><b>C-JEPA</b> (cited)</td><td>conceptual input</td><td>object-level masking supports granularity-matches-query; identity anchor = additive binding</td></tr>
+</tbody></table></div>
+</div></section>
+
+<section id="arcs"><div class="wrap">
+<div class="secHead"><span class="dial">11 ·</span><h2>How we got here — eight arcs, in order</h2></div>
+<ul class="timeline">
+<li><span class="when">arc 1</span><br><b>Centre, don't whiten — scoped.</b><p>Mean-removal
+carries 40–83% of whitening's benefit by encoder; whitening catastrophic on the classroom
+(−47.6%, 5 seeds), neutral on chess. Claims scoped, never universal.</p></li>
+<li><span class="when">arc 2</span><br><b>The capacity law.</b><p>χ(N) = a<sub>μ</sub>N +
+√N·√(α/PR + γ/hd)·h(N,τ); held-out prediction 1.4%; explains the encoder-independent
+whitened floor; persistence √-reverts to √(1+τ/τ₀).</p></li>
+<li><span class="when">arc 3</span><br><b>Key diversity ↔ conditioning are substitutes.</b>
+<p>Yaw-binding rescued bad content on TUM, hurt good content on the classroom
+(0.35→1.00 m), mildly helped chess's orbit tail — trajectory-dependent, as predicted.</p></li>
+<li><span class="when">arc 4</span><br><b>The frontend verdict.</b><p>EigenPlaces lifted
+the classroom ceiling 0.78→0.43 m; the VSA followed to 0.35 m — the memory tracks its
+ceiling.</p></li>
+<li><span class="when">arc 5</span><br><b>Dual granularity, measured both ways.</b>
+<p>Objects: crops 0.769 vs place-vectors 0.429. Places: crops 0.96 m vs EigenPlaces
+0.35 m. Each wins its own task; both coexist in one trace.</p></li>
+<li><span class="when">arc 6</span><br><b>Public benchmarks.</b><p>Chess 0.36 m at 32 KB;
+Replica grounding at the perception ceiling on all 8 scenes; bounded insertion fixed the
+imbalance failure the law predicted.</p></li>
+<li><span class="when">arc 7</span><br><b>Merge = addition beats merge = association.</b>
+<p>89%/0-decisions vs 84%/622-decisions; survey: bundling as between-robot map merge
+appears novel; shared-frame caveat always attached.</p></li>
+<li class="warn"><span class="when">arc 8</span><br><b>The metric correction.</b><p>"Don't
+invent metrics" — bespoke grounding numbers demoted to diagnostics; the student package
+scores both systems under ConceptGraphs' own eval, honest expectation pre-registered.</p></li>
+</ul>
+</div></section>
+
+<section id="limits"><div class="wrap">
+<div class="secHead"><span class="dial">12 ·</span><h2>What we do not claim — say these first</h2></div>
+<ul class="limits">
+<li><b>Not SOTA accuracy anywhere.</b> DSAC* is 10× better at relocalisation; SAM
+pipelines label scenes we cannot. The claim is the trade, not the crown.</li>
+<li><b>Perception-bound.</b> The failure gallery above is the frontend's, top to bottom.</li>
+<li><b>Vocabulary-bound.</b> COCO-80 sees 9–31% of Replica's GT instances.</li>
+<li><b>Shared frame assumed.</b> Alignment remains the classical problem; frame-recovery
+robustness study queued.</li>
+<li><b>Bounded capacity, characterised.</b> Beyond the law's crossover, databases win.</li>
+<li><b>Seed honesty.</b> 0.35 m (seed-0) and 0.84 m (5-seed) travel together.</li>
+</ul>
+<p class="claim" style="margin-top:28px">A fixed-size vector memory that <b>reaches the
+accuracy ceiling of its own perception</b> on public benchmarks — ~1000× smaller than the
+database it replaces, updated in one addition, merged bit-exactly with <b>zero data
+association</b>, answering <b>where, what and when</b> in a single algebra.</p>
+</div></section>
+
+<section id="next"><div class="wrap">
+<div class="secHead"><span class="dial">13 ·</span><h2>Open items — whose move</h2></div>
+<div class="card"><table>
+<thead><tr><th>item</th><th>status</th><th>whose move</th></tr></thead>
+<tbody>
+<tr><td>ConceptGraphs head-to-head under THEIR metric</td><td><span class="pill done">PACKAGE SHIPPED</span> 6 self-checking stages, VRAM-aware, self-collecting data</td><td>student (GPU)</td></tr>
+<tr><td>χ-law constants derivation + real-cell closure (T1)</td><td><span class="pill open">STRUCTURE PINNED</span></td><td>Claude/Paul</td></tr>
+<tr><td>frame-recovery robustness · K-scaling merge · T5 write-up</td><td><span class="pill open">QUEUED</span></td><td>Claude</td></tr>
+<tr><td>D1a workshop · <b>D2 authorship (blocking prose)</b> · D3 · D4</td><td><span class="pill open">DECISIONS</span></td><td><b>Paul</b></td></tr>
+</tbody></table></div>
+</div></section>
+
+<section id="sites"><div class="wrap">
+<div class="secHead"><span class="dial">14 ·</span><h2>Deep dives</h2></div>
+<div class="links" style="margin-top:14px">
+<a href="results_vs_sota.html"><b>The visual showcase</b><span>the standalone demo page</span></a>
+<a href="replica_truth_summary.html"><b>8-scene tables</b><span>stratified · chance-anchored · miss taxonomy</span></a>
+<a href="cross_inspector_7scenes_chess.html"><b>Chess inspector</b><span>every held-out query as photos</span></a>
+<a href="recall_inspector.html"><b>School + classroom</b><span>time merge &amp; place recall</span></a>
+<a href="grounding_inspector_room0.html"><b>room0 fields</b><span>incl. the honest vase miss</span></a>
+<a href="results_tum.html"><b>TUM finding</b><span>the scale-mismatch negative in full</span></a>
+</div>
+</div></section>
+</main>
+<footer><div class="wrap">style tokens imported from the Ecology project design system
+(EventLab inherits the same guide) · cited numbers: 7-Scenes (arXiv:1903.07504 and
+successors) · Replica mAcc (ConceptGraphs, OSMa-Bench, KeySG) · bandwidth (Kimera-Multi
+T-RO'22, DOOR-SLAM RA-L'20) · provenance: wiki tracker entries a–be · rebuild:
+python tools/build_results_showcase.py</footer>
+
+<script id="payload" type="application/json">__PAYLOAD__</script>
+<script>
+(function(){"use strict";
+var D=JSON.parse(document.getElementById("payload").textContent);
+/* Ecology palette in JS space: blue=data, mint=truth, magenta=answer */
+var BLUE=[59,155,255],MINT=[124,224,192],MG=[255,95,208],AMB=[255,198,92],
+OFF=[255,140,66];
+var reduced=matchMedia("(prefers-reduced-motion: reduce)").matches;
+function fit(cv,h){var dpr=Math.min(devicePixelRatio||1,2);
+var w=cv.clientWidth||cv.parentNode.clientWidth||600;
+cv.width=w*dpr;cv.height=h*dpr;var g=cv.getContext("2d");
+g.setTransform(dpr,0,0,dpr,0,0);return{g:g,w:w,h:h}}
+function mapper(ext,w,h,pad){var sx=(w-2*pad)/(ext[1]-ext[0]),
+sy=(h-2*pad)/(ext[3]-ext[2]),s=Math.min(sx,sy);
+var ox=(w-s*(ext[1]-ext[0]))/2,oy=(h-s*(ext[3]-ext[2]))/2;
+return function(x,y){return[ox+(x-ext[0])*s,h-(oy+(y-ext[2])*s)]}}
+function panelFill(){return getComputedStyle(document.documentElement)
+.getPropertyValue("--panel").trim()||"#080C11"}
+function drawField(g,field,grid,ext,T,t,rgb){
+var i,j,v,a,p;rgb=rgb||BLUE;
+var cw=(ext[1]-ext[0])/(grid-1),ch=(ext[3]-ext[2])/(grid-1);
+var p2=T(ext[0]+cw,ext[2]+ch),p0=T(ext[0],ext[2]);
+for(j=0;j<grid;j++)for(i=0;i<grid;i++){
+v=field[j*grid+i]/255;if(v<0.3)continue;
+a=Math.pow((v-0.3)/0.7,1.7);
+if(t!==undefined)a*=0.75+0.25*Math.sin(t*0.0022+i*0.35+j*0.21);
+p=T(ext[0]+i*cw,ext[2]+j*ch);
+g.fillStyle="rgba("+rgb[0]+","+rgb[1]+","+rgb[2]+","+(a*0.85).toFixed(3)+")";
+g.fillRect(p[0]-(p2[0]-p0[0])/2,p[1]-(p0[1]-p2[1])/2,(p2[0]-p0[0])+0.5,(p0[1]-p2[1])+0.5)}}
+function truthSquares(g,T,pts){if(!pts)return;
+pts.forEach(function(q){var t=T(q[0],q[1]);
+g.fillStyle="rgba("+MINT.join(",")+",.95)";g.fillRect(t[0]-5,t[1]-5,10,10);
+g.strokeStyle="rgba(0,0,0,.5)";g.lineWidth=1.2;g.strokeRect(t[0]-5,t[1]-5,10,10)})}
+/* ---------- hero: cycling belief fields ---------- */
+(function(){
+var cv=document.getElementById("heroCv");if(!cv)return;
+var tag=document.getElementById("heroCls");
+var sc=D.gallery[0],t0=performance.now(),last=-1;
+function frame(now){
+var c=fit(cv,cv.parentNode.clientHeight||360),g=c.g;
+g.clearRect(0,0,c.w,c.h);
+var T=mapper(sc.ext,c.w,c.h,30);
+var per=6000,k=Math.floor((now-t0)/per)%sc.panels.length;
+if(k!==last){last=k;tag.textContent="query: "+sc.panels[k].cls+
+(sc.panels[k].hit?"":"  (the miss)")}
+var p=sc.panels[k];
+drawField(g,p.field,sc.grid,sc.ext,T,reduced?undefined:now,p.hit?BLUE:OFF);
+truthSquares(g,T,p.truth);
+if(!reduced)requestAnimationFrame(frame)}
+if(reduced){frame(0)}else{requestAnimationFrame(frame)}
+})();
+/* ---------- chess playback ---------- */
+(function(){
+var cv=document.getElementById("chessCv");if(!cv)return;
+var Q=D.chess.queries,i=0,timer=null;
+var sl=document.getElementById("chSl");sl.max=Q.length-1;
+function draw(){
+var c=fit(cv,330),g=c.g;g.fillStyle=panelFill();g.fillRect(0,0,c.w,330);
+var T=mapper(D.chess.ext,c.w,330,18);
+g.strokeStyle="rgba(108,124,135,.45)";g.lineWidth=1;
+D.chess.paths.forEach(function(path){g.beginPath();
+path.forEach(function(p,k){var t=T(p[0],p[1]);k?g.lineTo(t[0],t[1]):g.moveTo(t[0],t[1])});
+g.stroke()});
+for(var k=Math.max(0,i-12);k<=i;k++){var q=Q[k],al=(k-(i-12))/12;
+var a=T(q.px,q.py),b=T(q.x,q.y);
+g.strokeStyle="rgba("+MG.join(",")+","+(al*0.9)+")";g.lineWidth=k===i?2.4:1.2;
+g.beginPath();g.moveTo(a[0]-6,a[1]-6);g.lineTo(a[0]+6,a[1]+6);
+g.moveTo(a[0]+6,a[1]-6);g.lineTo(a[0]-6,a[1]+6);g.stroke();
+g.strokeStyle="rgba("+MINT.join(",")+","+(al*0.9)+")";g.lineWidth=k===i?2.4:1.2;
+g.beginPath();g.arc(b[0],b[1],7,0,6.2832);g.stroke();
+if(k===i){g.strokeStyle="rgba(150,160,170,.5)";g.lineWidth=1;
+g.beginPath();g.moveTo(b[0],b[1]);g.lineTo(a[0],a[1]);g.stroke()}}
+var q=Q[i];
+document.getElementById("chQ").src=D.chess.imgs[q.q];
+document.getElementById("chA").src=D.chess.imgs[q.a];
+document.getElementById("chN").src=D.chess.imgs[q.n];
+document.getElementById("chErr").innerHTML=q.err.toFixed(2)+"<small> M</small>";
+document.getElementById("chLbl").textContent="q "+(i+1)+"/"+Q.length+" · "+q.trav;
+sl.value=i}
+function stop(){if(timer){clearInterval(timer);timer=null;
+var b=document.getElementById("chPlay");b.classList.remove("on");
+b.innerHTML="&#9654; play walk"}}
+document.getElementById("chPlay").addEventListener("click",function(){
+if(timer){stop();return}
+this.classList.add("on");this.innerHTML="&#10074;&#10074; pause";
+timer=setInterval(function(){i=(i+1)%Q.length;draw();if(!i)stop()},380)});
+sl.addEventListener("input",function(){stop();i=+this.value;draw()});
+draw();addEventListener("resize",draw);
+var sz=[["DSAC* (cited)",16e6,"~0.02 m"],["DenseVLAD",30e6,"0.21 m"],
+["kNN ours",32.8e6,"0.29 m"],["PQ ours",2.1e6,"0.29 m"],["VSA trace",32768,"0.36 m"]];
+function sizes(){var scv=document.getElementById("sizeCv");if(!scv)return;
+var c=fit(scv,120),g=c.g;
+g.fillStyle=panelFill();g.fillRect(0,0,c.w,c.h);
+var lo=Math.log10(2e4),hi=Math.log10(6e7);
+sz.forEach(function(s,k){var y=16+k*21;
+var x=18+(Math.log10(s[1])-lo)/(hi-lo)*(c.w-150);
+var r=Math.max(2.2,Math.sqrt(s[1])/2400);
+g.fillStyle=k===4?"rgba("+BLUE.join(",")+",.95)":"rgba(150,163,175,.5)";
+g.beginPath();g.arc(x,y,Math.min(r,9),0,6.2832);g.fill();
+g.font="10px ui-monospace,Consolas,monospace";
+g.fillStyle=k===4?"rgb("+BLUE.join(",")+")":"#8797A4";
+g.textAlign="left";g.fillText(s[0]+" · "+s[2],x+14,y+3.5)})}
+sizes();addEventListener("resize",sizes);
+})();
+/* ---------- classroom playback ---------- */
+(function(){
+var cv=document.getElementById("clsCv");if(!cv||!D.classroom)return;
+var C=D.classroom,Q=C.queries,i=0,timer=null;
+var sl=document.getElementById("clSl");sl.max=Q.length-1;
+function draw(){
+var c=fit(cv,270),g=c.g;g.fillStyle=panelFill();g.fillRect(0,0,c.w,270);
+var T=mapper(C.ext,c.w,270,16);
+g.strokeStyle="rgba(108,124,135,.45)";g.lineWidth=1;g.beginPath();
+C.path.forEach(function(p,k){var t=T(p[0],p[1]);k?g.lineTo(t[0],t[1]):g.moveTo(t[0],t[1])});
+g.stroke();
+for(var k=Math.max(0,i-10);k<=i;k++){var q=Q[k],al=(k-(i-10))/10;
+var a=T(q.px,q.py),b=T(q.x,q.y);
+g.strokeStyle="rgba("+MG.join(",")+","+(al*0.9)+")";g.lineWidth=k===i?2.4:1.1;
+g.beginPath();g.moveTo(a[0]-6,a[1]-6);g.lineTo(a[0]+6,a[1]+6);
+g.moveTo(a[0]+6,a[1]-6);g.lineTo(a[0]-6,a[1]+6);g.stroke();
+g.strokeStyle="rgba("+MINT.join(",")+","+(al*0.9)+")";
+g.beginPath();g.arc(b[0],b[1],7,0,6.2832);g.stroke();
+if(k===i){g.strokeStyle="rgba(150,160,170,.4)";g.lineWidth=1;
+g.beginPath();g.moveTo(b[0],b[1]);g.lineTo(a[0],a[1]);g.stroke()}}
+var q=Q[i];
+document.getElementById("clQ").src=C.imgs[q.q];
+document.getElementById("clA").src=C.imgs[q.near];
+document.getElementById("clLbl").textContent="q "+(i+1)+"/"+Q.length+" · err "+
+q.err.toFixed(2)+" m · battery median "+C.med+" m";
+sl.value=i}
+function stop(){if(timer){clearInterval(timer);timer=null;
+var b=document.getElementById("clPlay");b.classList.remove("on");b.innerHTML="&#9654; play"}}
+document.getElementById("clPlay").addEventListener("click",function(){
+if(timer){stop();return}
+this.classList.add("on");this.innerHTML="&#10074;&#10074; pause";
+timer=setInterval(function(){i=(i+1)%Q.length;draw();if(!i)stop()},420)});
+sl.addEventListener("input",function(){stop();i=+this.value;draw()});
+draw();addEventListener("resize",draw);
+})();
+/* ---------- school time merge ---------- */
+(function(){
+var cv=document.getElementById("schCv");if(!cv||!D.school)return;
+var S=D.school,Q=S.queries,i=0,timer=null;
+var sl=document.getElementById("scSl");sl.max=Q.length-1;
+document.getElementById("scIdent").textContent=S.identical+"/"+S.n_batt;
+function draw(){
+var c=fit(cv,170),g=c.g;g.fillStyle=panelFill();g.fillRect(0,0,c.w,170);
+var L=14,W=c.w-28,y=88,X=function(t){return L+t/S.span*W};
+g.fillStyle="rgba("+BLUE.join(",")+",.12)";g.fillRect(X(0),y-26,X(S.tA_max)-X(0),52);
+g.fillStyle="rgba("+AMB.join(",")+",.12)";g.fillRect(X(S.tA_max),y-26,X(S.span)-X(S.tA_max),52);
+g.strokeStyle="rgba(108,124,135,.4)";g.strokeRect(L,y-26,W,52);
+g.font="10px ui-monospace,Consolas,monospace";
+g.fillStyle="rgb("+BLUE.join(",")+")";g.textAlign="left";
+g.fillText("robot A (0-"+S.tA_max+" s)",X(6),y-34);
+g.fillStyle="rgb("+AMB.join(",")+")";g.fillText("robot B",X(S.tA_max+6),y-34);
+var q=Q[i];
+function mark(t,col,lbl,dy){var x=X(t);
+g.strokeStyle=col;g.lineWidth=2;g.beginPath();g.moveTo(x,y-26);g.lineTo(x,y+26);g.stroke();
+g.fillStyle=col;g.fillText(lbl,Math.min(x+4,c.w-96),y+dy)}
+mark(q.ta,"rgba(135,151,164,.7)","A: "+q.ta+"s",40);
+mark(q.tb,"rgba(135,151,164,.7)","B: "+q.tb+"s",54);
+mark(q.tm,"rgb("+MG.join(",")+")","merged: "+q.tm+"s",-40);
+mark(q.t,"rgb("+MINT.join(",")+")","truth: "+q.t+"s",-54);
+document.getElementById("scQ").src=S.imgs[q.q];
+document.getElementById("scM").src=S.imgs[q.im];
+document.getElementById("scA").src=S.imgs[q.ia];
+document.getElementById("scB").src=S.imgs[q.ib];
+document.getElementById("scQc").textContent="query · captured t = "+q.t+" s";
+document.getElementById("scMc").textContent="merged answered t = "+q.tm+" s (err "+q.em+" s)";
+document.getElementById("scAc").textContent="A alone: t = "+q.ta+" s";
+document.getElementById("scBc").textContent="B alone: t = "+q.tb+" s";
+document.getElementById("scLbl").textContent="q "+(i+1)+"/"+Q.length+
+" · era "+(q.t<=S.tA_max?"A":"B");
+sl.value=i}
+function stop(){if(timer){clearInterval(timer);timer=null;
+var b=document.getElementById("scPlay");b.classList.remove("on");b.innerHTML="&#9654; play"}}
+document.getElementById("scPlay").addEventListener("click",function(){
+if(timer){stop();return}
+this.classList.add("on");this.innerHTML="&#10074;&#10074; pause";
+timer=setInterval(function(){i=(i+1)%Q.length;draw();if(!i)stop()},900)});
+sl.addEventListener("input",function(){stop();i=+this.value;draw()});
+draw();addEventListener("resize",draw);
+})();
+/* ---------- gallery ---------- */
+(function(){
+var wrap=document.getElementById("gallery");if(!wrap)return;
+D.gallery.forEach(function(sc,si){
+var pane=document.createElement("div");pane.className="pane";
+pane.innerHTML='<canvas height="240"></canvas><div class="chips"></div>'+
+'<p class="legend">'+sc.scene+' · <i class="lg-mi">■ ground truth</i> · '+
+'<i class="lg-mg">✕ top-3 peaks</i></p>';
+wrap.appendChild(pane);
+var cv=pane.querySelector("canvas"),chips=pane.querySelector(".chips"),cur=0;
+sc.panels.forEach(function(p,k){
+var ch=document.createElement("span");
+ch.className="chip"+(p.hit?"":" miss");ch.textContent=p.cls;
+ch.addEventListener("click",function(){cur=k;render();mark()});
+chips.appendChild(ch)});
+function mark(){chips.querySelectorAll(".chip").forEach(function(ch,k){
+ch.classList.toggle("on",k===cur)})}
+function render(){
+var c=fit(cv,240),g=c.g;g.fillStyle=panelFill();g.fillRect(0,0,c.w,240);
+var T=mapper(sc.ext,c.w,240,14),p=sc.panels[cur];
+drawField(g,p.field,sc.grid,sc.ext,T,undefined,p.hit?BLUE:OFF);
+g.strokeStyle="rgba(108,124,135,.5)";g.lineWidth=1;g.beginPath();
+sc.path.forEach(function(q,i2){var t=T(q[0],q[1]);i2?g.lineTo(t[0],t[1]):g.moveTo(t[0],t[1])});
+g.stroke();
+truthSquares(g,T,p.truth);
+p.peaks.forEach(function(q,r){var t=T(q[0],q[1]);
+g.strokeStyle="rgba("+MG.join(",")+","+(r?0.45:0.95)+")";g.lineWidth=r?1.2:2.2;
+g.beginPath();g.moveTo(t[0]-6,t[1]-6);g.lineTo(t[0]+6,t[1]+6);
+g.moveTo(t[0]+6,t[1]-6);g.lineTo(t[0]-6,t[1]+6);g.stroke()})}
+mark();render();addEventListener("resize",render);
+if(!reduced)setInterval(function(){cur=(cur+1)%sc.panels.length;mark();render()},
+5200+si*700);
+});
+var r0=D.gallery[0],miss=r0.panels.filter(function(p){return !p.hit&&p.tq})[0];
+if(miss){document.getElementById("msQ").src=r0.imgs[miss.tq];
+if(miss.ta)document.getElementById("msA").src=r0.imgs[miss.ta];
+document.getElementById("msQc").textContent='what YOLO calls a "'+miss.cls+'" — every time';
+document.getElementById("msAc").textContent="what the memory grounded there · truth error "+
+miss.d1+" m — a perception mistake, faithfully remembered"}
+})();
+/* ---------- merge animation ---------- */
+(function(){
+var cv=document.getElementById("mergeCv");if(!cv)return;
+var btn=document.getElementById("mgBtn"),lbl=document.getElementById("mgLbl"),
+ph=0,t0=0,anim=null;
+/* robot colours = Ecology REGION_COLOURS */
+var cols=[[111,182,255],[255,95,208],[124,224,192],[255,209,102]];
+var Q=D.merge.quarters;
+var allx=[],ally=[];Q.forEach(function(q){q.forEach(function(p){allx.push(p[0]);ally.push(p[1])})});
+var ext=[Math.min.apply(0,allx)-0.5,Math.max.apply(0,allx)+0.5,
+Math.min.apply(0,ally)-0.5,Math.max.apply(0,ally)+0.5];
+var field=null;D.gallery[0].panels.forEach(function(p){if(p.cls==="couch")field=p});
+function draw(prog){
+var c=fit(cv,330),g=c.g;g.fillStyle=panelFill();g.fillRect(0,0,c.w,330);
+var T=mapper(ext,c.w,330,18);
+Q.forEach(function(q,k){
+var upto=ph===0?q.length:Math.floor(q.length*Math.min(1,prog*4-k));
+if(ph===2)upto=q.length;
+if(upto<2)return;
+var col=cols[k],al=ph===2?0.25:0.85;
+g.strokeStyle="rgba("+col.join(",")+","+al+")";g.lineWidth=1.6;g.beginPath();
+for(var i2=0;i2<upto;i2++){var t=T(q[i2][0],q[i2][1]);
+i2?g.lineTo(t[0],t[1]):g.moveTo(t[0],t[1])}
+g.stroke();
+if(ph===1&&upto<q.length){var h=T(q[upto-1][0],q[upto-1][1]);
+g.fillStyle="rgba("+col.join(",")+",1)";g.beginPath();g.arc(h[0],h[1],3.5,0,6.2832);g.fill()}});
+if(ph===2&&field){g.globalAlpha=Math.min(1,prog);
+drawField(g,field.field,D.gallery[0].grid,D.gallery[0].ext,T);g.globalAlpha=1;
+truthSquares(g,T,field.truth)}}
+function step(now){
+if(!t0)t0=now;var p=(now-t0)/4200;
+if(ph===1&&p>=1){ph=2;t0=now;p=0;
+lbl.textContent="Σ added — |merged − joint| = "+D.merge.stats.exact+
+", 0 association decisions (their merge: "+D.merge.stats.assoc_inst+")"}
+if(ph===2&&p>=1){draw(1);btn.classList.remove("on");
+btn.innerHTML="&#8635; replay";return}
+draw(p);anim=requestAnimationFrame(step)}
+btn.addEventListener("click",function(){
+if(anim)cancelAnimationFrame(anim);
+ph=1;t0=0;this.classList.add("on");this.innerHTML="merging…";
+lbl.textContent="four robots mapping their quarters…";
+if(reduced){ph=2;draw(1);lbl.textContent="Σ added — |merged − joint| = "+
+D.merge.stats.exact;return}
+anim=requestAnimationFrame(step)});
+ph=0;draw(1);addEventListener("resize",function(){if(ph!==1)draw(1)});
+function bw(){var bcv=document.getElementById("bwCv");if(!bcv)return;
+var c=fit(bcv,130),g=c.g;
+g.fillStyle=panelFill();g.fillRect(0,0,c.w,130);
+var rows=[["Kimera-Multi (per experiment)",146e6,"24–146 MB","#8797A4"],
+["DOOR-SLAM (per candidate)",6e4,"~60 KB","#8797A4"],
+["ours (per robot, total)",32768,"32 KB","rgb("+BLUE.join(",")+")"]];
+var lo=Math.log10(1e4),hi=Math.log10(2e8);
+rows.forEach(function(r,k){var y=22+k*34;
+var x2=20+(Math.log10(r[1])-lo)/(hi-lo)*(c.w-40);
+g.fillStyle=r[3];g.globalAlpha=k===2?1:0.55;
+g.fillRect(20,y-6,Math.max(x2-20,3),12);g.globalAlpha=1;
+g.font="10px ui-monospace,Consolas,monospace";
+g.fillStyle=r[3];g.textAlign="left";
+g.fillText(r[0]+" · "+r[2],20,y-12)})}
+bw();addEventListener("resize",bw);
+})();
+/* ---------- chi curves ---------- */
+(function(){
+var cv=document.getElementById("chiCv");if(!cv)return;
+var series=[["B_lowrank_mean","rgb("+OFF.join(",")+")","mean-dominated"],
+["D2_iso_persistent","rgb("+AMB.join(",")+")","persistent correlation"],
+["A_lowrank","#9DAEB9","low-rank content"],
+["C_isotropic","rgb("+BLUE.join(",")+")","isotropic floor"]];
+function draw(){
+var c=fit(cv,340),g=c.g;g.fillStyle=panelFill();g.fillRect(0,0,c.w,340);
+var lo=[Math.log10(80),Math.log10(0.08)],hi=[Math.log10(1.3e6),Math.log10(4000)];
+function X(n){return 48+(Math.log10(n)-lo[0])/(hi[0]-lo[0])*(c.w-70)}
+function Y(v){return 310-(Math.log10(v)-lo[1])/(hi[1]-lo[1])*280}
+g.strokeStyle="rgba(108,124,135,.25)";g.lineWidth=1;
+g.font="10px ui-monospace,Consolas,monospace";g.fillStyle="#8797A4";
+[100,1e3,1e4,1e5,1e6].forEach(function(n){g.beginPath();g.moveTo(X(n),30);
+g.lineTo(X(n),310);g.stroke();g.textAlign="center";
+g.fillText(n>=1e6?"1M":n>=1e3?(n/1e3)+"k":n,X(n),326)});
+[0.1,1,10,100,1000].forEach(function(v){g.beginPath();g.moveTo(48,Y(v));
+g.lineTo(c.w-22,Y(v));g.stroke();g.textAlign="right";g.fillText("χ="+v,44,Y(v)+3)});
+series.forEach(function(s){var pts=D.chi[s[0]];if(!pts)return;
+g.strokeStyle=s[1];g.lineWidth=2;g.beginPath();
+pts.forEach(function(p,i2){var x=X(p[0]),y=Y(Math.max(p[1],0.09));
+i2?g.lineTo(x,y):g.moveTo(x,y)});g.stroke();
+pts.forEach(function(p){g.fillStyle=s[1];g.beginPath();
+g.arc(X(p[0]),Y(Math.max(p[1],0.09)),2.6,0,6.2832);g.fill()});
+var last=pts[pts.length-1];g.textAlign="left";g.fillStyle=s[1];
+g.fillText(s[2],Math.min(X(last[0])+8,c.w-150),Y(Math.max(last[1],0.09))-6)})}
+draw();addEventListener("resize",draw);
+})();
+/* ---------- failure gallery + dataset thumbs ---------- */
+(function(){
+var fg=document.getElementById("failGrid");
+if(fg&&D.failures){
+D.failures.forEach(function(f){
+var div=document.createElement("div");div.className="fail";
+var pics="";
+if(f.tq)pics+='<figure class="ph q"><img src="'+f.tq+'"><figcaption>the "'+f.cls+
+'" the detector reports</figcaption></figure>';
+if(f.ta)pics+='<figure class="ph a"><img src="'+f.ta+'"><figcaption>what the memory grounded</figcaption></figure>';
+div.innerHTML='<div class="fhead">'+f.scene+' · '+f.cls+' · '+f.kind+
+(f.d1!=null?(' · off by '+f.d1+' m'):'')+'</div>'+
+(pics?('<div class="fpair">'+pics+'</div>'):'')+
+'<p>'+(f.n_mem===0?
+'The detector never fired on this class in the memory half — nothing was stored, so nothing can be recalled. Frontend recall failure.':
+'The detector reports this label consistently at the wrong place (mislabel or bad depth); the memory faithfully grounds the wrong observation. Frontend semantic failure.')+'</p>';
+fg.appendChild(div)});
+if(D.thumbs&&D.thumbs.tum){
+var div=document.createElement("div");div.className="fail";
+div.innerHTML='<div class="fhead">TUM fr1/desk · place descriptor · scale mismatch</div>'+
+'<div class="fpair"><figure class="ph q"><img src="'+D.thumbs.tum+
+'"><figcaption>a 2.4 m desk orbit</figcaption></figure></div>'+
+'<p>Street-trained EigenPlaces treats the entire desk as ONE place (kNN ceiling only '+
+'0.82 m in a 2.4 m space). Viewpoint invariance works against sub-metre discrimination '+
+'— the honest negative that scoped where the place frontend applies.</p>';
+fg.appendChild(div)}}
+var ts=document.getElementById("thumbStrip");
+if(ts&&D.thumbs){
+var names=[["classroom","Classroom · Spot robot"],["school","school_run1 · 11k frames"],
+["tum","TUM fr1/desk"],["chess","7-Scenes chess"],["replica","Replica ×8"]];
+names.forEach(function(n){if(!D.thumbs[n[0]])return;
+var f=document.createElement("figure");
+f.innerHTML='<img src="'+D.thumbs[n[0]]+'"><figcaption>'+n[1]+'</figcaption>';
+ts.appendChild(f)})}
+})();
+})();
+</script>
