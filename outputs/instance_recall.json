@@ -1,0 +1,44 @@
+{
+  "all": {
+    "class": {
+      "wrong_instance": 796,
+      "instance": 433,
+      "wrong": 80
+    },
+    "app": {
+      "wrong_instance": 524,
+      "instance": 607,
+      "wrong": 178
+    },
+    "hybrid": {
+      "wrong_instance": 598,
+      "instance": 636,
+      "wrong": 75
+    }
+  },
+  "multi": {
+    "class": {
+      "wrong_instance": 796,
+      "instance": 273,
+      "wrong": 40
+    },
+    "app": {
+      "wrong_instance": 524,
+      "instance": 479,
+      "wrong": 106
+    },
+    "hybrid": {
+      "wrong_instance": 598,
+      "instance": 476,
+      "wrong": 35
+    }
+  },
+  "scenes": [
+    "room2",
+    "office4",
+    "room0",
+    "office2",
+    "office3"
+  ],
+  "radius": 0.75
+}

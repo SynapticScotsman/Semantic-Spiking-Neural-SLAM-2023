@@ -1,0 +1,49 @@
+{
+  "designs": {
+    "class": {
+      "wrong_instance": 17,
+      "instance": 7,
+      "wrong": 0
+    },
+    "relational": {
+      "wrong_instance": 14,
+      "instance": 7,
+      "wrong": 3
+    },
+    "app": {
+      "wrong": 11,
+      "wrong_instance": 5,
+      "instance": 41
+    },
+    "app+rel": {
+      "instance": 27,
+      "wrong": 17,
+      "wrong_instance": 13
+    }
+  },
+  "per_scene": [
+    {
+      "scene": "room2",
+      "queries": 6
+    },
+    {
+      "scene": "office4",
+      "queries": 5
+    },
+    {
+      "scene": "room0",
+      "queries": 2
+    },
+    {
+      "scene": "office2",
+      "queries": 3
+    },
+    {
+      "scene": "office3",
+      "queries": 8
+    }
+  ],
+  "discarded_ambiguous": 40,
+  "radius": 0.75,
+  "margin": 0.5
+}
