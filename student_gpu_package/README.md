@@ -10,6 +10,89 @@ Time budget: ~1 evening for room0, ~1 day for all 8 scenes.
 Everything below is scripted; run the stages in order. Each stage prints
 `STAGE OK` on success — do not continue past a failure, send Paul the log.
 
+## Walkthrough from zero (nothing installed yet)
+
+You need: a Linux machine with an NVIDIA GPU (≥10 GB VRAM ideal; ≥6 GB works
+with the SAM vit_b swap in Troubleshooting), ~30 GB free disk, and internet
+on the machine (model checkpoints download at setup).
+
+**1. Install the two prerequisites** (skip any you have):
+
+```bash
+# git
+sudo apt install -y git            # or: module load git   on a cluster
+# miniconda
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+bash Miniconda3-latest-Linux-x86_64.sh -b
+source ~/miniconda3/etc/profile.d/conda.sh
+conda init bash && exec bash
+```
+
+**2. Pull the repo and check out the right branch:**
+
+```bash
+git clone https://github.com/SynapticScotsman/Semantic-Spiking-Neural-SLAM-2023.git
+cd Semantic-Spiking-Neural-SLAM-2023
+git checkout results-sites
+cd student_gpu_package
+```
+
+Everything below is run from inside `student_gpu_package/` unless a command
+says otherwise. Sanity check you are in the right place:
+
+```bash
+ls   # you should see: 00_setup.sh 01_check_data.py 02_run_conceptgraphs.sh ...
+```
+
+**3. Get the scene data** (not in git — too big). Two options:
+
+- *Copy from Paul* (fastest): he has, per scene, `data/replica/<scene>/`
+  (~5 GB: frame*.jpg, depth*.png, traj.txt, poses.csv),
+  `data/replica/<scene'>_vmap/` (~0.4 GB GT renders), and
+  `outputs/replica_<scene>/` (object_points.json + detections_crops.csv,
+  tiny). Place them at the SAME paths inside your clone
+  (`Semantic-Spiking-Neural-SLAM-2023/data/replica/...` and
+  `.../outputs/replica_...`). `scp -r` or a OneDrive share both work.
+- *Fetch yourself* (no Paul needed, ~30-60 min/scene): from the repo root,
+
+```bash
+cd ..                                           # repo root
+pip install numpy pillow                        # tiny deps for the fetchers
+python tools/prepare_replica.py --scene room0   # RGB-D + poses (range-fetch)
+python tools/replica_gt_from_renders.py --scene room0   # GT renders
+# our observations (CPU, ~1-2 h — or just copy outputs/replica_room0/ from Paul):
+pip install ultralytics torch --index-url https://download.pytorch.org/whl/cpu
+python -m vsa_cognitive_mapping.classroom_pipeline embed-crops \
+    --dataset vsa_cognitive_mapping/configs/replica_room0.json
+python -m vsa_cognitive_mapping.object_grounding \
+    --dataset vsa_cognitive_mapping/configs/replica_room0.json \
+    --gt-json outputs/replica_room0/gt_instances.json
+cd student_gpu_package
+```
+
+**4. Run the stages in order** (each prints `STAGE OK`):
+
+```bash
+bash 00_setup.sh                         # once, ~15 min
+python 01_check_data.py --scene room0    # seconds; fixes layout for their code
+bash 02_run_conceptgraphs.sh room0       # GPU, ~30-90 min
+python 03_export_cg.py --scene room0     # seconds
+python 04_vsa_labels.py --scene room0    # minutes on GPU
+python 05_score.py --scene room0         # seconds — the head-to-head number
+```
+
+**5. Send the results back:** zip the handoff folder and send it to Paul
+(email/OneDrive/Teams — anything):
+
+```bash
+zip -r handoff_$(date +%F).zip handoff/ environment.txt
+```
+
+Then repeat stages 1-5 with `room1 room2 office0 office1 office2 office3
+office4` (stage 0 is once-only). A bash loop is fine once room0 works.
+If ANY stage fails: stop, and send the printed log + the Troubleshooting
+row you tried. Partial handoffs are useful; guessed fixes are not.
+
 ## What you produce (send back to Paul)
 
 ```
