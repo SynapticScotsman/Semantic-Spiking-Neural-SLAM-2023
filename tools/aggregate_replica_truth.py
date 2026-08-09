@@ -25,6 +25,7 @@ import numpy as np
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(ROOT)
+sys.path.insert(0, ROOT)
 
 SCENES = ["room0", "room1", "room2", "office0", "office1", "office2",
           "office3", "office4"]
