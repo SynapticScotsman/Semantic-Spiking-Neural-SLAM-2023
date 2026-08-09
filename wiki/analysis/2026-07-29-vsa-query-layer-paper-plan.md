@@ -609,6 +609,28 @@ comparison claims).
   implementation check, pursuit-as-mechanism pending a legal stopping
   rule.
 
+- **2026-08-10 (bj)** — **ICRA PAPER BUILD-OUT: complete IEEE-style draft
+  in `paper/` (main.tex + refs.bib + figures/), targeting the Overleaf
+  project (6a75e41dde34d8bf1ef1b38f; auth-gated, manual sync).** Scope
+  decision encoded: ONE track — the fixed-size algebraic map. Four
+  pillars, all already measured: system + conditioning discipline
+  (Sec. III), χ capacity law with the 1.4% held-out prediction and the
+  imbalance→bounded-insertion story (IV), benchmark characterisation
+  (chess (ax), Replica ×8 (bd) with miss taxonomy, drift bounding (ah))
+  (VI), exact merge with the 4-robot head-to-head (bc)/(bd) and the
+  shared-frame caveat verbatim (VI-C). Deliberately out: isotropy science
+  (→ workshop draft), multi-robot at scale + frame recovery (→ paper 2),
+  relational/instance (Limitations ¶ only, internal-diagnostic). Standing
+  rules enforced in-text: no invented metrics (grounding labelled
+  characterisation; ConceptGraphs comparison pre-registered under THEIR
+  scorer as a \todo slot), multipliers with encoder+N, ≤0.5/1/2 m
+  fractions, seed tags, banned phrases swept. Intro+conclusion are
+  complete drafts flagged MERGE NOTE (Overleaf partials unseen — Chrome
+  extension disconnected). Blockers: D2 authorship (author block
+  placeholder), their-scorer run (table slot), ieeeconf.cls swap at
+  submission. 7 \todo markers; env/cite/ref/brace checks pass. Cut
+  ladder for the ~1-page overrun in paper/README.md.
+
 - **2026-08-06 (bf)** — **INSTANCE vs SEMANTIC recall measured (Paul's
   diagnosis confirmed) + the 2025 primer restored and reviewed.**
   New `vsa_cognitive_mapping/instance_recall.py`: 1,309 held-out
