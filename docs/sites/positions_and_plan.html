@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Four points of view · and the plan</title>
+<style>
+:root{--bg:#05080f;--panel:#0d1524;--panel2:#111c30;--ink:#e8eef6;--ink2:#aab8c8;
+--muted:#64748b;--line:#1b2740;--cyan:#57e6d4;--amber:#ffb454;--mint:#7ce0c0;
+--magenta:#ff5fd0;--blue:#3b9bff;--orange:#ff8c42;
+--mono:ui-monospace,"Cascadia Code",Consolas,Menlo,monospace}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+font:16px/1.65 Georgia,"Times New Roman",serif;padding:40px 20px 90px}
+.wrap{max-width:900px;margin:0 auto}
+h1{font-weight:400;font-size:clamp(1.6rem,4vw,2.4rem);letter-spacing:-.01em;margin:0 0 6px}
+h1 b{color:var(--cyan);font-style:italic;font-weight:400}
+.sub{font-family:var(--mono);font-size:.8rem;color:var(--muted);margin:0 0 8px}
+.back{font-family:var(--mono);font-size:.75rem;color:var(--ink2);text-decoration:none}
+.back:hover{color:var(--cyan)}
+h2{font-family:var(--mono);font-size:.75rem;letter-spacing:.18em;text-transform:uppercase;
+color:var(--cyan);margin:44px 0 6px;font-weight:700;border-top:1px solid var(--line);padding-top:22px}
+h2.first{border-top:none;padding-top:0}
+.lede{color:var(--ink2);margin:0 0 22px;font-size:1.02rem}
+.view{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--c);
+border-radius:10px;padding:18px 22px;margin:14px 0}
+.view .tag{font-family:var(--mono);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;
+color:var(--c);font-weight:700}
+.view h3{margin:4px 0 10px;font-weight:400;font-size:1.2rem}
+.view .quote{font-style:italic;color:var(--ink);border-left:2px solid var(--line);
+padding-left:14px;margin:0 0 12px;font-size:1.05rem}
+.view p{margin:8px 0;color:var(--ink2);font-size:.95rem}
+.view p b{color:var(--ink);font-weight:400;font-family:var(--mono);font-size:.74rem;
+letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:1px}
+.ask{font-family:var(--mono);font-size:.78rem;color:var(--c);margin-top:12px;
+border-top:1px dashed var(--line);padding-top:10px}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:.9rem}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;
+color:var(--muted);font-weight:700}
+td b{color:var(--cyan);font-weight:400}
+.scroll{overflow-x:auto}
+ul{padding-left:20px;color:var(--ink2)}li{margin:6px 0}
+li b{color:var(--ink);font-weight:400}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:680px){.split{grid-template-columns:1fr}}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 20px}
+.box h4{font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;
+margin:0 0 8px;font-weight:700}
+.agree h4{color:var(--mint)}.diverge h4{color:var(--orange)}
+.box p,.box li{font-size:.92rem;margin:6px 0}
+.phase{background:var(--panel);border:1px solid var(--line);border-radius:10px;
+padding:16px 20px;margin:12px 0}
+.phase .when{font-family:var(--mono);font-size:.72rem;letter-spacing:.1em;
+text-transform:uppercase;color:var(--amber);font-weight:700}
+.phase h3{margin:3px 0 10px;font-weight:400;font-size:1.12rem}
+.phase table{margin:6px 0 0}
+.pill{display:inline-block;font-family:var(--mono);font-size:.66rem;letter-spacing:.08em;
+text-transform:uppercase;padding:2px 8px;border-radius:99px;border:1px solid var(--line);
+color:var(--ink2)}
+.pill.paul{color:var(--magenta);border-color:#4a2b46}
+.pill.claude{color:var(--blue);border-color:#20375c}
+.pill.compute{color:var(--amber);border-color:#4d3a1c}
+.note{background:var(--panel2);border:1px solid var(--line);border-left:3px solid var(--amber);
+border-radius:8px;padding:14px 18px;margin:16px 0;font-size:.94rem;color:var(--ink2)}
+.note b{color:var(--amber);font-weight:400}
+footer{margin-top:50px;padding-top:18px;border-top:1px solid var(--line);
+font-family:var(--mono);font-size:.72rem;color:var(--muted)}
+</style></head><body><div class="wrap">
+
+<a class="back" href="index.html">&larr; results sites</a>
+<h1>Four points of view, and <b>the plan</b></h1>
+<p class="sub">what each collaborator is actually proposing · where they agree ·
+the one real disagreement · what happens next · 2026-08-10</p>
+
+<h2 class="first">the short version</h2>
+<p class="lede">Everyone agrees on the substrate: phasor vectors, bind and bundle and
+unbind, fractional power encoding for space and time. What differs is <b>what the
+vector is for</b>. One view says it replaces the scene graph. Two say it sits
+alongside one. One says the algebra already expresses what the scene graphs
+compute. They are not in conflict so much as at different distances from the
+robot.</p>
+
+<h2>the four views</h2>
+
+<div class="view" style="--c:var(--cyan)">
+<div class="tag">view 1 · the ICRA draft (ours)</div>
+<h3>The vector <em>replaces</em> the structure</h3>
+<p class="quote">"Throw the structure away. Keep one 32 KB vector. Measure what
+still works."</p>
+<p><b>the claim</b>The scene graph and the trace are opposite design points. We
+characterise the trace standing on its own: how it relocalises, how it grounds
+objects, how it merges, how its interference scales.</p>
+<p><b>strongest card</b>It is finished and measured. Benchmarks exist, the merge
+result is exact and checkable, the capacity law makes predictions that came true.</p>
+<p><b>weakest card</b>It concedes what graphs are good at (exact instance identity,
+arbitrary relational queries), so a reviewer hunting for ambition can call the
+scope narrow.</p>
+<p class="ask">Answers: how much can a fixed-size vector still do?</p>
+</div>
+
+<div class="view" style="--c:var(--mint)">
+<div class="tag">view 2 · Naitri</div>
+<h3>The vector is an <em>overlay</em> on the structure</h3>
+<p class="quote">"The graph knows where things are now. The vector remembers where
+they have been."</p>
+<p><b>the claim</b>Keep SuperMap or FARM authoritative for current state, identity
+and geometry. Add a fixed-budget VSA holding the approximate history, which
+returns candidates the graph then verifies exactly.</p>
+<p><b>strongest card</b>It does not fight the graph where the graph wins. The claim
+that at fixed memory it retains more useful history than a truncated or sampled
+log is testable, and nobody owns it yet.</p>
+<p><b>weakest card</b>It depends on somebody else's system running. SuperMap's code
+is unreleased; FARM's is released.</p>
+<p class="ask">Answers: at a fixed memory budget, who remembers more of what happened?</p>
+</div>
+
+<div class="view" style="--c:var(--blue)">
+<div class="tag">view 3 · Lorin</div>
+<h3>Isolate the backend and <em>race</em> them</h3>
+<p class="quote">"Same eyes, different memory, same test."</p>
+<p><b>the claim</b>One perception front end, two map backends (4D scene graph versus
+SSP/VSA), the same navigation task suite. Plus hybrid variants: the SSP as a fast
+index into the graph, as a replacement for edge and existence tracking, or as the
+per-node confidence.</p>
+<p><b>strongest card</b>This is exactly the fair comparison already demanded here
+(same front end, different backend), and its metrics — footprint, query big-O,
+wall-clock, update cost — are the axes where the trace actually wins.</p>
+<p><b>weakest card</b>It needs a working task suite and substantial integration
+engineering before it produces a single number.</p>
+<p class="ask">Answers: holding perception fixed, does the representation change the outcome?</p>
+</div>
+
+<div class="view" style="--c:var(--magenta)">
+<div class="tag">view 4 · Shay</div>
+<h3>The algebra already <em>expresses</em> what they compute</h3>
+<p class="quote">"Their mechanisms are our identities."</p>
+<p><b>the claim</b>An equation-by-equation mapping from SuperMap and FARM onto FHRR:
+6 exact correspondences, 4 bounded approximations, 10 reformulations, and no weak
+analogies.</p>
+<p><b>strongest card</b>It is the intellectual case for the whole programme, and it
+hands over four concrete upgrades we do not currently have (listed below).</p>
+<p><b>weakest card</b>It is theory until an experiment runs, and one of its
+recommendations contradicts one of our measurements.</p>
+<p class="ask">Answers: is the correspondence real, and what does it buy over a
+hand-written predicate library?</p>
+</div>
+
+<h2>agreement and divergence</h2>
+<div class="split">
+<div class="box agree">
+<h4>✓ all four agree</h4>
+<ul>
+<li>The state should be <b>fixed-size</b>, not growing.</li>
+<li>Relations should be <b>computed at query time, not stored</b>. FARM
+independently made the same choice, so this is agreement, not advantage.</li>
+<li>Comparisons must hold the <b>perception front end fixed</b>.</li>
+<li>The case is strongest on <b>systems axes</b> (bytes, update cost, query cost),
+not on raw accuracy.</li>
+</ul>
+</div>
+<div class="box diverge">
+<h4>✕ where they split</h4>
+<p><b>Replace</b> (view 1) versus <b>overlay</b> (views 2 and 3b).</p>
+<p>Our ICRA draft argues the trace as an alternative to the graph. The
+collaborators are converging on the trace as a component inside or beside one.</p>
+<p>These are not contradictory: you cannot argue the overlay credibly without
+first knowing what the bounded map does alone, which is what the draft measures.
+But they are different papers with different claims, and the framing needs
+deciding rather than drifting.</p>
+</div>
+</div>
+
+<h2>the one real technical disagreement</h2>
+<p class="lede">Shay's pipeline <b>whitens</b> semantic embeddings before fractional
+power encoding. Our measured rule is <b>centre or z-score, never whiten</b>
+(−47.6% signal on the classroom over 5 seeds, though harmless on chess). They may
+not actually conflict, and the distinction is precise:</p>
+<div class="scroll"><table>
+<tr><th></th><th>what gets whitened</th><th>how it is then used</th></tr>
+<tr><td><b>our measurement</b></td><td>the content vector</td>
+<td>as a <b>binding key</b> — bound directly into the trace</td></tr>
+<tr><td><b>Shay's pipeline</b></td><td>the semantic embedding</td>
+<td>as an <b>argument to the encoder</b> — fractional-power-encoded first, then bound</td></tr>
+</table></div>
+<div class="note"><b>Why this matters and why it is cheap.</b> Shay's own argument is
+that FPE outputs are quasi-orthogonal by construction, so the pathology whitening
+fixes is a different one in his case. That is a one-day experiment, and it should
+run before either claim is written down as general. It is the only item on this
+page that could change a sentence already in the paper.</div>
+
+<h2>what Shay's note gives us that we do not have</h2>
+<div class="scroll"><table>
+<tr><th>idea</th><th>what it fixes</th><th>cost</th></tr>
+<tr><td><b>Submap-local frames</b></td>
+<td>Our standing shared-frame merge caveat. A loop closure updates one
+submap-to-world transform instead of invalidating every stored position.</td>
+<td>cheap — turns an open problem into a known fix</td></tr>
+<tr><td><b>Fusion update + the κ statistic</b></td>
+<td>Re-observation currently grows N. Remove-and-replace is exact, so N counts
+objects. κ (the bundle norm) is a threshold-free data-association and change score.</td>
+<td>1–2 days, strong journal material</td></tr>
+<tr><td><b>Residue (CRT) codes</b></td>
+<td>Separates the <em>range</em> budget from the <em>crosstalk</em> budget, which
+our capacity law currently conflates. Also the best grid-cell anchor in the
+programme.</td>
+<td>medium — journal scope</td></tr>
+<tr><td><b>Structured orthogonal random features</b></td>
+<td>Kills the phase-matrix storage (~12 MB at d=4096), the same embarrassment as
+our "decoder grids dominate the honest map state" note.</td>
+<td>small, strictly better on both axes</td></tr>
+</table></div>
+<p class="lede">Two convergences worth telling him about, because they are
+independent derivations of the same thing: his <b>participation-ratio effective
+load</b> is the PR term in our measured capacity law, and his <b>sequential
+extraction</b> under decreasing noise is our matching-pursuit result.</p>
+
+<h2>the plan</h2>
+
+<div class="phase">
+<div class="when">now → 15 September 2026 · the only hard deadline</div>
+<h3>A · The ICRA paper</h3>
+<div class="scroll"><table>
+<tr><th>#</th><th>item</th><th>who</th></tr>
+<tr><td>A1</td><td>Choose the abstract and intro angle, or keep the general
+synthesis now in the draft (5 variants delivered)</td><td><span class="pill paul">Paul</span></td></tr>
+<tr><td>A2</td><td><b>Authorship</b> — now across Lorin, Shay and Naitri as well as
+the GC-VSA and Waterloo groups. Blocks acknowledgments and the review round.</td><td><span class="pill paul">Paul</span></td></tr>
+<tr><td>A3</td><td>Merge the Overleaf partial intro and conclusion with the new drafts</td><td><span class="pill paul">Paul</span> <span class="pill claude">Claude</span></td></tr>
+<tr><td>A4</td><td>ConceptGraphs run under <em>their</em> scorer — fills the one
+empty table; the pre-registration is already written into the text</td><td><span class="pill compute">Colab L4</span></td></tr>
+<tr><td>A5</td><td>Two figures: the Replica belief-field montage and the chess
+qualitative pairs</td><td><span class="pill claude">Claude</span></td></tr>
+<tr><td>A6</td><td>Cut from ~7 pages to 6 using the ladder in the paper README</td><td><span class="pill claude">Claude</span></td></tr>
+<tr><td>A7</td><td><b>One paragraph positioning the overlay direction as future
+work</b> — stakes the collaborators' claim without spending pages, and stops the
+two papers colliding</td><td><span class="pill claude">Claude</span></td></tr>
+</table></div>
+</div>
+
+<div class="phase">
+<div class="when">before the deadline, if they land</div>
+<h3>B · Cheap wins from the notes</h3>
+<div class="scroll"><table>
+<tr><th>#</th><th>item</th><th>cost</th></tr>
+<tr><td>B1</td><td><b>The whitening experiment</b> — binding key versus encoder
+argument. Resolves a contradiction between two of our own documents before either
+is published.</td><td>~1 day CPU</td></tr>
+<tr><td>B2</td><td>Cite submap-local frames in the merge caveat. Turns "open
+problem" into "known fix, unmeasured", which is a much better limitation to
+have.</td><td>1 paragraph</td></tr>
+<tr><td>B3</td><td>The κ consistency statistic on the Replica change data</td><td>1–2 days</td></tr>
+</table></div>
+<p class="lede" style="font-size:.94rem;margin-top:10px">B1 is the one that genuinely
+matters before submission. B2 is free. B3 is optional for ICRA and strong for the
+journal version.</p>
+</div>
+
+<div class="phase">
+<div class="when">submit ~Feb–Apr 2027, after the ICRA decision</div>
+<h3>C · The T-RO journal version</h3>
+<p class="lede" style="font-size:.94rem">T-RO explicitly accepts "evolutionary"
+papers: extended versions of your own conference paper with substantial new
+results. The material deliberately cut from ICRA <em>is</em> that delta, now with
+the collaborator additions folded in.</p>
+<ul>
+<li>Frame recovery inside the algebra, plus <b>submap-local frames</b>, measured</li>
+<li>K-scaling from 2 to 16 robots, and the bandwidth protocol</li>
+<li>The formal capacity derivation, including the <b>range-versus-crosstalk
+split</b> that residue codes make explicit</li>
+<li>The full ConceptGraphs head-to-head across all eight scenes</li>
+<li>The <b>fusion update and κ</b></li>
+<li><b>Structured orthogonal random features</b>, which fixes the honest
+map-state number</li>
+<li>The relational layer, if the stopping rule is legalised</li>
+</ul>
+</div>
+
+<div class="phase">
+<div class="when">parallel · not ours to lead</div>
+<h3>D · The collaborators' paper</h3>
+<p class="lede" style="font-size:.94rem">Naitri's overlay plus Lorin's head-to-head
+is a second paper. Our contribution to it is the trace, the capacity law, and the
+index-not-store architecture; Shay's validation ladder (rungs 1 to 3) is its
+spine.</p>
+<div class="note"><b>Practical note.</b> FARM's code and FARM-Scenes are released;
+SuperMap's are not. If a hybrid target has to be picked to make progress this
+year, FARM is the one that can actually be run.</div>
+</div>
+
+<h2>decisions only Paul can make</h2>
+<ul>
+<li><b>Authorship</b>, now across five or more people. It blocks prose.</li>
+<li><b>Framing</b>: does the ICRA paper stay "the opposite design point", or soften
+to "a component that can also stand alone"? <em>Recommendation: stay, and add
+A7's paragraph. The standalone result is the prerequisite, and softening it costs
+the paper its spine.</em></li>
+<li><b>Who leads which paper</b>, so the ICRA submission and the overlay paper do
+not overlap in claims.</li>
+<li><b>FARM or SuperMap</b> as the hybrid target. <em>Recommendation: FARM, on code
+availability alone.</em></li>
+</ul>
+
+<footer>
+Sources: Telluride-VSA-Maps notes (Lorin, Shay, Naitri) · paper/main.tex ·
+tracker entries (a)–(bk) at wiki/analysis/2026-07-29-vsa-query-layer-paper-plan.md ·
+written record at wiki/analysis/2026-08-10-positions-and-plan.md
+</footer>
+</div></body></html>

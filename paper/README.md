@@ -3,6 +3,31 @@
 Target: **ICRA 2027, deadline Sept 15, 2026.** Overleaf project:
 https://www.overleaf.com/project/6a75e41dde34d8bf1ef1b38f
 
+## Publication pipeline (ICRA + T-RO, decided 2026-08-10)
+
+Two-stage, using T-RO's "evolutionary paper" category (extended versions of
+your own conference papers with substantial new results are an explicitly
+recognised T-RO submission type):
+
+1. **ICRA 2027** (Sept 15, 2026): this draft. Merge as a *property*, χ law
+   empirical, at-scale material named in future work.
+2. **T-RO evolutionary version** (submit ~Feb–Apr 2027, after the ICRA
+   decision): subsumes the ICRA paper + the deliberately-cut delta = frame
+   recovery in the algebra, K-scaling 2–16 robots, bandwidth protocol,
+   formal χ derivation + no-per-cell-fit real-data closure, full
+   ConceptGraphs head-to-head, relational layer if legalised. Cites the
+   ICRA paper with a delta statement; text rewritten, not pasted; not
+   under review simultaneously.
+3. **Insurance**: if ICRA rejects (~late Jan 2027) the work never appeared
+   in proceedings, so the T-RO submission qualifies as a *new* paper and
+   becomes eligible for ICRA 2028 presentation via PaperPlaza journal
+   transfer (T-RO/RA-L→ICRA transfer deadline was Dec 31 for ICRA 2027).
+   RA-L remains the fast fallback.
+
+Rule refs: T-RO-at-ICRA presentation is only for NEW (non-evolved) T-RO
+papers (ieee-ras.org "Presenting Your T-RO Paper at ICRA"); ICRA 2027 CFP
+confirms journal transfer + Dec 31, 2026 deadline.
+
 ## Files
 
 - `main.tex` — complete IEEE-conference-style draft (IEEEtran conference
@@ -10,8 +35,18 @@ https://www.overleaf.com/project/6a75e41dde34d8bf1ef1b38f
   the file). All sections written: abstract, intro, related work (with
   merge-survey table), method, capacity law, setup, results (5
   subsections, 4 tables), limitations, conclusion.
-- `refs.bib` — full bibliography; entries with unverified fields carry a
-  `TODO verify` note.
+- `refs.bib` — full bibliography. Every entry web-verified 2026-08-10
+  (fetch + adversarial recheck) and carries a real clickable URL: arXiv
+  abstract page where the paper is on arXiv, else the DOI link, else the
+  official project page. No repo-internal links appear in the rendered
+  PDF; number provenance lives in `% provenance:` TeX comments only.
+- `variants/abstract_intro_variants.md` — five complete alternative
+  abstract+intro drafts (systems-first, law-first, merge-first,
+  honest-contrarian, algebra-first), each with a suggested title and an
+  honest self-assessment, plus a comparison table. **The abstract and
+  intro currently in `main.tex` are a deliberate general synthesis** that
+  covers all four pillars evenly; swap in a variant (or a graft) once the
+  angle is chosen.
 - `figures/` — `synthetic_scaling.png` (capacity-law figure, ready);
   remaining figures are `\todo{}` placeholders (list below).
 

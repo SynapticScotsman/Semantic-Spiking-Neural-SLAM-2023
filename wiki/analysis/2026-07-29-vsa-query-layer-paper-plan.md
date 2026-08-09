@@ -609,6 +609,50 @@ comparison claims).
   implementation check, pursuit-as-mechanism pending a legal stopping
   rule.
 
+- **2026-08-10 (bk)** — **COLLABORATOR NOTES INGESTED (Telluride-VSA-Maps):
+  three contributors, and they point at a DIFFERENT paper than our ICRA
+  draft. Scope decision now live for Paul.** Source:
+  `Telluride-VSA-Maps (1).txt` (Lorin, Shay, Naitri + Paul's 07-30 results
+  page). (1) **Lorin**: two threads — same-front-end head-to-head
+  (SuperMap-style 4D scene graph vs SSP/VSA backend on HM3D/Habitat VLN
+  tasks) and a HYBRID (SSP as a fast index layer over a scene graph, SSP
+  replacing edge/existence tracking, SSP as per-node confidence). Metrics:
+  fixed footprint, query big-O, wall-clock, update cost. (2) **Naitri**:
+  states the objective as a **fixed-budget VSA episodic OVERLAY on an
+  open-vocab 4D scene graph** — graph authoritative for current state, VSA
+  for approximate history, returning candidates for exact verification;
+  central hypothesis is retained-history-at-fixed-memory, not replacement;
+  three experiments (fixed-budget temporal memory vs truncated/sampled
+  histories; relational retrieval vs FARM incl. compositional anchors;
+  repeated-visit robot eval). (3) **Shay**: equation-level FHRR ↔
+  SuperMap/FARM correspondence note with an E/A/R/W taxonomy (6 exact, 4
+  approximate, 10 reformulation, 0 weak). Convergences with our measured
+  record: his participation-ratio effective load N_eff IS our χ law's
+  PR_eff term, derived analytically; his "**the bundle should be an index,
+  not the primary store**" is exactly the relational-sprint architecture
+  resolution (bh); his sequential-extraction/matching-pursuit under
+  decreasing noise is our pursuit result, and he ties it to R@5/R@10 as
+  the deliverable. New material we do NOT have: submap-local frames as the
+  loop-closure/shared-frame fix (directly addresses our standing merge
+  caveat); the exact fusion update (remove-and-replace so N counts objects
+  not observations) plus the bundle-norm consistency statistic κ as a
+  threshold-free data-association score; residue/CRT codes to decouple the
+  RANGE budget from the CROSSTALK budget (grid-cell anchor); structured
+  orthogonal random features to kill the Θ storage cost (~12 MB at d=4096
+  — relevant to our "decoder grids dominate map state" honesty note);
+  geometric decay giving N_eff bounded independent of N. **TENSION to
+  resolve, not paper over:** Shay's pipeline whitens semantic embeddings
+  before FPE, while our measured rule is centre/z-score, never whiten
+  (−47.6% classroom 5-seed). These may not actually conflict — ours is
+  measured on content used as a BINDING KEY, his is preprocessing for an
+  FPE ARGUMENT (encoded, not bound), which is a different pathway; worth
+  an explicit experiment and a precise statement either way. **Scope
+  question for Paul:** our ICRA draft frames the trace as the OPPOSITE
+  design point to scene graphs (standalone characterisation); the
+  collaborators are converging on HYBRID/overlay. Not a contradiction (the
+  standalone characterisation is the prerequisite for arguing the overlay)
+  but the framing, and possibly the paper split, is his call.
+
 - **2026-08-10 (bj)** — **ICRA PAPER BUILD-OUT: complete IEEE-style draft
   in `paper/` (main.tex + refs.bib + figures/), targeting the Overleaf
   project (6a75e41dde34d8bf1ef1b38f; auth-gated, manual sync).** Scope

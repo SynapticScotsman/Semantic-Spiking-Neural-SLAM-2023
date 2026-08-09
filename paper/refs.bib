@@ -1,5 +1,8 @@
-% refs.bib — ICRA paper. Entries marked "TODO verify" need a check against
-% the actual PDF/publisher page before camera-ready (esp. pages, volume).
+% refs.bib for the ICRA paper.
+% Every entry web-verified 2026-08-10 (15-agent fetch + adversarial recheck;
+% each URL was fetched and confirmed to resolve to the cited paper).
+% URL policy: arXiv abstract page when the paper is on arXiv (open access),
+% else the DOI link, else the official project page.
 
 % ---------------- VSA / HDC lineage ----------------
 
@@ -10,7 +13,8 @@
   volume  = {6},
   number  = {3},
   pages   = {623--641},
-  year    = {1995}
+  year    = {1995},
+  url     = {https://doi.org/10.1109/72.377968}
 }
 
 @article{kanerva2009hyperdimensional,
@@ -21,7 +25,8 @@
   volume  = {1},
   number  = {2},
   pages   = {139--159},
-  year    = {2009}
+  year    = {2009},
+  url     = {https://doi.org/10.1007/s12559-009-9009-8}
 }
 
 @article{frady2018theory,
@@ -32,7 +37,8 @@
   volume  = {30},
   number  = {6},
   pages   = {1449--1513},
-  year    = {2018}
+  year    = {2018},
+  url     = {https://arxiv.org/abs/1803.00412}
 }
 
 @article{kleyko2022survey,
@@ -43,7 +49,8 @@
   journal = {ACM Computing Surveys},
   volume  = {55},
   number  = {6},
-  year    = {2022}
+  year    = {2022},
+  url     = {https://arxiv.org/abs/2111.06077}
 }
 
 @inproceedings{komer2019neural,
@@ -53,20 +60,22 @@
                Binding},
   booktitle = {Proceedings of the 41st Annual Meeting of the Cognitive Science
                Society (CogSci)},
-  year      = {2019}
+  year      = {2019},
+  url       = {https://compneuro.uwaterloo.ca/publications/komer2019.html}
 }
 
 @article{voelker2021simulating,
   author  = {Voelker, Aaron R. and Blouw, Peter and Choo, Xuan and
              Dumont, Nicole Sandra-Yaffa and Stewart, Terrence C. and
              Eliasmith, Chris},
-  title   = {Simulating and Predicting Dynamical Systems with Spatial Semantic
+  title   = {Simulating and Predicting Dynamical Systems With Spatial Semantic
              Pointers},
   journal = {Neural Computation},
   volume  = {33},
   number  = {8},
   pages   = {2033--2067},
-  year    = {2021}
+  year    = {2021},
+  url     = {https://doi.org/10.1162/neco_a_01410}
 }
 
 @article{dumont2023sspslam,
@@ -76,18 +85,20 @@
              System},
   journal = {Frontiers in Neuroscience},
   volume  = {17},
-  year    = {2023}
+  pages   = {1190515},
+  year    = {2023},
+  url     = {https://doi.org/10.3389/fnins.2023.1190515}
 }
 
 @inproceedings{krausse2025gcvsa,
-  author    = {Krausse, Jan and Neftci, Emre and Sommer, Friedrich T. and
+  author    = {Krausse, Sven and Neftci, Emre and Sommer, Friedrich T. and
                Renner, Alpha},
-  title     = {{GC-VSA}: Grid-Cell-Inspired Vector Symbolic Spatio-Temporal
-               Memory},
-  booktitle = {IEEE International Conference on Neuromorphic Computing (NICE)},
+  title     = {A Grid Cell-Inspired Structured Vector Algebra for Cognitive
+               Maps},
+  booktitle = {Neuro-Inspired Computational Elements Conference (NICE)},
+  pages     = {1--10},
   year      = {2025},
-  note      = {TODO verify exact title and author order against the NICE 2025
-               proceedings}
+  url       = {https://arxiv.org/abs/2503.08608}
 }
 
 @inproceedings{neubert2021hyperdimensional,
@@ -96,27 +107,31 @@
                Aggregation of Image Descriptors},
   booktitle = {IEEE/CVF Conference on Computer Vision and Pattern Recognition
                (CVPR)},
-  year      = {2021}
+  pages     = {16938--16947},
+  year      = {2021},
+  url       = {https://arxiv.org/abs/2101.07720}
 }
 
 @inproceedings{fedhd2022,
   author    = {Zhao, Quanling and Lee, Kai and Liu, Jeffrey and
                Huzaifa, Muhammad and Yu, Xiaofan and Rosing, Tajana},
   title     = {{FedHD}: Federated Learning with Hyperdimensional Computing},
-  booktitle = {ACM International Conference on Mobile Computing and Networking
-               (MobiCom)},
+  booktitle = {Proceedings of the 28th Annual International Conference on
+               Mobile Computing and Networking (MobiCom)},
+  pages     = {791--793},
   year      = {2022},
-  note      = {TODO verify author list (demo/poster track)}
+  url       = {https://doi.org/10.1145/3495243.3558757}
 }
 
 % ---------------- scene graphs / open-vocab maps ----------------
 
 @inproceedings{hughes2022hydra,
   author    = {Hughes, Nathan and Chang, Yun and Carlone, Luca},
-  title     = {Hydra: A Real-Time Spatial Perception System for {3D} Scene
+  title     = {Hydra: A Real-time Spatial Perception System for {3D} Scene
                Graph Construction and Optimization},
   booktitle = {Robotics: Science and Systems (RSS)},
-  year      = {2022}
+  year      = {2022},
+  url       = {https://arxiv.org/abs/2201.13360}
 }
 
 @inproceedings{gu2024conceptgraphs,
@@ -124,22 +139,28 @@
                Jatavallabhula, Krishna Murthy and Sen, Bipasha and
                Agarwal, Aditya and Rivera, Corban and Paul, William and
                Ellis, Kirsty and Chellappa, Rama and Gan, Chuang and
-               de Melo, Celso M. and Tenenbaum, Joshua B. and
+               de Melo, Celso Miguel and Tenenbaum, Joshua B. and
                Torralba, Antonio and Shkurti, Florian and Paull, Liam},
   title     = {{ConceptGraphs}: Open-Vocabulary {3D} Scene Graphs for
                Perception and Planning},
   booktitle = {IEEE International Conference on Robotics and Automation
                (ICRA)},
-  year      = {2024}
+  pages     = {5021--5028},
+  year      = {2024},
+  url       = {https://arxiv.org/abs/2309.16650}
 }
 
 @inproceedings{jatavallabhula2023conceptfusion,
   author    = {Jatavallabhula, Krishna Murthy and Kuwajerwala, Alihusein and
-               Gu, Qiao and Omama, Mohd and others},
-  title     = {{ConceptFusion}: Open-Set Multimodal {3D} Mapping},
+               Gu, Qiao and Omama, Mohd and Chen, Tao and Maalouf, Alaa and
+               Li, Shuang and Iyer, Ganesh and Saryazdi, Soroush and
+               Keetha, Nikhil and Tewari, Ayush and Tenenbaum, Joshua B. and
+               de Melo, Celso Miguel and Krishna, Madhava and Paull, Liam and
+               Shkurti, Florian and Torralba, Antonio},
+  title     = {{ConceptFusion}: Open-set Multimodal {3D} Mapping},
   booktitle = {Robotics: Science and Systems (RSS)},
   year      = {2023},
-  note      = {TODO complete author list}
+  url       = {https://arxiv.org/abs/2302.07241}
 }
 
 @inproceedings{werby2024hovsg,
@@ -148,21 +169,28 @@
   title     = {Hierarchical Open-Vocabulary {3D} Scene Graphs for
                Language-Grounded Robot Navigation},
   booktitle = {Robotics: Science and Systems (RSS)},
-  year      = {2024}
+  year      = {2024},
+  url       = {https://arxiv.org/abs/2403.17846}
 }
 
-@article{keysg2025,
-  title   = {{KeySG}: Hierarchical Keyframe-Based {3D} Scene Graphs},
-  journal = {arXiv preprint arXiv:2510.01049},
-  year    = {2025},
-  note    = {TODO verify title and authors from the arXiv page}
+@inproceedings{keysg2025,
+  author    = {Werby, Abdelrhman and Rotondi, Dennis and Scaparro, Fabio and
+               Arras, Kai O.},
+  title     = {{KeySG}: Hierarchical Keyframe-Based {3D} Scene Graphs},
+  booktitle = {IEEE International Conference on Robotics and Automation
+               (ICRA)},
+  year      = {2026},
+  url       = {https://arxiv.org/abs/2510.01049}
 }
 
 @article{farm2026,
-  title   = {{FARM}: Relational Spatial Memory for Embodied Agents},
+  author  = {He, Siming and Huang, Leo and Lilja, Adam and H{\"u}bel, Fabio and
+             Frey, Jonas and Pavone, Marco and Sastry, S. Shankar and
+             Malik, Jitendra and Tomlin, Claire},
+  title   = {{FARM}: Find Anything using Relational Spatial Memory},
   journal = {arXiv preprint arXiv:2606.15476},
   year    = {2026},
-  note    = {TODO verify title and authors from the arXiv page}
+  url     = {https://arxiv.org/abs/2606.15476}
 }
 
 @inproceedings{agia2022taskography,
@@ -171,8 +199,11 @@
                Mukadam, Mustafa and Paull, Liam and Shkurti, Florian},
   title     = {Taskography: Evaluating Robot Task Planning over Large {3D}
                Scene Graphs},
-  booktitle = {Conference on Robot Learning (CoRL)},
-  year      = {2022}
+  booktitle = {Proceedings of the 5th Conference on Robot Learning (CoRL),
+               PMLR 164},
+  pages     = {46--58},
+  year      = {2022},
+  url       = {https://arxiv.org/abs/2207.05006}
 }
 
 % ---------------- relocalisation / VPR ----------------
@@ -184,17 +215,21 @@
                in {RGB-D} Images},
   booktitle = {IEEE Conference on Computer Vision and Pattern Recognition
                (CVPR)},
-  year      = {2013}
+  pages     = {2930--2937},
+  year      = {2013},
+  url       = {https://doi.org/10.1109/CVPR.2013.377}
 }
 
 @inproceedings{sattler2019understanding,
   author    = {Sattler, Torsten and Zhou, Qunjie and Pollefeys, Marc and
                Leal-Taix{\'e}, Laura},
-  title     = {Understanding the Limitations of {CNN}-Based Absolute Camera
+  title     = {Understanding the Limitations of {CNN-Based} Absolute Camera
                Pose Regression},
   booktitle = {IEEE/CVF Conference on Computer Vision and Pattern Recognition
                (CVPR)},
-  year      = {2019}
+  pages     = {3302--3312},
+  year      = {2019},
+  url       = {https://arxiv.org/abs/1903.07504}
 }
 
 @article{jegou2011product,
@@ -204,7 +239,8 @@
   volume  = {33},
   number  = {1},
   pages   = {117--128},
-  year    = {2011}
+  year    = {2011},
+  url     = {https://doi.org/10.1109/TPAMI.2010.57}
 }
 
 @inproceedings{berton2023eigenplaces,
@@ -213,19 +249,22 @@
   title     = {{EigenPlaces}: Training Viewpoint Robust Models for Visual
                Place Recognition},
   booktitle = {IEEE/CVF International Conference on Computer Vision (ICCV)},
-  year      = {2023}
+  pages     = {11046--11056},
+  year      = {2023},
+  url       = {https://arxiv.org/abs/2308.10832}
 }
 
 % ---------------- multi-robot mapping / merge ----------------
 
 @article{birk2006merging,
   author  = {Birk, Andreas and Carpin, Stefano},
-  title   = {Merging Occupancy Grid Maps from Multiple Robots},
+  title   = {Merging Occupancy Grid Maps From Multiple Robots},
   journal = {Proceedings of the IEEE},
   volume  = {94},
   number  = {7},
   pages   = {1384--1397},
-  year    = {2006}
+  year    = {2006},
+  url     = {https://doi.org/10.1109/JPROC.2006.876965}
 }
 
 @article{carpin2008fast,
@@ -235,16 +274,20 @@
   volume  = {25},
   number  = {3},
   pages   = {305--316},
-  year    = {2008}
+  year    = {2008},
+  url     = {https://doi.org/10.1007/s10514-008-9097-4}
 }
 
 @inproceedings{cunningham2010ddfsam,
-  author    = {Cunningham, Alexander and Paluri, Manohar and Dellaert, Frank},
+  author    = {Cunningham, Alexander and Paluri, Balamanohar and
+               Dellaert, Frank},
   title     = {{DDF-SAM}: Fully Distributed {SLAM} Using Constrained Factor
                Graphs},
   booktitle = {IEEE/RSJ International Conference on Intelligent Robots and
                Systems (IROS)},
-  year      = {2010}
+  pages     = {3025--3030},
+  year      = {2010},
+  url       = {https://doi.org/10.1109/IROS.2010.5652875}
 }
 
 @inproceedings{mangelson2018pcm,
@@ -254,7 +297,9 @@
                Multi-Robot Map Merging},
   booktitle = {IEEE International Conference on Robotics and Automation
                (ICRA)},
-  year      = {2018}
+  pages     = {2916--2923},
+  year      = {2018},
+  url       = {https://doi.org/10.1109/ICRA.2018.8460217}
 }
 
 @article{lajoie2020doorslam,
@@ -266,7 +311,8 @@
   volume  = {5},
   number  = {2},
   pages   = {1656--1663},
-  year    = {2020}
+  year    = {2020},
+  url     = {https://arxiv.org/abs/1909.12198}
 }
 
 @article{tian2022kimeramulti,
@@ -279,19 +325,20 @@
   number  = {4},
   pages   = {2022--2038},
   year    = {2022},
-  note    = {TODO verify page range}
+  url     = {https://arxiv.org/abs/2106.14386}
 }
 
 @article{cramariuc2023maplab,
   author  = {Cramariuc, Andrei and Bernreiter, Lukas and Tschopp, Florian and
-             Fehr, Marius and Reijgwart, Victor and Nieto, Juan and
+             Fehr, Marius and Reijgwart, Victor and Nieto, Juan I. and
              Siegwart, Roland and Cadena, Cesar},
-  title   = {maplab 2.0 -- A Modular and Multi-Modal Mapping Framework},
+  title   = {{maplab} 2.0 -- A Modular and Multi-Modal Mapping Framework},
   journal = {IEEE Robotics and Automation Letters},
   volume  = {8},
   number  = {2},
   pages   = {520--527},
-  year    = {2023}
+  year    = {2023},
+  url     = {https://arxiv.org/abs/2212.00654}
 }
 
 @article{lajoie2024swarmslam,
@@ -303,7 +350,7 @@
   number  = {1},
   pages   = {475--482},
   year    = {2024},
-  note    = {TODO verify volume/pages}
+  url     = {https://arxiv.org/abs/2301.06230}
 }
 
 @inproceedings{chang2023hydramulti,
@@ -312,7 +359,9 @@
                Graphs with Multi-Robot Teams},
   booktitle = {IEEE/RSJ International Conference on Intelligent Robots and
                Systems (IROS)},
-  year      = {2023}
+  pages     = {10995--11002},
+  year      = {2023},
+  url       = {https://arxiv.org/abs/2304.13487}
 }
 
 @article{tardos2002robust,
@@ -324,7 +373,8 @@
   volume  = {21},
   number  = {4},
   pages   = {311--330},
-  year    = {2002}
+  year    = {2002},
+  url     = {https://doi.org/10.1177/027836402320556340}
 }
 
 @article{huang2008slsjf,
@@ -335,7 +385,8 @@
   volume  = {24},
   number  = {5},
   pages   = {1121--1130},
-  year    = {2008}
+  year    = {2008},
+  url     = {https://doi.org/10.1109/TRO.2008.2003259}
 }
 
 @article{zhao2019linear,
@@ -346,33 +397,39 @@
   volume  = {100},
   pages   = {231--246},
   year    = {2019},
-  note    = {TODO verify volume/pages}
+  url     = {https://arxiv.org/abs/1809.06967}
 }
 
 @inproceedings{hu2023cpslam,
-  author    = {Hu, Jiarui and Chen, Xianhao and Feng, Boyin and Li, Guanglin
-               and Yang, Liangjing and Bao, Hujun and Zhang, Guofeng and
+  author    = {Hu, Jiarui and Mao, Mao and Bao, Hujun and Zhang, Guofeng and
                Cui, Zhaopeng},
   title     = {{CP-SLAM}: Collaborative Neural Point-Based {SLAM} System},
   booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
   year      = {2023},
-  note      = {TODO verify author list}
+  url       = {https://arxiv.org/abs/2311.08013}
 }
 
 @article{dinerf2024,
+  author  = {Asadi, Mahboubeh and Zareinia, Kourosh and Saeedi, Sajad},
   title   = {{Di-NeRF}: Distributed {NeRF} for Collaborative Learning with
              Relative Pose Refinement},
-  journal = {arXiv preprint},
+  journal = {IEEE Robotics and Automation Letters},
+  volume  = {9},
+  number  = {11},
+  pages   = {10527--10534},
   year    = {2024},
-  note    = {TODO verify authors and arXiv id}
+  url     = {https://arxiv.org/abs/2402.01485}
 }
 
 @inproceedings{magicslam2025,
-  title     = {{MAGiC-SLAM}: Multi-Agent Gaussian Globally Consistent {SLAM}},
+  author    = {Yugay, Vladimir and Gevers, Theo and Oswald, Martin R.},
+  title     = {{MAGiC-SLAM}: Multi-Agent {Gaussian} Globally Consistent
+               {SLAM}},
   booktitle = {IEEE/CVF Conference on Computer Vision and Pattern Recognition
                (CVPR)},
+  pages     = {6741--6750},
   year      = {2025},
-  note      = {TODO verify authors}
+  url       = {https://arxiv.org/abs/2411.16785}
 }
 
 % ---------------- datasets / frontends ----------------
@@ -383,7 +440,8 @@
              Mur-Artal, Ra{\'u}l and Ren, Carl and Verma, Shobhit and others},
   title   = {The {Replica} Dataset: A Digital Replica of Indoor Spaces},
   journal = {arXiv preprint arXiv:1906.05797},
-  year    = {2019}
+  year    = {2019},
+  url     = {https://arxiv.org/abs/1906.05797}
 }
 
 @inproceedings{zhu2022niceslam,
@@ -393,7 +451,8 @@
   title     = {{NICE-SLAM}: Neural Implicit Scalable Encoding for {SLAM}},
   booktitle = {IEEE/CVF Conference on Computer Vision and Pattern Recognition
                (CVPR)},
-  year      = {2022}
+  year      = {2022},
+  url       = {https://arxiv.org/abs/2112.12130}
 }
 
 @inproceedings{kong2023vmap,
@@ -402,22 +461,26 @@
   title     = {{vMAP}: Vectorised Object Mapping for Neural Field {SLAM}},
   booktitle = {IEEE/CVF Conference on Computer Vision and Pattern Recognition
                (CVPR)},
-  year      = {2023}
+  year      = {2023},
+  url       = {https://arxiv.org/abs/2302.01838}
 }
 
 @misc{jocher2023yolov8,
   author = {Jocher, Glenn and Chaurasia, Ayush and Qiu, Jing},
   title  = {Ultralytics {YOLOv8}},
   year   = {2023},
-  note   = {\url{https://github.com/ultralytics/ultralytics}}
+  url    = {https://github.com/ultralytics/ultralytics}
 }
 
 @article{oquab2023dinov2,
   author  = {Oquab, Maxime and Darcet, Timoth{\'e}e and Moutakanni, Th{\'e}o
-             and others},
+             and Vo, Huy and Szafraniec, Marc and Khalidov, Vasil and
+             Fernandez, Pierre and Haziza, Daniel and Massa, Francisco and
+             El-Nouby, Alaaeldin and others},
   title   = {{DINOv2}: Learning Robust Visual Features without Supervision},
   journal = {Transactions on Machine Learning Research},
-  year    = {2024}
+  year    = {2024},
+  url     = {https://arxiv.org/abs/2304.07193}
 }
 
 @inproceedings{radford2021clip,
@@ -425,8 +488,10 @@
                Ramesh, Aditya and Goh, Gabriel and Agarwal, Sandhini and
                Sastry, Girish and Askell, Amanda and Mishkin, Pamela and
                Clark, Jack and Krueger, Gretchen and Sutskever, Ilya},
-  title     = {Learning Transferable Visual Models from Natural Language
+  title     = {Learning Transferable Visual Models From Natural Language
                Supervision},
-  booktitle = {International Conference on Machine Learning (ICML)},
-  year      = {2021}
+  booktitle = {International Conference on Machine Learning (ICML), PMLR 139},
+  pages     = {8748--8763},
+  year      = {2021},
+  url       = {https://arxiv.org/abs/2103.00020}
 }
