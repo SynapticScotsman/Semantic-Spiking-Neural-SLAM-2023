@@ -1,0 +1,270 @@
+"""Generate experiments/COLAB_CONCEPTGRAPHS_L4.ipynb — the head-to-head.
+
+Why this notebook exists: the same-metric ConceptGraphs comparison is the
+project's biggest open item and it was blocked on a laptop GPU of unknown
+VRAM. An L4 (24 GB) runs their DEFAULT config — SAM ViT-H — so the
+comparison is against their paper's configuration rather than a
+downgraded variant, and one Replica scene costs only a few compute units.
+
+Structure mirrors student_gpu_package/ (same stages, same handoff schema,
+same one-scorer-for-both-systems rule) with three Colab adaptations:
+  * pip instead of conda (Colab has no conda by default);
+  * Drive persistence for the repo, checkpoints and scene data, so a
+    disconnect never re-downloads ~6 GB of weights;
+  * a SMOKE stage that validates their install on ~40 frames BEFORE any
+    full run, because dependency drift in a third-party repo is the
+    likeliest failure and units should not be spent discovering it.
+
+    python tools/create_colab_conceptgraphs_nb.py
+"""
+from __future__ import annotations
+
+import json
+import os
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+OUT = os.path.join(ROOT, "experiments", "COLAB_CONCEPTGRAPHS_L4.ipynb")
+
+REPO = "https://github.com/SynapticScotsman/Semantic-Spiking-Neural-SLAM-2023.git"
+BRANCH = "results-sites"
+
+
+def md(*lines):
+    return {"cell_type": "markdown", "metadata": {},
+            "source": [l + "\n" for l in lines]}
+
+
+def code(*lines):
+    return {"cell_type": "code", "metadata": {}, "execution_count": None,
+            "outputs": [], "source": [l + "\n" for l in lines]}
+
+
+cells = [
+    md("# ConceptGraphs head-to-head — Colab (L4 recommended)",
+       "",
+       "Scores **ConceptGraphs and our VSA memory on the same Replica scenes,",
+       "under ConceptGraphs' own evaluation** (mAcc / F-mIoU, their scorer,",
+       "their ground truth). No invented metrics: our trace is made to emit the",
+       "same output type their eval consumes, so one scorer judges both.",
+       "",
+       "**Runtime choice matters here:**",
+       "",
+       "| runtime | VRAM | backbone it can run | ~units/h | verdict |",
+       "|---|---|---|---|---|",
+       "| **L4** | 24 GB | **SAM ViT-H — their default** | ~4.8 | **use this** |",
+       "| T4 | 16 GB | MobileSAM (supported variant) | ~1.8 | works, config differs |",
+       "| TPU | — | none of this stack | — | not usable (see below) |",
+       "",
+       "*Why not the TPUs:* every model here (YOLO/ultralytics, SAM,",
+       "GroundingDINO, CLIP, EigenPlaces) is CUDA-path PyTorch. TPUs need",
+       "XLA-compiled graphs; porting an inference pipeline over a few thousand",
+       "images would cost far more effort than the compute it saves. Spend the",
+       "TPU allocation elsewhere.",
+       "",
+       "**Budget:** one scene ≈ 30–90 min on L4 ≈ **3–7 units**. All 8 Replica",
+       "scenes ≈ 25–55 units. Run `room0` first (it is ConceptGraphs' own demo",
+       "scene) and only continue if its mAcc lands near their published ~0.40."),
+
+    md("## 0 · Runtime check + unit estimate"),
+    code("import subprocess, torch",
+         "print(subprocess.run(['nvidia-smi',",
+         "                      '--query-gpu=name,memory.total',",
+         "                      '--format=csv'], capture_output=True,",
+         "                     text=True).stdout)",
+         "vram = torch.cuda.get_device_properties(0).total_memory / 1e9 if torch.cuda.is_available() else 0",
+         "GSA = 'sam_vit_h' if vram >= 20 else ('mobilesam' if vram >= 6 else None)",
+         "print(f'VRAM {vram:.0f} GB -> segmentation backbone: {GSA}')",
+         "assert GSA, 'No usable GPU — Runtime > Change runtime type > L4 (or T4)'",
+         "if GSA != 'sam_vit_h':",
+         "    print('NOTE: not their default config — record this in the writeup.')"),
+
+    md("## 1 · Drive workspace",
+       "",
+       "Repo, their repo, ~6 GB of checkpoints and the scene data all live in",
+       "Drive. A disconnect then costs minutes, not a re-download."),
+    code("from google.colab import drive; from pathlib import Path; import os",
+         "drive.mount('/content/drive')",
+         "DRIVE = Path('/content/drive/MyDrive/ssnslam_colab')",
+         "WORKSPACE = DRIVE / 'workspace'; HANDOFF = DRIVE / 'handoff'",
+         "for p in (WORKSPACE, HANDOFF): p.mkdir(parents=True, exist_ok=True)",
+         "print(WORKSPACE)"),
+
+    md("## 2 · Our repo + deps"),
+    code("import subprocess, os",
+         f"REPO_URL = '{REPO}'; BRANCH = '{BRANCH}'",
+         "REPO_DIR = WORKSPACE / 'Semantic-Spiking-Neural-SLAM-2023'",
+         "if not (REPO_DIR / '.git').exists():",
+         "    subprocess.run(['git','clone','--branch',BRANCH,'--depth','50',",
+         "                    REPO_URL,str(REPO_DIR)], check=True)",
+         "else:",
+         "    subprocess.run(['git','-C',str(REPO_DIR),'fetch','origin',BRANCH], check=True)",
+         "    subprocess.run(['git','-C',str(REPO_DIR),'reset','--hard',",
+         "                    f'origin/{BRANCH}'], check=True)",
+         "os.chdir(REPO_DIR)",
+         "# keep big dirs on Drive",
+         "for d in ('data/replica','outputs'):",
+         "    tgt = WORKSPACE / d.replace('/','_'); tgt.mkdir(parents=True, exist_ok=True)",
+         "    if not os.path.exists(d):",
+         "        os.makedirs(os.path.dirname(d) or '.', exist_ok=True); os.symlink(tgt, d)",
+         "!pip -q install ultralytics transformers scipy 2>&1 | tail -1",
+         "print('repo ready at', os.getcwd())"),
+
+    md("## 3 · ConceptGraphs + checkpoints (VRAM-aware)",
+       "",
+       "Their README is authoritative; this covers the documented path. If the",
+       "editable install fails, follow their README and re-run — every step",
+       "below is skip-if-present."),
+    code("import os, subprocess",
+         "from pathlib import Path",
+         "CG = WORKSPACE / 'concept-graphs'",
+         "if not (CG / '.git').exists():",
+         "    subprocess.run(['git','clone',",
+         "        'https://github.com/concept-graphs/concept-graphs.git',str(CG)],",
+         "        check=True)",
+         "!pip -q install -e {CG} 2>&1 | tail -2",
+         "!pip -q install open_clip_torch supervision open3d 2>&1 | tail -1",
+         "",
+         "ck = CG / 'checkpoints'; ck.mkdir(exist_ok=True)",
+         "def get(url, name):",
+         "    p = ck / name",
+         "    if not p.exists():",
+         "        print('downloading', name); subprocess.run(['wget','-q','-O',str(p),url], check=True)",
+         "    print(f'{name}: {p.stat().st_size/1e6:.0f} MB')",
+         "get('https://github.com/ChaoningZhang/MobileSAM/raw/master/weights/mobile_sam.pt',",
+         "    'mobile_sam.pt')",
+         "if GSA == 'sam_vit_h':",
+         "    get('https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth',",
+         "        'sam_vit_h_4b8939.pth')",
+         "get('https://github.com/IDEA-Research/GroundingDINO/releases/download/v0.1.0-alpha/groundingdino_swint_ogc.pth',",
+         "    'groundingdino_swint_ogc.pth')",
+         "get('https://huggingface.co/spaces/xinyu1205/recognize-anything/resolve/main/ram_swin_large_14m.pth',",
+         "    'ram_swin_large_14m.pth')"),
+
+    md("## 4 · Scene data + our observations",
+       "",
+       "Same commands as the local pipeline — RGB-D + poses, GT renders, then",
+       "our YOLO detections and world placement (all GPU-accelerated here)."),
+    code("SCENE = 'room0'   # ConceptGraphs' own demo scene — start here",
+         "",
+         "import subprocess, time",
+         "def sh(c):",
+         "    print('$', ' '.join(c), flush=True)",
+         "    t0=time.time(); r=subprocess.run(c)",
+         "    print(f'  exit {r.returncode} in {time.time()-t0:.0f}s', flush=True); return r.returncode==0",
+         "",
+         "cfg = f'vsa_cognitive_mapping/configs/replica_{SCENE}.json'",
+         "from pathlib import Path",
+         "if not Path(f'data/replica/{SCENE}/poses.csv').exists():",
+         "    sh(['python','tools/prepare_replica.py','--scene',SCENE])",
+         "if not Path(f'outputs/replica_{SCENE}/gt_instances.json').exists():",
+         "    sh(['python','tools/replica_gt_from_renders.py','--scene',SCENE])",
+         "if not Path(f'outputs/replica_{SCENE}/detections_crops.csv').exists():",
+         "    sh(['python','-m','vsa_cognitive_mapping.classroom_pipeline',",
+         "        'embed-crops','--dataset',cfg])",
+         "if not Path(f'outputs/replica_{SCENE}/object_points.json').exists():",
+         "    sh(['python','-m','vsa_cognitive_mapping.object_grounding','--dataset',cfg,",
+         "        '--gt-json',f'outputs/replica_{SCENE}/gt_instances.json'])",
+         "sh(['python','student_gpu_package/01_check_data.py','--scene',SCENE])"),
+
+    md("## 5 · SMOKE their pipeline first (~40 frames)",
+       "",
+       "Spend two minutes proving the install before spending units on 2000",
+       "frames. If this fails, the fix is in their README — nothing below is",
+       "worth attempting until it passes."),
+    code("import os, subprocess, glob",
+         "CG_DATA = 'student_gpu_package/cg_dataset'",
+         "SMOKE = f'{CG_DATA}_smoke/{SCENE}/results'",
+         "os.makedirs(SMOKE, exist_ok=True)",
+         "src = sorted(glob.glob(f'{CG_DATA}/{SCENE}/results/frame*.jpg'))[:40]",
+         "for p in src:",
+         "    d = os.path.join(SMOKE, os.path.basename(p))",
+         "    if not os.path.exists(d): os.symlink(os.path.abspath(p), d)",
+         "    dp = p.replace('frame','depth').replace('.jpg','.png')",
+         "    dd = os.path.join(SMOKE, os.path.basename(dp))",
+         "    if os.path.exists(dp) and not os.path.exists(dd): os.symlink(os.path.abspath(dp), dd)",
+         "import shutil",
+         "shutil.copy(f'{CG_DATA}/{SCENE}/traj.txt', f'{CG_DATA}_smoke/{SCENE}/traj.txt')",
+         "shutil.copy(f'{CG_DATA}/{SCENE}/cam_params.json', f'{CG_DATA}_smoke/{SCENE}/cam_params.json')",
+         "print(f'{len(src)} frames staged for smoke at {SMOKE}')",
+         "",
+         "# candidate entry points — their module path has moved between releases",
+         "CANDIDATES = ['conceptgraph.slam.cfslam_pipeline_batch',",
+         "              'conceptgraph.slam.rerun_realtime_mapping',",
+         "              'conceptgraph.scripts.run_slam']",
+         "ENTRY = None",
+         "for m in CANDIDATES:",
+         "    if subprocess.run(['python','-c',f'import importlib;importlib.import_module(\"{m}\")'],",
+         "                      capture_output=True).returncode == 0:",
+         "        ENTRY = m; break",
+         "print('entry point:', ENTRY or 'NONE FOUND — check their README Usage section')",
+         "if not ENTRY:",
+         "    !grep -rl '__main__' {CG}/conceptgraph --include='*.py' | head -20"),
+
+    md("## 6 · Full run on the scene",
+       "",
+       "Record the wall-clock — it is a column in the systems comparison."),
+    code("import time, subprocess",
+         "OUT = f'{WORKSPACE}/cg_out/{SCENE}'",
+         "!mkdir -p {OUT}",
+         "extra = [] if GSA=='sam_vit_h' else ['sam_variant=mobilesam']",
+         "t0 = time.time()",
+         "r = subprocess.run(['python','-m',ENTRY,",
+         "                    f'dataset_root={os.path.abspath(CG_DATA)}',",
+         "                    f'scene_id={SCENE}', f'save_dir={OUT}'] + extra)",
+         "print(f'exit {r.returncode} | wall-clock {(time.time()-t0)/60:.1f} min',",
+         "      f'| backbone {GSA}')",
+         "!ls -lh {OUT} | head"),
+
+    md("## 7 · Export, our labels, one scorer for both"),
+    code("sh(['python','student_gpu_package/03_export_cg.py','--scene',SCENE])",
+         "sh(['python','student_gpu_package/04_vsa_labels.py','--scene',SCENE])",
+         "sh(['python','student_gpu_package/05_score.py','--scene',SCENE])",
+         "import json",
+         "print(json.dumps(json.load(open(",
+         "    f'student_gpu_package/handoff/{SCENE}/scores.json')), indent=2))"),
+
+    md("## 8 · Save the handoff",
+       "",
+       "Sanity anchor before trusting anything: their room0 mAcc should land",
+       "near the paper's Replica average (~0.40). If it is wildly off, the",
+       "config drifted — send the run log rather than tuning toward the number."),
+    code("import shutil, time",
+         "stamp = time.strftime('%Y%m%d_%H%M')",
+         "dst = HANDOFF / f'{SCENE}_{stamp}'",
+         "shutil.copytree(f'student_gpu_package/handoff/{SCENE}', dst, dirs_exist_ok=True)",
+         "!pip list 2>/dev/null | grep -Ei 'torch|clip|segment|groundingdino|ultralytics' > {dst}/environment.txt",
+         "print('saved to', dst)",
+         "!du -sh {dst}"),
+
+    md("## 9 · What this costs and what to run next",
+       "",
+       "- `room0` first (their demo scene, best chance of a clean install).",
+       "- If its mAcc is near ~0.40, queue the rest: `room1 room2 office0",
+       "  office1 office2 office3 office4` — roughly 25–55 units total on L4.",
+       "- Bring the `handoff/` folders home; scoring and every downstream",
+       "  analysis then runs locally in seconds.",
+       "",
+       "**Pre-registered expectation (state it before seeing the number):** our",
+       "all-classes mAcc will be LOW — walls, floors and ceilings dominate the",
+       "point count and an object-detector-fed memory cannot label them, while",
+       "their SAM pipeline segments everything. Record which classes their eval",
+       "actually scores; the honest comparison is whatever their code reports,",
+       "not a subset we choose afterwards."),
+]
+
+nb = {
+    "cells": cells,
+    "metadata": {
+        "colab": {"provenance": [], "gpuType": "L4"},
+        "accelerator": "GPU",
+        "kernelspec": {"display_name": "Python 3", "name": "python3"},
+        "language_info": {"name": "python"},
+    },
+    "nbformat": 4,
+    "nbformat_minor": 0,
+}
+
+os.makedirs(os.path.dirname(OUT), exist_ok=True)
+with open(OUT, "w", encoding="utf-8", newline="\n") as f:
+    json.dump(nb, f, indent=1)
+print(f"wrote {OUT} ({os.path.getsize(OUT)/1024:.0f} KB, {len(cells)} cells)")

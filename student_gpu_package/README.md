@@ -10,6 +10,18 @@ Time budget: ~1 evening for room0, ~1 day for all 8 scenes.
 Everything below is scripted; run the stages in order. Each stage prints
 `STAGE OK` on success — do not continue past a failure, send Paul the log.
 
+## Colab alternative (no local GPU needed)
+
+If a suitable local GPU is not available, the same six stages run on Colab:
+**`experiments/COLAB_CONCEPTGRAPHS_L4.ipynb`** in this repo (open it via
+colab.research.google.com/github/... → results-sites branch). It uses the
+identical stage scripts and handoff schema; the only differences are pip
+instead of conda, Drive persistence, and a ~40-frame smoke run that
+validates the ConceptGraphs install before a full scene is attempted.
+An **L4** runtime (24 GB) runs their default SAM ViT-H config; a T4 falls
+back to MobileSAM exactly as stage 00 does locally. Budget roughly 3–7
+compute units per scene.
+
 ## Walkthrough from zero (nothing installed yet)
 
 You need: a Linux machine with an NVIDIA GPU, ~40 GB free disk, and internet
