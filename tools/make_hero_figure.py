@@ -104,6 +104,59 @@ def pick_class(panels, wanted=None):
     return scored[0]
 
 
+def real_traces(scene="outputs/replica_room0/object_points.json",
+                dim=8192, seed=7, cls="chair", ell=0.6, cap=None):
+    """Build REAL traces from the real observation stream.
+
+    The strips drawn in the concept figure are actual FHRR phasors from
+    this repo's own implementation, bound and bundled exactly as the
+    system does it, so the picture is the mechanism rather than an
+    illustration of it.
+    """
+    import sys
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from vsa_cognitive_mapping.vsa import Phasor
+
+    pts = json.load(open(scene))["points"]
+    rng = np.random.RandomState(seed)
+
+    classes = sorted({p["cls"] for p in pts})
+    atoms = {c: Phasor(dim=dim, seed=seed + i) for i, c in enumerate(classes)}
+    bx = Phasor(dim=dim, seed=seed + 901)
+    by = Phasor(dim=dim, seed=seed + 902)
+
+    def place(x, y):
+        return Phasor(data=bx.fpe(x / ell).values * by.fpe(y / ell).values)
+
+    # cap=None bundles the whole stream, so the figure's "N observations
+    # into one fixed vector" caption is literally true of what is drawn.
+    # Passing cap=k reproduces the deployed bounded per-class insertion.
+    if cap is None:
+        kept = list(pts)
+    else:
+        seen = collections.Counter()
+        kept = []
+        for p in pts:
+            if seen[p["cls"]] < cap:
+                seen[p["cls"]] += 1
+                kept.append(p)
+
+    half = len(kept) // 2
+    def bundle(sub):
+        acc = np.zeros(dim, dtype=complex)
+        for p in sub:
+            acc += atoms[p["cls"]].bind(place(p["x"], p["y"])).values
+        return acc
+
+    m_a, m_b = bundle(kept[:half]), bundle(kept[half:])
+    joint = bundle(kept)
+    one = atoms[cls].bind(place(kept[0]["x"], kept[0]["y"])).values
+    err = float(np.max(np.abs((m_a + m_b) - joint)))
+    return dict(atom=atoms[cls].values, one=one, trace=joint,
+                a=m_a, b=m_b, sum=m_a + m_b, merge_err=err,
+                n_obs=len(pts), n_kept=len(kept), dim=dim)
+
+
 def merge_summary(pattern=MERGE_GLOB):
     """Pool the per-scene 4-robot joining results."""
     agg = collections.defaultdict(lambda: {"r": [], "a": 0, "b": []})
@@ -184,6 +237,142 @@ def draw_field(ax, rm, panel, compact=False):
                    linewidth=1.05, zorder=5)
     ax.set_xlim(ex[0], ex[1]); ax.set_ylim(ex[2], ex[3])
     ax.set_xticks([]); ax.set_yticks([])
+
+
+def strip(ax, values, n_show=176, lw=0.6):
+    """Draw a phasor as a barcode of phase angles: the map, made visible."""
+    v = np.asarray(values)
+    idx = np.linspace(0, len(v) - 1, n_show).astype(int)
+    ph = np.angle(v[idx])[None, :]
+    ax.imshow(ph, aspect="auto", cmap="twilight", vmin=-np.pi, vmax=np.pi,
+              interpolation="nearest")
+    ax.set_xticks([]); ax.set_yticks([])
+    for sp in ax.spines.values():
+        sp.set_color("#3a4654"); sp.set_linewidth(lw)
+
+
+# ------------------------------------------------------------- layout: concept
+def build_concept(args):
+    """Show WHAT the representation is, not just that it works.
+
+    Scene-graph teasers (ConceptGraphs, FARM) show their data structure
+    accumulating: point clouds, nodes, edges, Gaussians. A reader can
+    picture the thing. The equivalent here is the trace itself, so this
+    figure draws it, and draws every operation acting on it.
+    """
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    from matplotlib.gridspec import GridSpec
+
+    rm = payload(args.room0)
+    panel = pick_class(rm["panels"], args.class_name or "chair")
+    tr = real_traces(cls=panel["cls"])
+    mg, n_scenes = merge_summary()
+    vsa, inst = mg["VSA trace + addition"], mg["instance lists + association"]
+
+    plt.rcParams.update({"font.size": 7, "font.family": "sans-serif",
+                         "axes.linewidth": 0.6})
+    fig = plt.figure(figsize=(7.16, 2.30))
+    gs = GridSpec(1, 4, width_ratios=[1.90, 1.62, 1.86, 1.78], wspace=0.30,
+                  left=0.006, right=0.994, top=0.855, bottom=0.045)
+
+    T = dict(fontsize=7.0, weight="bold", pad=4)
+    note = dict(fontsize=5.5, color="#5b6875", ha="center")
+
+    # ---- (a) one observation is one multiply-add --------------------
+    a = fig.add_subplot(gs[0]); a.axis("off")
+    a.set_title("(a) an observation is a multiply-add", **T)
+    sa = gs[0].subgridspec(4, 1, height_ratios=[2.5, 0.5, 0.5, 0.8],
+                           hspace=0.42)
+    axp = fig.add_subplot(sa[0])
+    key = panel.get("tq") or panel.get("ta")
+    if key and key in rm["imgs"]:
+        axp.imshow(decode(rm["imgs"][key]))
+    axp.set_xticks([]); axp.set_yticks([])
+    for sp in axp.spines.values():
+        sp.set_color(C_GT); sp.set_linewidth(1.0)
+    axp.text(0.04, 0.93, panel["cls"], transform=axp.transAxes, ha="left",
+             va="top", fontsize=5.8, color="white",
+             bbox=dict(fc=C_GT, ec="none", pad=1.1, alpha=0.92))
+    ax1 = fig.add_subplot(sa[1]); strip(ax1, tr["atom"])
+    ax1.set_ylabel("what", rotation=0, ha="right", va="center",
+                   fontsize=5.6, labelpad=3)
+    ax2 = fig.add_subplot(sa[2])
+    strip(ax2, np.exp(1j * np.angle(tr["one"] / tr["atom"])))
+    ax2.set_ylabel("where", rotation=0, ha="right", va="center",
+                   fontsize=5.6, labelpad=3)
+    ax3 = fig.add_subplot(sa[3]); strip(ax3, tr["one"], lw=1.0)
+    ax3.set_ylabel(r"what $\otimes$ where", rotation=0, ha="right",
+                   va="center", fontsize=5.6, labelpad=3)
+
+    # ---- (b) the whole map is one vector ----------------------------
+    b = fig.add_subplot(gs[1]); b.axis("off")
+    b.set_title("(b) the map is one vector", **T)
+    sb = gs[1].subgridspec(3, 1, height_ratios=[1.0, 1.1, 2.3], hspace=0.35)
+    fig.add_subplot(sb[0]).axis("off")
+    axt = fig.add_subplot(sb[1]); strip(axt, tr["trace"], lw=1.2)
+    axt.set_ylabel(r"$\Sigma$", rotation=0, ha="right", va="center",
+                   fontsize=9, labelpad=3)
+    axn = fig.add_subplot(sb[2]); axn.axis("off")
+    axn.text(0.5, 0.92,
+             "all %s observations\nof one walk, bundled into\n%s phases = 32 KB"
+             % ("{:,}".format(tr["n_kept"]), "{:,}".format(tr["dim"])),
+             transform=axn.transAxes, ha="center", va="top", fontsize=6.0,
+             linespacing=1.45)
+    axn.text(0.5, 0.30, "storing more\nnever makes it longer",
+             transform=axn.transAxes, va="top", linespacing=1.4, **note)
+
+    # ---- (c) a question is one unbind -------------------------------
+    c = fig.add_subplot(gs[2]); c.axis("off")
+    c.set_title("(c) a question is one unbind", **T)
+    sc = gs[2].subgridspec(2, 1, height_ratios=[0.55, 3.1], hspace=0.30)
+    axq = fig.add_subplot(sc[0]); strip(axq, tr["atom"])
+    axq.set_ylabel(r"$\oslash$ %s" % panel["cls"], rotation=0, ha="right",
+                   va="center", fontsize=5.8, labelpad=3)
+    axf = fig.add_subplot(sc[1]); draw_field(axf, rm, panel, compact=True)
+    axf.text(0.03, 0.96, '"where is the %s?"' % panel["cls"],
+             transform=axf.transAxes, ha="left", va="top", fontsize=5.8,
+             color="white")
+    axf.text(0.03, 0.04, "green = true instances", transform=axf.transAxes,
+             ha="left", va="bottom", fontsize=5.2, color="white", alpha=0.9)
+
+    # ---- (d) two maps combine by addition ---------------------------
+    d = fig.add_subplot(gs[3]); d.axis("off")
+    d.set_title("(d) two maps add", **T)
+    sd = gs[3].subgridspec(5, 1, height_ratios=[0.5, 0.5, 0.5, 0.5, 2.0],
+                           hspace=0.55)
+    for i, (vals, lab) in enumerate(((tr["a"], "robot A"),
+                                     (tr["b"], "robot B"),
+                                     (tr["sum"], "A + B"))):
+        ax = fig.add_subplot(sd[i if i < 2 else 3])
+        strip(ax, vals, lw=1.0 if i == 2 else 0.6)
+        ax.set_ylabel(lab, rotation=0, ha="right", va="center",
+                      fontsize=5.6, labelpad=3)
+    axplus = fig.add_subplot(sd[2]); axplus.axis("off")
+    axplus.text(0.5, 0.5, "+", transform=axplus.transAxes, ha="center",
+                va="center", fontsize=9)
+    axd = fig.add_subplot(sd[4]); axd.axis("off")
+    axd.text(0.5, 0.98, "= the jointly built map", transform=axd.transAxes,
+             ha="center", va="top", fontsize=6.2)
+    axd.text(0.5, 0.72,
+             "to $10^{%d}$, with no\ndata association at all"
+             % round(np.log10(tr["merge_err"])), transform=axd.transAxes,
+             va="top", linespacing=1.4, **note)
+    axd.text(0.5, 0.24,
+             "%.0f%% vs %.0f%% for an explicit\nmerge and its %d decisions"
+             % (100 * vsa["mean"], 100 * inst["mean"], inst["assoc"]),
+             transform=axd.transAxes, ha="center", va="top", fontsize=5.5,
+             linespacing=1.4)
+
+    # flow arrows between stages
+    for x in (0.268, 0.505, 0.745):
+        fig.text(x, 0.47, "→", ha="center", va="center", fontsize=11,
+                 color="#8b97a4")
+
+    return fig, dict(cls=panel["cls"], merge_err=tr["merge_err"],
+                     n_obs=tr["n_obs"], n_kept=tr["n_kept"],
+                     scenes=n_scenes)
 
 
 # ------------------------------------------------------------- layout: overview
@@ -361,8 +550,8 @@ def build_results(args):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--layout", choices=("overview", "results"),
-                    default="overview")
+    ap.add_argument("--layout", choices=("concept", "overview", "results"),
+                    default="concept")
     ap.add_argument("--chess", default=CHESS_HTML)
     ap.add_argument("--room0", default=ROOM0_HTML)
     ap.add_argument("--out", default=None)
@@ -372,11 +561,13 @@ def main():
     args = ap.parse_args()
 
     if args.out is None:
-        args.out = ("paper/figures/hero" if args.layout == "overview"
-                    else "paper/figures/reloc")
+        args.out = {"concept": "paper/figures/hero",
+                    "overview": "paper/figures/overview",
+                    "results": "paper/figures/reloc"}[args.layout]
 
-    fig, info = (build_overview(args) if args.layout == "overview"
-                 else build_results(args))
+    fig, info = {"concept": build_concept,
+                 "overview": build_overview,
+                 "results": build_results}[args.layout](args)
     os.makedirs(os.path.dirname(args.out), exist_ok=True)
     for e in ("pdf", "png"):
         path = "%s.%s" % (args.out, e)

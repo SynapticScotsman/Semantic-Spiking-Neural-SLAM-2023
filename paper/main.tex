@@ -127,27 +127,28 @@ merging assumes a shared coordinate frame.
 \begin{strip}
 \centering
 \includegraphics[width=\textwidth]{figures/hero.pdf}
-\captionof{figure}{\textbf{One fixed-size vector: what it answers, how
-two of them combine, and why its failures are predictable.}
-\textbf{(a)} The same 32\,KB trace answers two kinds of question. A photo
-from an \emph{unseen} 7-Scenes \texttt{chess} test walk returns a place
-(median-error example, not a best case; the memory returns a stored
-\emph{pose}, so the recalled viewpoint need not match). A class name
-returns a spatial belief \emph{field} rather than a lookup; green squares
-mark every ground-truth chair, and the unresolved ones are the identity
-limitation of Sec.~\ref{sec:limitations}, shown rather than hidden.
-\textbf{(b)} Four robots walk disjoint routes and never share data. Their
-traces \emph{add}: the sum equals the jointly built map to
-$\sim$10$^{-12}$ with zero data-association decisions. Pooled over the
-eight Replica scenes, addition grounds 89\% against 84\% for the
-equivalent explicit instance merge, which needs 622 greedy decisions to
-get there (Sec.~\ref{sec:merge-results}).
-\textbf{(c)} Interference $\chi$ against stored items $N$ on controlled
-streams through the deployed pipeline. A shared mean direction
-accumulates coherently and never bends, $O(N)$; every other content
-geometry reverts to $\sqrt{N}$. This is the law of Sec.~\ref{sec:law},
-which predicts a held-out condition to 1.4\% and predicted a deployed
-class-imbalance failure together with its fix.}
+\captionof{figure}{\textbf{What the map \emph{is}.} Where a scene graph
+accumulates a node per object and an edge per relation, this map is one
+vector, and storing, querying and merging are arithmetic on it. Every
+vector below is drawn as its phase angles, and every one was computed by
+our implementation from the real Replica \texttt{room0} observation
+stream.
+\textbf{(a)} An observation is one multiply-add: a content atom is bound
+to a fractional-power position code by an elementwise complex multiply
+(Eq.~\eqref{eq:fpe}), and the product is added into a running sum.
+\textbf{(b)} The whole map is that sum. All 8{,}028 detections of the
+walk superpose into 8{,}192 phases, 32\,KB, a size fixed before the robot
+moves and unchanged by how much it then sees.
+\textbf{(c)} A question is one unbind. Dividing by the \texttt{chair}
+atom leaves a spatial belief \emph{field} over the floor rather than a
+lookup result; the peak sits on a true instance, and the green squares
+mark every ground-truth chair, including the ones a single argmax does
+not resolve (Sec.~\ref{sec:limitations}).
+\textbf{(d)} Two robots' maps combine by addition. The sum equals the
+jointly built map to $10^{-11}$ with no data association whatsoever;
+pooled over the eight Replica scenes it grounds 89\% against 84\% for the
+equivalent explicit instance merge, which needs 622 greedy association
+decisions to get there (Sec.~\ref{sec:merge-results}).}
 \label{fig:hero}
 \end{strip}
 
