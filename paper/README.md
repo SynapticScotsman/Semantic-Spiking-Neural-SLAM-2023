@@ -96,6 +96,7 @@ large"):
 
 | # | figure | source | status |
 |---|---|---|---|
+| 0 | **Page-1 hero** — (a) asked/recalled photo pairs at the 50th and 75th error percentile, (b) the chess map with a segment per query, (c) a Replica belief field with GT instances | `python tools/make_hero_figure.py` (reads both inspector payloads; nothing hand-drawn) | **in draft** |
 | 1 | χ(N) synthetic scaling | `outputs/synthetic/synthetic_scaling.png` | **in draft** (restyle pass wanted) |
 | 2 | Replica belief-field montage (2–3 class queries + one consistent-but-false case) | harvest from `outputs/grounding_inspector_*.html` payloads / `tools/export_grounding_inspector.py` | placeholder |
 | 3 | Chess qualitative (query frame → retrieved frame pairs + error CDF) | `outputs/cross_recall_7scenes_chess.json` + inspector | placeholder (optional if page-tight) |

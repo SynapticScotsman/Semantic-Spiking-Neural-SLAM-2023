@@ -66,6 +66,38 @@ Colorado Boulder, CO, USA\\
 
 \maketitle
 
+% -------------------------------------------------------------------------
+% PAGE-1 TEASER. A full-width float declared this early lands at the top of
+% page 1's text area, under the title block. If it drifts to page 2 in your
+% build, the usual fixes are (a) keep [!t], (b) add \usepackage{stfloats},
+% or (c) move this block to just before \section{Introduction}.
+% Regenerate with:  python tools/make_hero_figure.py
+% Every photo, path, field and number in it is read from the measured
+% inspector payloads; nothing is drawn by hand.
+% -------------------------------------------------------------------------
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\textwidth]{figures/hero.pdf}
+\caption{\textbf{The whole system, working, on public data.}
+\textbf{(a)} Two queries from the 7-Scenes \texttt{chess} \emph{test}
+walks, beside the frames the 32\,KB trace recalled. They are the
+50th- and 75th-percentile errors, not best cases. The memory returns a
+stored \emph{pose}, so at larger errors the recalled viewpoint can differ
+while the place is still right.
+\textbf{(b)} Where every test query lands: the four stored training walks
+(grey), each query's true position (dot), and a segment to the position
+the trace answered (red). The visible tail is real; the box gives the
+median and the fraction within 0.5\,m for the trace and for exact nearest
+neighbour over the same descriptors at 1000$\times$ the bytes.
+\textbf{(c)} The same algebra answering an object query on Replica
+\texttt{room0}: unbinding a class atom returns a spatial belief
+\emph{field}, not a lookup. The peak (white cross) lands on a true chair
+(green squares mark all ground-truth instances); the unresolved instances
+are the identity limitation of Sec.~\ref{sec:limitations}, shown rather
+than hidden.}
+\label{fig:hero}
+\end{figure*}
+
 % =========================================================================
 \begin{abstract}
 Semantic maps on robots are usually structures that grow: a node per
@@ -133,8 +165,9 @@ commutative, associative and exact, because a representation that makes
 no association decisions has none for a merge step to get wrong.
 
 Properties that are usually separate subsystems therefore arrive as
-identities of the algebra, and we measure each one on real data.
-\emph{Query} is one unbind, milliseconds on a laptop CPU.
+identities of the algebra, and we measure each one on real data
+(Fig.~\ref{fig:hero}). \emph{Query} is one unbind, milliseconds on a
+laptop CPU.
 \emph{Relocalisation} from the 32\,KB trace reaches 0.36\,m median error
 on the official 7-Scenes \texttt{chess} cross-traverse split, against
 0.29\,m for exact nearest neighbour over the same descriptors at
