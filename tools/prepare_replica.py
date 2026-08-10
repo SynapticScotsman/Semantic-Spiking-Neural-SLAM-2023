@@ -126,6 +126,81 @@ class RangeFile(io.RawIOBase):
         return bytes(out)
 
 
+def _download_whole(staging):
+    """Resumable single-stream download of the full archive. On plentiful
+    bandwidth (Colab) this beats per-block range requests by an order of
+    magnitude: urllib opens a fresh TLS connection per 8 MB block, so
+    handshakes dominate; one wget stream keeps the window open."""
+    import shutil
+    import subprocess
+    os.makedirs(os.path.dirname(staging) or ".", exist_ok=True)
+    for tool, cmd in (
+        ("aria2c", ["aria2c", "-x8", "-s8", "-c",
+                    "-d", os.path.dirname(staging) or ".",
+                    "-o", os.path.basename(staging), URL]),
+        ("wget", ["wget", "-c", "-O", staging, URL]),
+        ("curl", ["curl", "-L", "-C", "-", "-o", staging, URL]),
+    ):
+        if shutil.which(tool):
+            print(f"single-stream download via {tool} -> {staging}", flush=True)
+            if subprocess.run(cmd).returncode == 0:
+                return
+            print(f"{tool} failed; trying next downloader", flush=True)
+    # pure-python fallback, resumable via Range from current size
+    pos = os.path.getsize(staging) if os.path.exists(staging) else 0
+    hdr = {"Range": f"bytes={pos}-"} if pos else {}
+    req = urllib.request.Request(URL, headers=hdr)
+    with urllib.request.urlopen(req, timeout=120) as r, \
+            open(staging, "ab" if pos else "wb") as f:
+        while True:
+            chunk = r.read(1 << 22)
+            if not chunk:
+                break
+            f.write(chunk)
+
+
+def fetch_whole(scene, data_root, staging):
+    """Fast path: download the whole archive once, extract EVERY scene flat
+    into data_root/<scene>/ (resume-safe: existing files are skipped). Later
+    scenes then need no download at all this session."""
+    import shutil
+    rgb_pat = re.compile(r"frame\d{6}\.jpg$")
+    dep_pat = re.compile(r"depth\d{6}\.png$")
+    if os.path.exists(os.path.join(data_root, scene, "traj.txt")) and \
+            len(os.listdir(os.path.join(data_root, scene))) >= 4000:
+        print(f"{scene} already extracted; skipping download", flush=True)
+        return
+    if not os.path.exists(staging):
+        _download_whole(staging)
+    try:
+        z = zipfile.ZipFile(staging)
+    except zipfile.BadZipFile:
+        raise SystemExit(f"{staging} is incomplete — re-run to resume the "
+                         "download (wget -c/aria2c -c pick up where it stopped)")
+    with z:
+        n = 0
+        for m in sorted(z.namelist()):
+            base = os.path.basename(m)
+            if not (rgb_pat.search(base) or dep_pat.search(base)
+                    or base == "traj.txt"):
+                continue
+            sc = next((p for p in m.split("/")
+                       if re.fullmatch(r"(room|office)\d+", p)), None)
+            if sc is None:
+                continue
+            dest_dir = os.path.join(data_root, sc)
+            os.makedirs(dest_dir, exist_ok=True)
+            dest = os.path.join(dest_dir, base)
+            if os.path.exists(dest) and os.path.getsize(dest) > 0:
+                continue
+            with z.open(m) as src, open(dest, "wb") as dst:
+                shutil.copyfileobj(src, dst)
+            n += 1
+            if n % 2000 == 0:
+                print(f"  extracted {n} files...", flush=True)
+        print(f"extracted {n} new files across all scenes", flush=True)
+
+
 def fetch_scene(scene, scene_dir):
     rgb_pat = re.compile(r"frame\d{6}\.jpg$")
     dep_pat = re.compile(r"depth\d{6}\.png$")
@@ -214,7 +289,21 @@ def main():
     ap.add_argument("--scene", default="room0")
     ap.add_argument("--data-root", default="data/replica")
     ap.add_argument("--skip-fetch", action="store_true")
+    ap.add_argument("--whole-zip", metavar="STAGING", nargs="?",
+                    const="data/replica/_Replica.zip", default=None,
+                    help="download the full archive once (single stream) and "
+                         "extract all scenes locally — the fast path on "
+                         "plentiful bandwidth. Auto-enabled on Colab.")
+    ap.add_argument("--range-fetch", action="store_true",
+                    help="force the per-block range-request path even on Colab")
     args = ap.parse_args()
+
+    # Colab: per-request TLS overhead makes range mode painfully slow while
+    # the fat download pipe idles — default to the whole-archive path there,
+    # staged on the fast local VM disk.
+    whole = args.whole_zip
+    if whole is None and not args.range_fetch and os.path.isdir("/content"):
+        whole = "/content/Replica.zip"
 
     scene_dir = os.path.join(args.data_root, args.scene)
     if not args.skip_fetch:
@@ -223,8 +312,13 @@ def main():
         import time
         for outer in range(8):
             try:
-                fetch_scene(args.scene, scene_dir)
+                if whole:
+                    fetch_whole(args.scene, args.data_root, whole)
+                else:
+                    fetch_scene(args.scene, scene_dir)
                 break
+            except SystemExit:
+                raise
             except Exception as e:
                 print(f"fetch attempt {outer + 1} failed: {e!r}; "
                       f"waiting {60 * (outer + 1)}s", flush=True)
