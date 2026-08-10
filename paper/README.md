@@ -96,8 +96,9 @@ large"):
 
 | # | figure | source | status |
 |---|---|---|---|
-| 0 | **Page-1 hero** — (a) asked/recalled photo pairs at the 50th and 75th error percentile, (b) the chess map with a segment per query, (c) a Replica belief field with GT instances | `python tools/make_hero_figure.py` (reads both inspector payloads; nothing hand-drawn) | **in draft** |
-| 1 | χ(N) synthetic scaling | `outputs/synthetic/synthetic_scaling.png` | **in draft** (restyle pass wanted) |
+| 0 | **Page-1 hero — one panel per contribution.** (a) query: photo→place *and* class→belief field; (b) merge: 4 robots' traces add to the joint map, 0 vs 622 decisions; (c) law: χ(N), mean term O(N) vs √N, 1.4% held-out prediction | `python tools/make_hero_figure.py` | **in draft** |
+| 0b | Relocalisation results figure (the former hero: photo pairs, chess map, belief field) | `python tools/make_hero_figure.py --layout results` | **in draft**, Sec. VI-A |
+| 1 | χ(N) synthetic scaling (superseded by hero panel c — cut candidate) | `outputs/synthetic/synthetic_scaling.png` | in draft |
 | 2 | Replica belief-field montage (2–3 class queries + one consistent-but-false case) | harvest from `outputs/grounding_inspector_*.html` payloads / `tools/export_grounding_inspector.py` | placeholder |
 | 3 | Chess qualitative (query frame → retrieved frame pairs + error CDF) | `outputs/cross_recall_7scenes_chess.json` + inspector | placeholder (optional if page-tight) |
 | 4 | Merge schematic (4 traces → sum ≡ joint; vs association decisions) | draw; numbers from `merge_comparison_k4.json` | placeholder (optional) |

@@ -127,23 +127,27 @@ merging assumes a shared coordinate frame.
 \begin{strip}
 \centering
 \includegraphics[width=\textwidth]{figures/hero.pdf}
-\captionof{figure}{\textbf{The whole system, working, on public data.}
-\textbf{(a)} Two queries from the 7-Scenes \texttt{chess} \emph{test}
-walks, beside the frames the 32\,KB trace recalled. They are the
-50th- and 75th-percentile errors, not best cases. The memory returns a
-stored \emph{pose}, so at larger errors the recalled viewpoint can differ
-while the place is still right.
-\textbf{(b)} Where every test query lands: the four stored training walks
-(grey), each query's true position (dot), and a segment to the position
-the trace answered (red). The visible tail is real; the box gives the
-median and the fraction within 0.5\,m for the trace and for exact nearest
-neighbour over the same descriptors at 1000$\times$ the bytes.
-\textbf{(c)} The same algebra answering an object query on Replica
-\texttt{room0}: unbinding a class atom returns a spatial belief
-\emph{field}, not a lookup. The peak (white cross) lands on a true chair
-(green squares mark all ground-truth instances); the unresolved instances
-are the identity limitation of Sec.~\ref{sec:limitations}, shown rather
-than hidden.}
+\captionof{figure}{\textbf{One fixed-size vector: what it answers, how
+two of them combine, and why its failures are predictable.}
+\textbf{(a)} The same 32\,KB trace answers two kinds of question. A photo
+from an \emph{unseen} 7-Scenes \texttt{chess} test walk returns a place
+(median-error example, not a best case; the memory returns a stored
+\emph{pose}, so the recalled viewpoint need not match). A class name
+returns a spatial belief \emph{field} rather than a lookup; green squares
+mark every ground-truth chair, and the unresolved ones are the identity
+limitation of Sec.~\ref{sec:limitations}, shown rather than hidden.
+\textbf{(b)} Four robots walk disjoint routes and never share data. Their
+traces \emph{add}: the sum equals the jointly built map to
+$\sim$10$^{-12}$ with zero data-association decisions. Pooled over the
+eight Replica scenes, addition grounds 89\% against 84\% for the
+equivalent explicit instance merge, which needs 622 greedy decisions to
+get there (Sec.~\ref{sec:merge-results}).
+\textbf{(c)} Interference $\chi$ against stored items $N$ on controlled
+streams through the deployed pipeline. A shared mean direction
+accumulates coherently and never bends, $O(N)$; every other content
+geometry reverts to $\sqrt{N}$. This is the law of Sec.~\ref{sec:law},
+which predicts a held-out condition to 1.4\% and predicted a deployed
+class-imbalance failure together with its fix.}
 \label{fig:hero}
 \end{strip}
 
@@ -606,7 +610,8 @@ characterisation and never presented as comparable numbers.
 \subsection{Relocalisation at 32\,KB: 7-Scenes \texttt{chess}}
 \label{sec:chess}
 
-Table~\ref{tab:chess} is the storage/accuracy trade at a fixed frontend
+Fig.~\ref{fig:reloc} shows the experiment and
+Table~\ref{tab:chess} the storage/accuracy trade at a fixed frontend
 (EigenPlaces, z-scored on memory statistics): exact kNN over all stored
 descriptors is the ceiling; product quantisation \cite{jegou2011product}
 is the standard compression; the trace is $\sim$1000$\times$ smaller than
@@ -619,6 +624,26 @@ a DenseVLAD retrieval baseline reports 0.21\,m median
 result's class. Top-3 readout closes most of the argmax gap
 (2D $\le$0.5\,m: 76.4\%$\to$91.5\%), consistent with truth sitting near a
 secondary mode of the belief field.
+
+% Full-width results figure. Unlike the page-1 teaser this one is a real
+% float: it may land on any later page, which is fine here.
+% Regenerate with:  python tools/make_hero_figure.py --layout results
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/reloc.pdf}
+\caption{Cross-traverse relocalisation on 7-Scenes \texttt{chess}.
+\textbf{(a)} Query frames from the two unseen test walks beside the
+frames the 32\,KB trace recalled, at the 50th and 75th error percentile
+so the panel shows typical rather than best behaviour.
+\textbf{(b)} Every test query: the four stored training walks (grey),
+each query's true position (dot), and a segment to the answered position
+(red). The tail is left visible, and the box reports the median together
+with the fraction within 0.5\,m for the trace and for exact nearest
+neighbour over the same descriptors at 1000$\times$ the bytes.
+\textbf{(c)} An object-class query on Replica \texttt{room0} decoded over
+the floor plane: the peak (white cross) lands on a true instance.}
+\label{fig:reloc}
+\end{figure*}
 
 \begin{table}[t]
 % provenance: tracker (ax); outputs/cross_recall_7scenes_chess.json
