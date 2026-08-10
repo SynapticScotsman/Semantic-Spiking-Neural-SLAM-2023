@@ -83,7 +83,9 @@ def main():
     print(f"{seq.name}: {len(seq)} frames; model {desc} "
           f"({args.backbone}, {args.dim}-d) on {device}, resize {args.resize}")
 
-    model = torch.hub.load(repo, "get_trained_model",
+    # trust_repo=True: newer torch.hub interactively prompts "do you trust
+    # this repository?" — a subprocess (Colab cell) has no stdin and EOFs.
+    model = torch.hub.load(repo, "get_trained_model", trust_repo=True,
                            backbone=args.backbone, fc_output_dim=args.dim)
     model.eval().to(device)
 
