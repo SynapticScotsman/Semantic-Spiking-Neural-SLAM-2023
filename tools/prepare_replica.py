@@ -138,7 +138,7 @@ def _download_whole(staging):
         ("aria2c", ["aria2c", "-x8", "-s8", "-c",
                     "-d", os.path.dirname(staging) or ".",
                     "-o", os.path.basename(staging), URL]),
-        ("wget", ["wget", "-c", "-O", staging, URL]),
+        ("wget", ["wget", "-c", "--progress=dot:giga", "-O", staging, URL]),
         ("curl", ["curl", "-L", "-C", "-", "-o", staging, URL]),
     ):
         if shutil.which(tool):

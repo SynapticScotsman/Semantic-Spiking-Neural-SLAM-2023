@@ -105,7 +105,9 @@ cells = [
          "print(subprocess.run(['git', 'log', '--oneline', '-1'],",
          "                     capture_output=True, text=True).stdout)"),
     code("# Colab already ships torch/torchvision — only the extras are needed.",
-         "!pip -q install ultralytics transformers pillow numpy scipy 2>&1 | tail -2"),
+         "!pip -q install ultralytics transformers pillow numpy scipy 2>&1 | tail -2",
+         "# parallel downloader — the scene fetch uses it when present (8 connections beat one wget stream)",
+         "!apt-get -qq install -y aria2 > /dev/null 2>&1 || true"),
 
     md("## 2 · Choose the work",
        "",

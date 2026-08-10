@@ -111,6 +111,8 @@ cells = [
          "os.makedirs('data', exist_ok=True)",
          "if not os.path.exists('data/replica'): os.symlink(local, 'data/replica')",
          "!pip -q install ultralytics transformers scipy 2>&1 | tail -1",
+         "# parallel downloader — the scene fetch uses it when present (8 connections beat one wget stream)",
+         "!apt-get -qq install -y aria2 > /dev/null 2>&1 || true",
          "print('repo ready at', os.getcwd())",
          "print('outputs ->', os.path.realpath('outputs'))",
          "print('data/replica ->', os.path.realpath('data/replica'), '(local, ephemeral)')"),
