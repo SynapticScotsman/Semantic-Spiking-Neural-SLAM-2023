@@ -14,9 +14,9 @@
 %
 % Every number in this file traces to the tracker
 % (wiki/analysis/2026-07-29-vsa-query-layer-paper-plan.md) or a named
-% artifact file. Provenance lives ONLY in "% provenance:" comments, because the
-% rendered PDF shows real citations/URLs, never repo-internal pointers,
-% because the document is shared. Pending numbers are marked \todo{}.
+% artifact file. Provenance lives ONLY in "% provenance:" comments, so the
+% rendered PDF shows real citations and URLs and never repo-internal
+% pointers: the document is shared. Pending numbers are marked \todo{}.
 % =========================================================================
 \documentclass[conference]{IEEEtran}
 \IEEEoverridecommandlockouts
@@ -30,6 +30,13 @@
 % clickable references/URLs for the shared draft; drop if the PaperPlaza
 % compliance check objects at submission time
 \usepackage[hidelinks]{hyperref}
+% Full-width material on the page where it is written. A figure* CANNOT
+% appear on the page it is declared on: LaTeX defers double-column floats
+% to a later page, which is why the page-1 teaser kept landing on page 2.
+% cuted's "strip" is not a float, so it stays put; capt-of then supplies a
+% numbered caption outside a float environment.
+\usepackage{cuted}
+\usepackage{capt-of}
 
 % --- editorial TODO marker: strip before submission -----------------------
 \newcommand{\todo}[1]{\textcolor{red}{\textbf{[TODO: #1]}}}
@@ -67,37 +74,6 @@ Colorado Boulder, CO, USA\\
 
 \maketitle
 
-% -------------------------------------------------------------------------
-% PAGE-1 TEASER. A full-width float declared this early lands at the top of
-% page 1's text area, under the title block. If it drifts to page 2 in your
-% build, the usual fixes are (a) keep [!t], (b) add \usepackage{stfloats},
-% or (c) move this block to just before \section{Introduction}.
-% Regenerate with:  python tools/make_hero_figure.py
-% Every photo, path, field and number in it is read from the measured
-% inspector payloads; nothing is drawn by hand.
-% -------------------------------------------------------------------------
-\begin{figure*}[!t]
-\centering
-\includegraphics[width=\textwidth]{figures/hero.pdf}
-\caption{\textbf{The whole system, working, on public data.}
-\textbf{(a)} Two queries from the 7-Scenes \texttt{chess} \emph{test}
-walks, beside the frames the 32\,KB trace recalled. They are the
-50th- and 75th-percentile errors, not best cases. The memory returns a
-stored \emph{pose}, so at larger errors the recalled viewpoint can differ
-while the place is still right.
-\textbf{(b)} Where every test query lands: the four stored training walks
-(grey), each query's true position (dot), and a segment to the position
-the trace answered (red). The visible tail is real; the box gives the
-median and the fraction within 0.5\,m for the trace and for exact nearest
-neighbour over the same descriptors at 1000$\times$ the bytes.
-\textbf{(c)} The same algebra answering an object query on Replica
-\texttt{room0}: unbinding a class atom returns a spatial belief
-\emph{field}, not a lookup. The peak (white cross) lands on a true chair
-(green squares mark all ground-truth instances); the unresolved instances
-are the identity limitation of Sec.~\ref{sec:limitations}, shown rather
-than hidden.}
-\label{fig:hero}
-\end{figure*}
 
 % =========================================================================
 \begin{abstract}
@@ -125,6 +101,51 @@ deployed failure together with its fix (grounding 44\%$\to$62\%). The
 memory does not exceed the ceiling its perception sets, and exact
 merging assumes a shared coordinate frame.
 \end{abstract}
+
+% -------------------------------------------------------------------------
+% PAGE-1 TEASER, as a "strip" rather than a figure*.
+%
+% Why not figure*: LaTeX defers every double-column float to a LATER page
+% than the one it is declared on, so a figure* teaser can never reach
+% page 1 -- no [!t], \usepackage{stfloats} or reordering changes that.
+% cuted's strip is not a float: it typesets full width exactly here.
+%
+% Consequences of not being a float: it will not move to avoid a bad
+% break, so keep it short (the art is 7.16 x 2.0 in), and the caption
+% needs \captionof rather than \caption.
+%
+% To sit it directly under the author block instead of under the
+% abstract, move this whole block to immediately after \maketitle.
+% If cuted is unavailable, the guaranteed fallback is a single-column
+% figure[!t] in column 1, which does land on page 1 -- regenerate the art
+% narrow and stacked for that.
+%
+% Regenerate with:  python tools/make_hero_figure.py
+% Every photo, path, field and number is read from the measured inspector
+% payloads; nothing is drawn by hand.
+% -------------------------------------------------------------------------
+\begin{strip}
+\centering
+\includegraphics[width=\textwidth]{figures/hero.pdf}
+\captionof{figure}{\textbf{The whole system, working, on public data.}
+\textbf{(a)} Two queries from the 7-Scenes \texttt{chess} \emph{test}
+walks, beside the frames the 32\,KB trace recalled. They are the
+50th- and 75th-percentile errors, not best cases. The memory returns a
+stored \emph{pose}, so at larger errors the recalled viewpoint can differ
+while the place is still right.
+\textbf{(b)} Where every test query lands: the four stored training walks
+(grey), each query's true position (dot), and a segment to the position
+the trace answered (red). The visible tail is real; the box gives the
+median and the fraction within 0.5\,m for the trace and for exact nearest
+neighbour over the same descriptors at 1000$\times$ the bytes.
+\textbf{(c)} The same algebra answering an object query on Replica
+\texttt{room0}: unbinding a class atom returns a spatial belief
+\emph{field}, not a lookup. The peak (white cross) lands on a true chair
+(green squares mark all ground-truth instances); the unresolved instances
+are the identity limitation of Sec.~\ref{sec:limitations}, shown rather
+than hidden.}
+\label{fig:hero}
+\end{strip}
 
 % =========================================================================
 \section{Introduction}
