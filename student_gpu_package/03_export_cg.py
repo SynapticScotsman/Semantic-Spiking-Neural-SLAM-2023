@@ -23,6 +23,11 @@ import pickle
 
 import numpy as np
 
+# anchor to this package dir like stages 4-5, so cg_out/handoff resolve the
+# same regardless of the caller's working directory (notebook runs from the
+# repo root, the README runs from student_gpu_package/)
+PKG = os.path.dirname(os.path.abspath(__file__))
+
 
 def load_their_result(out_dir):
     cands = (glob.glob(os.path.join(out_dir, "**", "*.pkl.gz"), recursive=True)
@@ -42,12 +47,15 @@ def main():
     ap.add_argument("--scene", default="room0")
     ap.add_argument("--eval-points", type=int, default=200_000,
                     help="subsample of the fused cloud used as eval points")
+    ap.add_argument("--cg-out", default=None,
+                    help="dir holding their pkl.gz (default <pkg>/cg_out/<scene>)")
     args = ap.parse_args()
 
-    res, src = load_their_result(os.path.join("cg_out", args.scene))
+    res, src = load_their_result(args.cg_out
+                                 or os.path.join(PKG, "cg_out", args.scene))
     # Documented layout: dict with 'objects' (MapObjectList) or the list itself
     objects = res.get("objects", res) if isinstance(res, dict) else res
-    out_dir = os.path.join("handoff", args.scene)
+    out_dir = os.path.join(PKG, "handoff", args.scene)
     os.makedirs(out_dir, exist_ok=True)
 
     def sniff(ob, keys, default):
