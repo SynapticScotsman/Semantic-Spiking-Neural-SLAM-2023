@@ -2,9 +2,13 @@
 
 Older transformers return a plain tensor from CLIPModel.get_text_features /
 get_image_features; newer versions (Colab) return a ModelOutput wrapper.
-These helpers always return the projected embedding tensor, so the
-similarity math is byte-identical across versions — and therefore between
-the local machine and Colab runs.
+Worse, the wrapper's fields are ambiguous: its pooler_output may already BE
+the projected embedding (observed 512-d on the vision tower, whose raw
+width is 768), and on the text tower raw and projected widths coincide
+(512 == 512) so a wrong guess would run silently. So: take a plain tensor
+or an explicit *_embeds field at face value; for anything else, bypass the
+convenience method and recompute from the base towers + projection heads,
+which is exact and stable across versions.
 """
 from __future__ import annotations
 
@@ -18,8 +22,9 @@ def text_features(model, tok):
     v = getattr(out, "text_embeds", None)
     if v is not None and torch.is_tensor(v):
         return v
-    # raw text_model output: apply the projection ourselves
-    return model.text_projection(out.pooler_output)
+    enc = model.text_model(input_ids=tok["input_ids"],
+                           attention_mask=tok.get("attention_mask"))
+    return model.text_projection(enc.pooler_output)
 
 
 def image_features(model, pix):
@@ -29,4 +34,5 @@ def image_features(model, pix):
     v = getattr(out, "image_embeds", None)
     if v is not None and torch.is_tensor(v):
         return v
-    return model.visual_projection(out.pooler_output)
+    enc = model.vision_model(pixel_values=pix["pixel_values"])
+    return model.visual_projection(enc.pooler_output)
