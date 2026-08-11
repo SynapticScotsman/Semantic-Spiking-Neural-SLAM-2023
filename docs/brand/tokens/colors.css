@@ -1,0 +1,17 @@
+:root{
+/* Crimson ramp (from logo + brand PDF) */
+--crimson-deep:#800020;--crimson:#9D2235;--berry:#990034;--crimson-bright:#C33A50;--rose:#E0687C;--salmon:#F4707C;
+/* Supporting accents (derived, placeholders pending Brand Portal) */
+--fluoro-orange:#FF5A1E;--gold:#DCA054;--terracotta:#B5623F;--sandstone:#E7D3B0;--dusk:#4A2530;
+/* Paper colourway (light, default) */
+--paper:#FAF9F6;--ink:#22252A;--panel:#F1EFE9;--line:#DCDAD3;
+/* Plate (dark) values as raw tokens */
+--plate:#16181B;--plate-deep:#05070A;--plate-text:#E6E4DF;--plate-panel:#1E2125;--plate-line:#33373C;
+/* Semantic — Paper */
+--bg:var(--paper);--text-body:var(--ink);--text-muted:#6E7278;--brand:var(--crimson);--accent:var(--crimson);--surface-card:#FFFFFF;--surface-panel:var(--panel);--border:var(--line);--good:#2F6B46;--warn:#8A5A12;
+--focus-ring:0 0 0 2px var(--bg),0 0 0 4px var(--crimson-bright);
+}
+[data-colourway="plate"],.plate{
+--bg:var(--plate);--text-body:var(--plate-text);--text-muted:#9A9EA6;--brand:var(--crimson-bright);--accent:var(--rose);--surface-card:var(--plate-panel);--surface-panel:var(--plate-panel);--border:var(--plate-line);--good:#6FAE7F;--warn:#C99A50;
+--focus-ring:0 0 0 2px var(--bg),0 0 0 4px var(--rose);
+}

@@ -1,0 +1,5 @@
+/* High-contrast video / figure palette — dark ground #05070A. One hue, one meaning. */
+:root{
+--viz-ground:#05070A;--viz-grid:#1C242C;--viz-dim:#8A97A0;--viz-dropped:#39424A;
+--viz-target:#FF3DA6;--viz-target-light:#FF5FD0;--viz-clutter:#FFB000;--viz-reference:#7CE0C0;--viz-discarded:#35E0FF;--viz-on:#3B9BFF;--viz-off:#FF8C42;--viz-event-tint:#C94A5E;--viz-map:#FFD166;--viz-bafw:#9A7BFF;--viz-pers:#E0526E;--viz-canopy-moving:#FF7A3C;
+}

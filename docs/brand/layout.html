@@ -1,0 +1,137 @@
+<!-- @dsCard group="Layout" viewport="940x820" subtitle="Base page — lockup, eyebrow/title, rule, stats, plate, callout, table" name="Base layout" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Base layout · WSU ICNS</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--text-body);font-family:var(--font-body);line-height:var(--leading-body);margin:0}
+main{max-width:940px;margin:0 auto;padding:44px 22px 96px}
+a{color:var(--brand)} a:hover{color:var(--accent)}
+header.lockup{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:0 0 26px}
+header.lockup img{height:56px;width:auto}
+.lock-d{display:none}
+:root[data-colourway="plate"] .lock-l{display:none}
+:root[data-colourway="plate"] .lock-d{display:block}
+@media (prefers-color-scheme: dark){
+  :root:not([data-colourway="paper"]) .lock-l{display:none}
+  :root:not([data-colourway="paper"]) .lock-d{display:block}
+}
+:root[data-colourway="paper"] .lock-l{display:block}
+:root[data-colourway="paper"] .lock-d{display:none}
+.eyebrow{font-family:var(--font-mono);font-size:var(--size-eyebrow);letter-spacing:var(--track-eyebrow);text-transform:uppercase;color:var(--accent);margin:60px 0 10px}
+.eyebrow.first{margin-top:0}
+h1{font-family:var(--font-display);font-size:var(--size-display);font-weight:700;letter-spacing:-.017em;margin:6px 0;text-wrap:balance;line-height:1.15}
+h2{font-family:var(--font-display);font-size:var(--size-heading);font-weight:650;letter-spacing:-.012em;margin:0 0 8px;text-wrap:balance}
+.sub{color:var(--text-muted);font-family:var(--font-mono);font-size:.79rem;line-height:1.5;max-width:78ch}
+.rule{height:3px;background:var(--brand);width:52px;margin:18px 0 0;border:0}
+p{max-width:var(--measure-body);margin:0 0 .95rem}
+b.hl{color:var(--accent)}
+.prose{font-family:var(--font-prose);font-size:1.02rem}
+.stats{display:flex;flex-wrap:wrap;border-block:1px solid var(--border);margin-top:26px}
+.stat{flex:1 1 132px;padding:14px 18px 12px 0}
+.stat+.stat{border-left:1px solid var(--border);padding-left:18px}
+.stat b{display:block;font-family:var(--font-mono);font-size:1.3rem;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.2}
+.stat span{font-size:.74rem;color:var(--text-muted);display:block;margin-top:2px}
+.stat.alert b{color:var(--accent)}
+.stat.good b{color:var(--good)}
+figure{margin:24px 0 34px}
+.plate{background:var(--plate-deep);border:1px solid var(--border);padding:10px;border-radius:2px}
+.plate .slot{aspect-ratio:16/9;display:grid;place-items:center;color:#969BA1;font-family:var(--font-mono);font-size:.75rem}
+figcaption{font-size:var(--size-caption);color:var(--text-muted);margin-top:8px;max-width:var(--measure-body)}
+figcaption b{color:var(--text-body);font-weight:600}
+.callout{border-left:3px solid var(--brand);padding:2px 0 2px 16px;margin:22px 0}
+.callout .tag{font-family:var(--font-mono);font-size:.66rem;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);display:block;margin-bottom:4px}
+.callout p{margin:6px 0}
+table{border-collapse:collapse;width:100%;font-size:.84rem}
+th{text-align:left;font-family:var(--font-mono);font-size:.67rem;letter-spacing:.07em;text-transform:uppercase;color:var(--text-muted);font-weight:500;padding:8px 14px 8px 0;border-bottom:1px solid var(--border)}
+td{padding:9px 14px 9px 0;border-bottom:1px solid var(--border);font-variant-numeric:tabular-nums}
+td.num{font-family:var(--font-mono)}
+tr.best td{background:color-mix(in srgb,var(--brand) 9%,transparent)}
+tr.best td:first-child{font-weight:640}
+.chip{display:inline-block;font-family:var(--font-mono);font-size:.67rem;padding:1px 8px 2px;border-radius:999px;border:1px solid;white-space:nowrap}
+.chip.take{color:var(--good);border-color:var(--good)}
+.chip.rej{color:var(--accent);border-color:var(--accent)}
+.chip.care{color:var(--warn);border-color:var(--warn)}
+.toggle{font-family:var(--font-mono);font-size:.67rem;padding:3px 10px 4px;border-radius:999px;border:1px solid var(--border);background:none;color:var(--text-muted);cursor:pointer}
+.toggle:hover{border-color:var(--text-muted)}
+footer{margin-top:76px;padding-top:14px;border-top:1px solid var(--border);font-family:var(--font-mono);font-size:.71rem;color:var(--text-muted);line-height:1.8}
+</style>
+</head>
+<body><main>
+
+<header class="lockup">
+  <img class="lock-l" src="assets/WSU_Logo_ICNS_RGB.png" alt="Western Sydney University — International Centre for Neuromorphic Systems">
+  <img class="lock-d" src="assets/WSU_Logo_ICNS_White.png" alt="Western Sydney University — International Centre for Neuromorphic Systems">
+  <button class="toggle" id="themeToggle" type="button">colourway: paper / plate</button>
+</header>
+
+<p class="eyebrow first">insect-evs · event-camera field entomology</p>
+<h1>Finding one insect in a moving bush — and hearing its wings</h1>
+<p class="sub">An event camera reports nothing but change: no frames, no exposure, just a
+stream of per-pixel events at microsecond resolution. Track individual insects against
+wind-blown vegetation, then read each animal's wingbeat frequency from the same stream.</p>
+<hr class="rule">
+
+<div class="stats">
+  <div class="stat"><b>120 dB</b><span>sensor dynamic range</span></div>
+  <div class="stat alert"><b>100–250 Hz</b><span>wingbeat band</span></div>
+  <div class="stat"><b>&lt; 20 Hz</b><span>foliage energy, aperiodic</span></div>
+  <div class="stat good"><b>1.00</b><span>gate precision, synthetic scenes</span></div>
+</div>
+
+<p class="eyebrow">Section pattern</p>
+<h2>The problem, watched directly</h2>
+<p>Vegetation moves constantly, and to a change-detecting sensor it is loud. What separates
+an insect is not brightness but <b class="hl">kinematics</b>: vegetation oscillates in place
+while an insect goes somewhere.</p>
+<figure>
+  <div class="plate"><div class="slot">media plate · 16:9 · video or figure</div></div>
+  <figcaption><b>Plate.</b> Figures and clips sit on the fixed dark plate in both colourways,
+  10px inset, hairline border, 2px radius.</figcaption>
+</figure>
+
+<div class="callout">
+  <span class="tag">Design rule</span>
+  <p>The combined score is the weakest link — the minimum normalised margin across criteria —
+  so a track cannot buy its way past a failed test with a large margin elsewhere.</p>
+</div>
+
+<p class="eyebrow">Table pattern</p>
+<h2>What the gate measures</h2>
+<table>
+  <thead><tr><th>Criterion</th><th>Physical statement</th><th class="num">Margin</th><th>Verdict</th></tr></thead>
+  <tbody>
+    <tr><td>peak_snr_db</td><td>A spectral line sits in the wingbeat band</td><td class="num">+6.2</td><td><span class="chip take">take</span></td></tr>
+    <tr class="best"><td>plv</td><td>Phase stays locked while it is beating</td><td class="num">+9.8</td><td><span class="chip take">take</span></td></tr>
+    <tr><td>low_freq_ratio</td><td>Power is not dominated by sub-20 Hz wind</td><td class="num">−1.4</td><td><span class="chip rej">reject</span></td></tr>
+    <tr><td>scene_coherence</td><td>Not phase-locked to the rest of the scene</td><td class="num">+0.3</td><td><span class="chip care">care</span></td></tr>
+  </tbody>
+</table>
+
+<p class="eyebrow">Prose pattern</p>
+<p class="prose">Longer academic prose is set in the serif: event sensors report per-pixel
+brightness changes at microsecond resolution with over 120 dB of dynamic range, so they do
+not blur on a fast wingbeat and do not saturate across a sun-shade boundary.</p>
+
+<footer>
+International Centre for Neuromorphic Systems, Western Sydney University ·
+derived clips: Münster insect camera-trap dataset (WACV 2024), CC BY 4.0
+</footer>
+
+</main>
+<script>
+// Colourway follows the system on load, then the toggle takes over.
+// The skill's tokens switch on [data-colourway="plate"]; "paper" is the default :root set.
+const t=document.getElementById('themeToggle'),r=document.documentElement;
+if(!r.getAttribute('data-colourway'))
+  r.setAttribute('data-colourway',matchMedia('(prefers-color-scheme: dark)').matches?'plate':'paper');
+t.addEventListener('click',()=>{
+  r.setAttribute('data-colourway',r.getAttribute('data-colourway')==='plate'?'paper':'plate');
+});
+</script>
+</body>
+</html>

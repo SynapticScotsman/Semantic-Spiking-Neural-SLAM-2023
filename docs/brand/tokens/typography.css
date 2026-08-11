@@ -1,0 +1,22 @@
+/* Archivo + Source Serif 4 are substitute faces per the brand PDF — swap when official fonts arrive. */
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;650;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap');
+:root{
+--font-display:'Archivo',system-ui,sans-serif;
+--font-body:system-ui,-apple-system,'Segoe UI',sans-serif;
+--font-prose:'Source Serif 4',Georgia,serif;
+--font-mono:ui-monospace,Menlo,monospace;
+/* Role: display */
+--size-display:clamp(1.5rem,1.2rem + 1.5vw,1.95rem);--weight-display:700;--track-display:-0.017em;--leading-display:1.15;
+/* Role: heading */
+--size-heading:clamp(1.15rem,1.05rem + .5vw,1.3rem);--weight-heading:650;--track-heading:-0.012em;--leading-heading:1.25;
+/* Role: body */
+--size-body:1rem;--leading-body:1.55;--measure-body:70ch;
+/* Role: prose (long-form serif) */
+--size-prose:1.02rem;--leading-prose:1.6;
+/* Role: eyebrow (mono uppercase) */
+--size-eyebrow:.71rem;--track-eyebrow:.14em;--weight-eyebrow:500;
+/* Role: stat (mono, tabular-nums) */
+--size-stat:1.3rem;--weight-stat:600;
+/* Role: caption */
+--size-caption:.82rem;
+}
