@@ -61,6 +61,8 @@ def clip_relabel(scene, classes, batch=32):
     import torch
     from transformers import CLIPModel, CLIPProcessor
 
+    from vsa_cognitive_mapping.clip_compat import image_features, text_features
+
     out_dir = f"outputs/replica_{scene}"
     cache = os.path.join(out_dir, "crop_clip_replica.pt")
     if os.path.exists(cache):
@@ -76,7 +78,7 @@ def clip_relabel(scene, classes, batch=32):
     with torch.no_grad():
         t = proc(text=[f"an image of a {c}" for c in classes],
                  return_tensors="pt", padding=True).to(dev)
-        T = model.get_text_features(**t)
+        T = text_features(model, t)
         T = T / T.norm(dim=-1, keepdim=True)
     lab = {}
     with torch.no_grad():
@@ -90,7 +92,7 @@ def clip_relabel(scene, classes, batch=32):
                                       min(img.size[0], float(r["x2"])),
                                       min(img.size[1], float(r["y2"])))))
             v = proc(images=imgs, return_tensors="pt").to(dev)
-            V = model.get_image_features(**v)
+            V = image_features(model, v)
             V = V / V.norm(dim=-1, keepdim=True)
             best = (V @ T.T).argmax(1).cpu().numpy()
             for r, b in zip(chunk, best):

@@ -204,7 +204,9 @@ def verify_crops(cfg, out_dir, pts, agree_k=3, batch=32):
         with torch.no_grad():
             t = proc(text=[f"a photo of a {c}" for c in classes],
                      return_tensors="pt", padding=True).to(dev)
-            T = model.get_text_features(**t)
+            from vsa_cognitive_mapping.clip_compat import (image_features,
+                                                           text_features)
+            T = text_features(model, t)
             T = T / T.norm(dim=-1, keepdim=True)
         seq = load_sequence(cfg)
         pos = {int(f): i for i, f in enumerate(seq.frame_ids())}
@@ -223,7 +225,7 @@ def verify_crops(cfg, out_dir, pts, agree_k=3, batch=32):
                                           min(img.size[0], x2),
                                           min(img.size[1], y2))))
                 v = proc(images=imgs, return_tensors="pt").to(dev)
-                V = model.get_image_features(**v)
+                V = image_features(model, v)
                 V = V / V.norm(dim=-1, keepdim=True)
                 sim = (V @ T.T).cpu().numpy()
                 for j, di in enumerate(chunk):
