@@ -52,8 +52,22 @@ def transfer(pred_xyz, pred_lab, eval_xyz, bound=0.05):
         return out
 
 
-def macc_fmiou(gt, pred):
-    """mAcc + frequency-weighted mIoU over GT classes (their definitions)."""
+# ConceptGraphs' own Replica evaluation runs with --n_exclude 6, which drops
+# these six structural/void classes from the scored set (see their
+# scripts/eval_replica_semseg.py). Their published Replica numbers
+# (mAcc 40.6 / F-mIoU 35.95) are measured WITH this exclusion, so scoring us
+# over all classes is a harsher protocol than the one the baseline was
+# measured under. Both numbers are reported; theirs is the comparable one.
+CG_EXCLUDE_6 = ("other", "floor", "wall", "ceiling", "door", "window")
+
+
+def macc_fmiou(gt, pred, exclude=()):
+    """mAcc + frequency-weighted mIoU over GT classes (their definitions).
+    `exclude` drops those GT classes from the scored set, matching their
+    --n_exclude flag."""
+    if exclude:
+        keep = ~np.isin(gt, list(exclude))
+        gt, pred = gt[keep], pred[keep]
     classes = sorted(set(gt))
     accs, ious, freqs = [], [], []
     n = len(gt)
@@ -102,10 +116,19 @@ def main():
             unmatched = float(np.mean([v is None for v in lab]))
             pred = np.array([v if v is not None else "__none__" for v in lab])
         macc, fmiou, ncls = macc_fmiou(gt, pred)
-        res[name] = dict(mAcc=round(macc, 4), fmiou=round(fmiou, 4),
-                         gt_classes=ncls, unmatched_frac=round(unmatched, 3))
-        print(f"{name:>14}: mAcc {macc:.3f}  F-mIoU {fmiou:.3f} "
-              f"({ncls} GT classes, {unmatched:.1%} points unmatched)")
+        xacc, xmiou, xcls = macc_fmiou(gt, pred, exclude=CG_EXCLUDE_6)
+        res[name] = dict(
+            their_protocol=dict(mAcc=round(xacc, 4), fmiou=round(xmiou, 4),
+                                gt_classes=xcls,
+                                excluded=list(CG_EXCLUDE_6)),
+            all_classes=dict(mAcc=round(macc, 4), fmiou=round(fmiou, 4),
+                             gt_classes=ncls),
+            unmatched_frac=round(unmatched, 3))
+        print(f"{name:>14}: their protocol (n_exclude 6) "
+              f"mAcc {xacc:.3f}  F-mIoU {xmiou:.3f}  ({xcls} classes)")
+        print(f"{'':>14}  all classes             "
+              f"mAcc {macc:.3f}  F-mIoU {fmiou:.3f}  ({ncls} classes, "
+              f"{unmatched:.1%} unmatched)")
 
     out = os.path.join(d, "scores.json")
     with open(out, "w") as f:
