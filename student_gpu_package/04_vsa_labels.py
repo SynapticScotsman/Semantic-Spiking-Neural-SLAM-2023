@@ -103,15 +103,25 @@ def clip_relabel(scene, classes, batch=32):
     return lab
 
 
-def build_eval_points(scene, n_pts=200_000, stride=20):
+def build_eval_points(scene, n_pts=200_000, stride=20, gt_scene=None):
     """GT-labelled eval points backprojected from the vMAP semantic renders —
-    the canonical point set both systems are scored on."""
+    the canonical point set both systems are scored on. `gt_scene` (if the
+    run is scored against a different physical scene's ground truth than its
+    own name implies, e.g. an alternate-frontend run) is used for the vMAP
+    lookup; the eval points are otherwise identical for any run against the
+    same physical scene, so an existing handoff/<gt_scene>/eval_points.npz is
+    reused rather than recomputed (same GT, same deterministic sampling)."""
+    gt_scene = gt_scene or scene
     out = f"student_gpu_package/handoff/{scene}/eval_points.npz"
     if os.path.exists(out):
         return out
+    shared = f"student_gpu_package/handoff/{gt_scene}/eval_points.npz"
+    if gt_scene != scene and os.path.exists(shared):
+        print(f"reusing {shared} (same physical scene, same GT)")
+        return shared
     # reuse the GT extractor's machinery via its saved per-scene assets
     from tools.replica_gt_from_renders import scene_paths  # noqa
-    vscene = re.sub(r"(\D)(\d+)$", r"\1_\2", scene)
+    vscene = re.sub(r"(\D)(\d+)$", r"\1_\2", gt_scene)
     ex_dir = f"data/replica/{vscene}_vmap"
     from PIL import Image
     inst = sorted(f for f in os.listdir(ex_dir)
@@ -161,12 +171,18 @@ def build_eval_points(scene, n_pts=200_000, stride=20):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--scene", default="room0")
+    ap.add_argument("--gt-scene", default=None,
+                    help="physical scene to read GT/vmap renders from, if "
+                         "different from --scene (e.g. an alternate-frontend "
+                         "run named 'room0_openvocab' still shares room0's "
+                         "ground truth). Defaults to --scene.")
     ap.add_argument("--max-per-class", type=int, default=60)
     ap.add_argument("--grid", type=int, default=96)
     args = ap.parse_args()
     scene = args.scene
+    gt_scene = args.gt_scene or scene
 
-    classes, _ = replica_class_list(scene)
+    classes, _ = replica_class_list(gt_scene)
     print(f"{len(classes)} Replica classes (their vocabulary)")
     lab = clip_relabel(scene, classes)
 
@@ -191,7 +207,7 @@ def main():
         raise SystemExit("FAIL: relabel join produced zero observations — "
                          "send this log to Paul")
 
-    ep = build_eval_points(scene)
+    ep = build_eval_points(scene, gt_scene=gt_scene)
     E = np.load(ep, allow_pickle=True)
     xyz, gt = E["xyz"], E["gt_class"]
 
