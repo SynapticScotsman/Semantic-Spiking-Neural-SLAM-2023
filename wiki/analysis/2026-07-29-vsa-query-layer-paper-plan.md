@@ -208,6 +208,26 @@ comparison claims).
 
 ## Progress log
 
+- **2026-08-12 (au)** — **ConceptGraphs head-to-head SCORED under their own
+  protocol; frontend, not memory, is the measured bottleneck; three-track
+  direction decided and Track B shipped.** Full derivation, numbers, and
+  status: [2026-08-12-frontend-bottleneck-and-comparison-direction.md](2026-08-12-frontend-bottleneck-and-comparison-direction.md).
+  Room0 under their `n_exclude 6` protocol: our VSA trace 0.091 mAcc vs
+  their published 0.406; deleting the memory (explicit instance list, same
+  detections) scores LOWER (0.066); an oracle instance list (same
+  representation, perfect frontend) scores 0.634 — the loss is
+  frontend-attributable, matching the existing miss taxonomy, now
+  reproduced at the dense per-point level under their own scorer. Decision:
+  Track A (CPU-only, rewrite ICRA §VII's semantic-comparison paragraph
+  around this ladder + promote the same-frontend 3-backend comparison,
+  no GPU dependency) — designed, not yet in `paper/main.tex`. Track B
+  (collaborator GPU packages, `collab_tasks/`: B1 open-vocab frontend swap,
+  B2 ConceptGraphs' own 8-scene run, B3 DINOv2-large keys) — **shipped**,
+  B1 has working tested code. Track C (adopt FARM's published
+  referring-expression protocol rather than inventing a benchmark) —
+  scoped only, third priority, needs a check that FARM's query
+  set/eval code is actually public before any code is written.
+
 - **2026-08-04 (at)** — **VPR FRONTEND (EigenPlaces): Paul's frontend
   hypothesis CONFIRMED, the paper's mean-term mechanism CONFIRMED live, and
   bind-yaw goes redundant-and-harmful exactly as predicted. Held-out
