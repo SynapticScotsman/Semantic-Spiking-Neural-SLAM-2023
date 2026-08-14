@@ -143,8 +143,10 @@ for name, rows in merge_acc.items():
     print(f"{name:<32}{np.mean(r1s):>9.0%}{np.min(r1s):>7.0%}{dec:>12}"
           f"{np.median([m['bytes_per_robot'] for m in rows]) / 1024:>10.1f}KB")
 
-print("\nSOTA context (DIFFERENT metric — dense semantic segmentation, GT-scored,")
-print("same 8 scenes; cited for scale, not same-number comparison):")
+print("\nSOTA context (DIFFERENT metric — dense semantic segmentation, GT-scored;")
+print("published on 7 Replica scenes [room0-2, office0-3, no office4] per")
+print("ConceptGraphs' own paper — we run all 8; cited for scale, NOT a")
+print("same-scene-count comparison):")
 print("  ConceptFusion 24.2 mAcc · ConceptGraphs 40.6 · HOV-SG 38.1 · KeySG 45.8")
 print("  ConceptGraphs' own query eval (their protocol): R@1 0.59")
 print("  The same-metric head-to-head = student's ConceptGraphs run on these")

@@ -81,10 +81,25 @@ observations, all 8 scenes) as the paper's controlled semantic comparison,
 since it isolates memory design from perception, which is the actual
 claim the paper makes.
 
-**Status: designed, not yet written into `paper/main.tex`.**
-**Next action:** rerun the ladder across all 8 scenes (today's numbers are
-room0 only), regenerate the their-protocol table, rewrite §VII, add the
-inspector artifact per the qualitative-with-quantitative rule.
+**Status: §VII protocol description corrected in `paper/main.tex` and
+`paper/icra6.tex` (2026-08-12); ladder itself not yet rerun beyond room0.**
+**Scene-count correction (verified against arXiv:2309.16650 via ar5iv,
+2026-08-12):** ConceptGraphs' own paper reports Replica results on **7**
+scenes (`room0-2`, `office0-3`, no `office4`) — confirmed for their
+scene-graph construction table (Table I) and consistent with every other
+Replica experiment in their paper; their semantic-segmentation table
+(Table II, the 40.63 mAcc / 35.95 F-mIoU we cite) does not restate the
+scene count next to it, so 7 is the well-supported inference, not a
+certainty. We evaluate on all 8 scenes of the standard NICE-SLAM/vMAP
+render release (the same data format their pipeline consumes) — that
+extra scene, `office4`, is real, useful coverage, but has no published
+ConceptGraphs number to compare against. **Next action:** rerun the
+ladder across all 8 scenes (today's numbers are room0 only), report the
+7-scene subset as the number compared against their published $\sim$0.40,
+and the full 8-scene number alongside as broader coverage — never blend
+them into one figure presented as matching their protocol. Then rewrite
+§VII's numbers (framing is already fixed), add the inspector artifact per
+the qualitative-with-quantitative rule.
 
 ## Track B — GPU work packages for collaborators, shipped
 

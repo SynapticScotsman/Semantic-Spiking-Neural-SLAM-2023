@@ -208,6 +208,25 @@ comparison claims).
 
 ## Progress log
 
+- **2026-08-12 (av)** — **Scene-count overclaim caught and corrected: ConceptGraphs'
+  own paper evaluates Replica on 7 scenes, not 8 — Paul flagged it, verified
+  against arXiv:2309.16650.** Their scene-graph construction table is
+  confirmed 7 scenes (`room0-2`, `office0-3`, no `office4`); every other
+  Replica experiment in their paper uses that same set; their semantic-seg
+  table (the 40.63 mAcc / 35.95 F-mIoU we cite — numbers themselves check
+  out) doesn't restate scene count next to it, so 7 there is the
+  well-supported inference, not certain. `paper/main.tex` and
+  `paper/icra6.tex` §VII both said "on the same 8 scenes... versus their
+  published ~0.40" — an unintended parity claim (their number likely 7-scene,
+  ours would have been 8). Both corrected: report a 7-scene subset as the
+  direct comparison, the full 8-scene number alongside as broader coverage
+  with no published baseline for `office4`. Also fixed the equivalent phrase
+  in `tools/aggregate_replica_truth.py`'s SOTA-context print. Full detail:
+  [2026-08-12-frontend-bottleneck-and-comparison-direction.md](2026-08-12-frontend-bottleneck-and-comparison-direction.md).
+  Caught before any real 8-scene number was computed (only room0 measured
+  so far) — the eventual multi-scene aggregator must keep the two figures
+  separate, never blend them into one "matches their protocol" number.
+
 - **2026-08-12 (au)** — **ConceptGraphs head-to-head SCORED under their own
   protocol; frontend, not memory, is the measured bottleneck; three-track
   direction decided and Track B shipped.** Full derivation, numbers, and
