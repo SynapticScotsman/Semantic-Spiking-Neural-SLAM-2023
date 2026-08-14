@@ -204,9 +204,10 @@ def main():
     scene = args.scene
     gt_scene = args.gt_scene or scene
 
-    classes, _ = replica_class_list(gt_scene)
-    print(f"{len(classes)} Replica classes (their vocabulary)")
-
+    # NOTE: replica_class_list() reads the vMAP renders, which only exist after
+    # a GT fetch. It is used solely to give CLIP its label set, so under
+    # --labels-from-points it must NOT be called — otherwise a run whose labels
+    # are already final still demands an 0.4 GB download it will never use.
     pts = json.load(open(f"outputs/replica_{scene}/object_points.json"))["points"]
     n0 = len(pts)
     if args.labels_from_points:
@@ -223,6 +224,8 @@ def main():
         if not pts:
             raise SystemExit("FAIL: no observation carried a cls field")
     else:
+        classes, _ = replica_class_list(gt_scene)
+        print(f"{len(classes)} Replica classes (their vocabulary)")
         lab = clip_relabel(scene, classes)
         if any(p.get("det") is None for p in pts):
             # older object_points.json lacks det ids: rebuild the join by
