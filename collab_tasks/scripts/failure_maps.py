@@ -39,6 +39,10 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--scene", default="room0_cgfront")
+    ap.add_argument("--compare-scene", default=None,
+                    help="scene whose cg_labels.npz holds ConceptGraphs' labels; "
+                         "adds a third panel so their map can be seen beside "
+                         "ours on the same points, not just compared as a number")
     ap.add_argument("--out", default=None)
     ap.add_argument("--top", type=int, default=6,
                     help="how many failing classes to draw, worst-supported first")
@@ -62,6 +66,26 @@ def main():
 
     obs = json.load(open(f"outputs/replica_{args.scene}/object_points.json"))["points"]
     n_obs = collections.Counter(p["cls"] for p in obs)
+
+    # ConceptGraphs' own labels, transferred onto the SAME eval points with
+    # their scorer's own nearest-neighbour rule, so the two maps are drawn from
+    # identical geometry and any visible difference is labelling, not sampling.
+    theirs = None
+    if args.compare_scene:
+        p = f"{PKG}/handoff/{args.compare_scene}/cg_labels.npz"
+        if os.path.exists(p):
+            import importlib.util
+            spec = importlib.util.spec_from_file_location(
+                "score05", os.path.join(PKG, "05_score.py"))
+            mod = importlib.util.module_from_spec(spec)
+            sys.argv = [os.path.join(PKG, "05_score.py")]
+            spec.loader.exec_module(mod)
+            C = np.load(p, allow_pickle=True)
+            lab = mod.transfer(C["xyz"], C["pred_class"].astype(object), xyz)
+            theirs = np.array([v if v is not None else "__none__" for v in lab])
+            print(f"loaded their labels from {p}")
+        else:
+            print(f"(no {p} — their panel will be skipped)")
 
     # which classes fail despite having observations — the interesting ones
     rows = []
@@ -104,16 +128,24 @@ def main():
         print(f"\n(matplotlib unavailable: {e} — tables only, no figures)")
         return
 
-    # overview: GT vs ours, coloured by class
-    names = sorted(set(gt) | set(pred))
+    # overview: GT, ours, and (when available) theirs — same points, same colours,
+    # so the panels are directly comparable
+    panels = [(gt, "ground truth"), (pred, f"ours — 32 KB trace")]
+    if theirs is not None:
+        panels.append((theirs, "ConceptGraphs — point-cloud map"))
+    names = sorted(set(gt) | set(pred) | (set(theirs) if theirs is not None else set()))
     cid = {c: i for i, c in enumerate(names)}
-    fig, axes = plt.subplots(1, 2, figsize=(15, 6.5), sharex=True, sharey=True)
-    for ax, lab, ttl in ((axes[0], gt, "ground truth"),
-                         (axes[1], pred, f"ours ({args.scene})")):
+    fig, axes = plt.subplots(1, len(panels), figsize=(7.5 * len(panels), 6.5),
+                             sharex=True, sharey=True)
+    axes = np.atleast_1d(axes)
+    for ax, (lab, ttl) in zip(axes, panels):
+        acc = "" if ttl.startswith("ground") else f"  (mAcc-relevant agreement {np.mean(lab == gt):.1%})"
         ax.scatter(X, Y, c=[cid[v] for v in lab], s=1, cmap="tab20", linewidths=0)
-        ax.set_title(ttl); ax.set_aspect("equal"); ax.set_xlabel("xyz"[a])
+        ax.set_title(ttl + acc, fontsize=10)
+        ax.set_aspect("equal"); ax.set_xlabel("xyz"[a])
     axes[0].set_ylabel("xyz"[b])
-    fig.tight_layout(); fig.savefig(f"{out}/overview_gt_vs_ours.png", dpi=130)
+    fig.tight_layout()
+    fig.savefig(f"{out}/overview_gt_ours_theirs.png", dpi=130)
     plt.close(fig)
 
     # per failing class: where its GT is, where our observations are, what we said
@@ -129,9 +161,14 @@ def main():
         ax.scatter(X[m], Y[m], c="tab:red", s=8,
                    label=f"GT {c} ({int(m.sum())} pts)")
         said = collections.Counter(pred[m]).most_common(1)
-        ax.set_title(f"{c}: acc {float((pred[m]==c).mean()):.3f} — "
-                     f"we mostly said '{said[0][0]}' there"
-                     f"\nmean height {Z[m].mean():+.2f} vs room mean {Z.mean():+.2f}")
+        ttl = (f"{c}: ours {float((pred[m]==c).mean()):.3f} — "
+               f"we mostly said '{said[0][0]}' there")
+        if theirs is not None:
+            t_said = collections.Counter(theirs[m]).most_common(1)
+            ttl += (f"\nConceptGraphs {float((theirs[m]==c).mean()):.3f} "
+                    f"(they said '{t_said[0][0]}')")
+        ax.set_title(ttl + f"\nmean height {Z[m].mean():+.2f} vs room mean {Z.mean():+.2f}",
+                     fontsize=9)
         ax.set_aspect("equal"); ax.legend(loc="best", fontsize=8)
         fig.tight_layout(); fig.savefig(f"{out}/fail_{c.replace(' ','_')}.png", dpi=130)
         plt.close(fig)
