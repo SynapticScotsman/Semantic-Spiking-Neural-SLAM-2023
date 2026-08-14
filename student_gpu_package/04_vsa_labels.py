@@ -117,8 +117,16 @@ def build_eval_points(scene, n_pts=200_000, stride=20, gt_scene=None):
         return out
     shared = f"student_gpu_package/handoff/{gt_scene}/eval_points.npz"
     if gt_scene != scene and os.path.exists(shared):
-        print(f"reusing {shared} (same physical scene, same GT)")
-        return shared
+        # Copy rather than return `shared` in place: 05_score.py looks for
+        # handoff/<scene>/eval_points.npz and has no --gt-scene of its own,
+        # so returning the borrowed path leaves stage 5 with nothing to load
+        # (FileNotFoundError on every alternate-frontend run — the failure is
+        # invisible when gt_scene == scene, which is the no-op case).
+        import shutil
+        os.makedirs(os.path.dirname(out), exist_ok=True)
+        shutil.copy(shared, out)
+        print(f"reusing {shared} (same physical scene, same GT) -> {out}")
+        return out
     # reuse the GT extractor's machinery via its saved per-scene assets
     from tools.replica_gt_from_renders import scene_paths  # noqa
     vscene = re.sub(r"(\D)(\d+)$", r"\1_\2", gt_scene)
@@ -176,6 +184,15 @@ def main():
                          "different from --scene (e.g. an alternate-frontend "
                          "run named 'room0_openvocab' still shares room0's "
                          "ground truth). Defaults to --scene.")
+    ap.add_argument("--oracle", default="none",
+                    choices=["none", "labels", "placement", "both"],
+                    help="substitute ground truth into ONE stage to measure "
+                         "what that stage costs (see the block in main()). "
+                         "Writes to handoff/<scene>_oracle_<mode>/ so the "
+                         "real measured labels are never overwritten.")
+    ap.add_argument("--oracle-radius", type=float, default=0.25,
+                    help="max distance (m) for an observation to adopt a GT "
+                         "class under --oracle labels")
     ap.add_argument("--max-per-class", type=int, default=60)
     ap.add_argument("--grid", type=int, default=96)
     args = ap.parse_args()
@@ -214,6 +231,57 @@ def main():
     # floor-plane axes: same rule as everywhere (largest-variance axes)
     var = xyz.var(0)
     a, b = sorted(np.argsort(var)[-2:])
+    # --- optional oracle substitutions (stage decomposition) ---------------
+    # Which stage costs us the score? Substitute ground truth into ONE stage
+    # at a time and re-score with the SAME scorer; the recovered distance is
+    # that stage's cost. Nothing here invents a metric — 05_score.py still
+    # does the judging, only its inputs change.
+    #   labels    : keep our detections+placement, take the GT class at each
+    #               observation's location.  MEASURED CAVEAT (room0, 2026-08-14):
+    #               the eval cloud is dense enough that EVERY position has a GT
+    #               point within 0.25 m (40789/40789 adopted a class, 0 dropped),
+    #               so this makes labels agree with wherever we PUT things and
+    #               reports the representation ceiling (0.624), NOT the cost of
+    #               relabelling. Treat it as a ceiling probe until the class is
+    #               taken from the GT instance a detection actually came from.
+    #   placement : keep our CLIP labels, snap each observation onto the
+    #               nearest GT point of its own class -> cost of grounding
+    #   both      : the ceiling of this representation
+    if args.oracle != "none":
+        from scipy.spatial import cKDTree
+        F2 = np.c_[xyz[:, a], xyz[:, b]]
+        gts = gt.astype(str)
+        n_in = len(pts)
+        if args.oracle in ("labels", "both"):
+            d, j = cKDTree(F2).query(np.array([[p["x"], p["y"]] for p in pts]), k=1)
+            pts = [dict(p, cls=str(gts[jj]))
+                   for p, dd, jj in zip(pts, d, j) if dd <= args.oracle_radius]
+            print(f"oracle labels: {len(pts)}/{n_in} observations took the GT "
+                  f"class within {args.oracle_radius} m "
+                  f"({n_in-len(pts)} had no GT point that close)")
+        if args.oracle in ("placement", "both"):
+            n_in2 = len(pts)
+            by_cls = {}
+            for c in {p["cls"] for p in pts}:
+                m = np.flatnonzero(gts == c)
+                if len(m):
+                    by_cls[c] = (cKDTree(F2[m]), m)
+            snapped = []
+            for p in pts:
+                e = by_cls.get(p["cls"])
+                if e is None:      # class our frontend named but GT never has
+                    continue
+                t, m = e
+                _, jj = t.query([p["x"], p["y"]], k=1)
+                snapped.append(dict(p, x=float(F2[m[jj], 0]),
+                                    y=float(F2[m[jj], 1])))
+            pts = snapped
+            print(f"oracle placement: {len(pts)}/{n_in2} observations snapped "
+                  "to the nearest GT point of their own class "
+                  f"({n_in2-len(pts)} named a class absent from GT)")
+        if not pts:
+            raise SystemExit(f"FAIL: oracle '{args.oracle}' left no observations")
+
     enc = ClassroomEncoders(HD, 0, LS, 20.0)
     sem = class_phasors(sorted({p["cls"] for p in pts}), HD)
     trace = build_trace(cap_per_class(pts, args.max_per_class), enc, sem, HD)
@@ -237,8 +305,16 @@ def main():
     iy = np.clip(np.searchsorted(gy, ys), 0, args.grid - 1)
     pred = np.array([names[winner[iy_ * args.grid + ix_]]
                      for ix_, iy_ in zip(ix, iy)])
-    out = f"student_gpu_package/handoff/{scene}/vsa_labels.npz"
+    # oracle runs land in their own namespace so a decomposition can never
+    # overwrite the real measured labels for this scene
+    tag = "" if args.oracle == "none" else f"_oracle_{args.oracle}"
+    out = f"student_gpu_package/handoff/{scene}{tag}/vsa_labels.npz"
     os.makedirs(os.path.dirname(out), exist_ok=True)
+    if tag:
+        import shutil
+        shutil.copy(ep, os.path.join(os.path.dirname(out), "eval_points.npz"))
+        print(f"oracle run -> score it with: python "
+              f"student_gpu_package/05_score.py --scene {scene}{tag}")
     np.savez_compressed(out, xyz=xyz, pred_class=pred)
     agree = float(np.mean(pred == gt))
     print(f"wrote {out}; raw point-label agreement {agree:.1%} "
