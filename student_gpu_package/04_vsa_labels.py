@@ -198,6 +198,15 @@ def main():
                          "final Replica-vocabulary labels (e.g. a ConceptGraphs "
                          "frontend run) — skip our CLIP relabel entirely, which "
                          "is the variable such a comparison holds fixed")
+    ap.add_argument("--decode", default="argmax",
+                    choices=["argmax", "normalised"],
+                    help="'argmax' (default, unchanged) picks the class whose "
+                         "raw field is highest at each cell, so a class that "
+                         "contributed more mass can blanket a lighter one. "
+                         "'normalised' z-scores each class field first, so "
+                         "classes compete on where their own field peaks. "
+                         "Diagnostic for the winner-take-all pattern seen in "
+                         "per_class_breakdown (18/24 classes exactly 0.000).")
     ap.add_argument("--max-per-class", type=int, default=60)
     ap.add_argument("--grid", type=int, default=96)
     args = ap.parse_args()
@@ -322,6 +331,16 @@ def main():
     names = sorted(sem)
     F = np.stack([((trace / sem[c])[None, :] @ np.conj(G).T).real[0]
                   for c in names])                       # (C, grid^2)
+    if args.decode == "normalised":
+        # Per-class z-score across grid cells before the argmax. Measured
+        # motivation (room0_cgfront, 2026-08-14): 18 of 24 scored classes came
+        # out at EXACTLY 0.000 — a class either won its region outright or
+        # vanished — and 'vent', with 2511 observations (more than any other
+        # class), still scored 0.000 by losing every cell. Raw field magnitude
+        # tracks how much mass a class contributed, so a heavy class can
+        # blanket a light one everywhere. Z-scoring makes classes compete on
+        # where their field is unusually high for THEM, not on absolute mass.
+        F = (F - F.mean(axis=1, keepdims=True)) / (F.std(axis=1, keepdims=True) + 1e-12)
     winner = F.argmax(0)                                 # class per cell
     ix = np.clip(np.searchsorted(gx, xs), 0, args.grid - 1)
     iy = np.clip(np.searchsorted(gy, ys), 0, args.grid - 1)
