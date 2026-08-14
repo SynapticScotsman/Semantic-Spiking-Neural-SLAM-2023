@@ -47,14 +47,37 @@ PKG = "student_gpu_package"
 
 
 def floor_axes(scene):
-    """Same rule as vsa_cognitive_mapping.object_grounding.localize(): the two
-    largest-variance axes of the camera translation are the floor plane. Using
-    a different rule here would silently rotate their map relative to ours."""
+    """Which two world axes are the floor plane.
+
+    Our baseline already recorded its answer in object_points.json's "axes"
+    field, so prefer that: it is authoritative, free, and survives a VM reset
+    (it lives on Drive). Only fall back to recomputing from traj.txt — the
+    same rule object_grounding.localize() uses — when that file is absent,
+    because raw scene data is an 11 GB re-download on a fresh VM.
+
+    Getting this wrong would silently rotate their map relative to ours, and
+    the damage would look like a scoring difference rather than a bug.
+    """
     cfg = json.load(open(f"vsa_cognitive_mapping/configs/replica_{scene}.json"))
+    recorded = f"outputs/replica_{scene}/object_points.json"
+    if os.path.exists(recorded):
+        axes = json.load(open(recorded)).get("axes")
+        if axes and len(axes) == 2:
+            a, b = ("xyz".index(axes[0]), "xyz".index(axes[1]))
+            print(f"floor axes {axes[0]},{axes[1]} (as recorded by our baseline "
+                  f"in {recorded})")
+            return a, b, cfg
     img_dir = os.path.dirname(cfg["images"])
-    traj = np.loadtxt(os.path.join(img_dir, "traj.txt")).reshape(-1, 4, 4)
+    traj_path = os.path.join(img_dir, "traj.txt")
+    if not os.path.exists(traj_path):
+        raise SystemExit(
+            f"cannot determine floor axes: neither {recorded} nor {traj_path} "
+            "exists. The first is on Drive if our baseline ever ran; the "
+            "second needs tools/prepare_replica.py (11 GB).")
+    traj = np.loadtxt(traj_path).reshape(-1, 4, 4)
     var = traj[:, :3, 3].var(axis=0)
     a, b = sorted(np.argsort(var)[-2:])
+    print(f"floor axes {'xyz'[a]},{'xyz'[b]} (recomputed from traj.txt)")
     return a, b, cfg
 
 
@@ -76,7 +99,6 @@ def main():
         raise SystemExit(f"{src} is empty — their export produced no observations")
 
     a, b, cfg = floor_axes(scene)
-    print(f"floor axes {'xyz'[a]},{'xyz'[b]} (same rule as object_grounding)")
 
     pts = []
     for i, o in enumerate(obs):
