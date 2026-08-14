@@ -49,6 +49,17 @@ def main():
                     help="subsample of the fused cloud used as eval points")
     ap.add_argument("--cg-out", default=None,
                     help="dir holding their pkl.gz (default <pkg>/cg_out/<scene>)")
+    ap.add_argument("--obs-geometry", default="sampled",
+                    choices=["sampled", "centroid"],
+                    help="where each observation in cg_observations.json sits. "
+                         "'centroid' (the original behaviour) puts every "
+                         "observation of an object at that object's centre, so "
+                         "110 objects collapse to 110 distinct positions — a "
+                         "downstream memory then has no extent to work with, "
+                         "while their own map is scored on full per-object "
+                         "point clouds. 'sampled' draws each observation's "
+                         "position from the object's own pcd_np, preserving "
+                         "extent at the same observation count.")
     args = ap.parse_args()
 
     res, src = load_their_result(args.cg_out
@@ -96,9 +107,21 @@ def main():
                              y=float(c[1]), z=float(c[2]),
                              n_points=int(len(pts))))
         feats.append(sniff(ob, ["clip_ft"], None))
-        for fr in list(frames)[:2000]:
-            obs_rows.append(dict(frame=int(fr), obj=oid, cls=str(cname),
-                                 x=float(c[0]), y=float(c[1]), z=float(c[2])))
+        frs = list(frames)[:2000]
+        if args.obs_geometry == "sampled" and len(frs):
+            # one position per observation, drawn from this object's own cloud,
+            # so the stream carries the object's extent rather than collapsing
+            # it to a point. Seeded per object => reproducible across runs.
+            sel = np.random.RandomState(oid).choice(
+                len(pts), size=len(frs), replace=len(pts) < len(frs))
+            for k, fr in enumerate(frs):
+                q = pts[sel[k]]
+                obs_rows.append(dict(frame=int(fr), obj=oid, cls=str(cname),
+                                     x=float(q[0]), y=float(q[1]), z=float(q[2])))
+        else:
+            for fr in frs:
+                obs_rows.append(dict(frame=int(fr), obj=oid, cls=str(cname),
+                                     x=float(c[0]), y=float(c[1]), z=float(c[2])))
         pts_all.append(pts)
         lab_all.append(np.full(len(pts), oid))
 
@@ -162,7 +185,10 @@ def main():
     names = np.array([cls_of[int(i)] for i in L])
     np.savez_compressed(os.path.join(out_dir, "cg_labels.npz"),
                         xyz=P.astype(np.float32), pred_class=names)
-    print(f"{len(obj_rows)} objects, {len(obs_rows)} observations, "
+    n_distinct = len({(round(r["x"], 3), round(r["y"], 3), round(r["z"], 3))
+                      for r in obs_rows})
+    print(f"{len(obj_rows)} objects, {len(obs_rows)} observations "
+          f"({args.obs_geometry} geometry -> {n_distinct} distinct positions), "
           f"{len(P)} labelled points")
     print("NOTE: eval_points.npz (GT labels) is built by 04_vsa_labels.py "
           "from the semantic renders so BOTH systems are scored on the "
