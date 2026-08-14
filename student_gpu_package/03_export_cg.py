@@ -67,7 +67,7 @@ def main():
                 return getattr(ob, k)
         return default
 
-    obj_rows, obs_rows = [], []
+    obj_rows, obs_rows, feats = [], [], []
     pts_all, lab_all = [], []
     for oid, ob in enumerate(objects):
         # schema drifts between releases — sniff the known spellings and,
@@ -95,11 +95,57 @@ def main():
         obj_rows.append(dict(id=oid, cls=str(cname), x=float(c[0]),
                              y=float(c[1]), z=float(c[2]),
                              n_points=int(len(pts))))
+        feats.append(sniff(ob, ["clip_ft"], None))
         for fr in list(frames)[:2000]:
             obs_rows.append(dict(frame=int(fr), obj=oid, cls=str(cname),
                                  x=float(c[0]), y=float(c[1]), z=float(c[2])))
         pts_all.append(pts)
         lab_all.append(np.full(len(pts), oid))
+
+    # A class-agnostic map (class_set none / class_agnostic=True) carries no
+    # semantics — every object's class_name is literally "item", so reading it
+    # exported one class for every point and scored mAcc 0.000. Their own eval
+    # (conceptgraph/scripts/eval_replica_semseg.py, lines 283-296 and 134-141)
+    # assigns labels by matching each object's clip_ft against CLIP text
+    # embeddings of the class list. Reproduced here verbatim — same model
+    # (ViT-H-14 / laion2b_s32b_b79k), same prompt, same L2 normalisation, same
+    # -1e10 suppression of the excluded classes, same argmax. Nothing invented.
+    if len({r["cls"] for r in obj_rows}) <= 1 and feats and feats[0] is not None:
+        import torch, open_clip
+        try:
+            from conceptgraph.dataset.replica_constants import (
+                REPLICA_CLASSES, REPLICA_EXISTING_CLASSES)
+            class_names = [REPLICA_CLASSES[i] for i in REPLICA_EXISTING_CLASSES]
+        except Exception as e:
+            raise SystemExit(f"cannot import their class list: {e}")
+        print(f"class-agnostic map detected -> assigning labels from clip_ft "
+              f"against {len(class_names)} Replica classes, their method")
+        dev = "cuda" if torch.cuda.is_available() else "cpu"
+        model, _, _ = open_clip.create_model_and_transforms(
+            "ViT-H-14", "laion2b_s32b_b79k")
+        model = model.to(dev).eval()
+        tok = open_clip.get_tokenizer("ViT-H-14")
+        # their n_exclude=6 list; suppressed BEFORE argmax exactly as they do
+        EXCLUDE = ["other", "floor", "wall", "ceiling", "door", "window"]
+        with torch.no_grad():
+            tf = model.encode_text(
+                tok([f"an image of {c}" for c in class_names]).to(dev))
+            tf = tf / tf.norm(dim=-1, keepdim=True)
+            of = torch.from_numpy(
+                np.stack([np.asarray(f) for f in feats])).to(dev).float()
+            of = of / of.norm(dim=-1, keepdim=True)
+            sim = of @ tf.T
+            for c in EXCLUDE:
+                if c in class_names:
+                    sim[:, class_names.index(c)] = -1e10
+            idx = sim.argmax(dim=-1).cpu().numpy()
+        for r, i in zip(obj_rows, idx):
+            r["cls"] = class_names[int(i)]
+        by_id = {r["id"]: r["cls"] for r in obj_rows}
+        for r in obs_rows:
+            r["cls"] = by_id.get(r["obj"], r["cls"])
+        import collections as _c
+        print("assigned:", _c.Counter(r["cls"] for r in obj_rows).most_common(10))
 
     with open(os.path.join(out_dir, "cg_objects.json"), "w") as f:
         json.dump(obj_rows, f, indent=1)
