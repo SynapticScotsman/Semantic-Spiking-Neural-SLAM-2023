@@ -83,6 +83,48 @@ their README directly, watch for these:
    Only small, valuable outputs (results, checkpoints cache) should live
    on Drive.
 
+### Found 2026-08-14, running it end-to-end on Colab (all now handled in the notebook's cell 3b)
+
+7. **`ninja` is absent from the Colab image.** Without it, torch's extension
+   builder compiles serially — one `nvcc`, 11 of 12 cores idle. chamferdist
+   (a 160 s job) ran 22 minutes without finishing and pytorch3d never
+   completed across three attempts, because a multi-hour silent compile is
+   what loses a Colab session. With ninja: chamferdist 96 s, pytorch3d ~5 min.
+   Memory is a red herring — peak usage during a fully parallel build is
+   ~17 GB, and the failures happened with 49–52 GB free.
+8. **The class-agnostic variant does NOT skip GroundingDINO or RAM.** Item 5's
+   claim above is about what their code *uses*; `generate_gsa_results.py`
+   *imports* both at module level (lines 36, 58) and **constructs**
+   GroundingDINO at line 306 regardless of `--class_set`, loading its 694 MB
+   `groundingdino_swint_ogc.pth`. Both packages and that checkpoint are
+   mandatory.
+9. **Their 2023 stack vs a 2026 image.** `environment.yml` pins
+   `transformers==4.31.0` and python 3.10; neither is installable on Colab
+   (tokenizers 0.13 has no py3.12 wheel and needs Rust). Consequences:
+   - transformers 5.x deleted `BertModel.get_head_mask` (GroundingDINO needs
+     it) and `find_pruneable_heads_and_indices` (RAM needs it). Use
+     **`transformers==4.46.3`** — newest pre-v5, verified to have both.
+   - GroundingDINO's CUDA source predates a torch API change:
+     `AT_ASSERTM(x.type().is_cuda())` → `x.is_cuda()` and
+     `AT_DISPATCH_FLOATING_TYPES(x.type(), …)` → `x.scalar_type()`.
+   - `cfslam_pipeline_batch.py:140` calls `MapObjectList(device=cfg.device)`
+     but `DetectionList(list)` defines no `__init__`, and `list()` has never
+     taken keywords. The kwarg is inert (all 15 other construction sites pass
+     nothing; the class never reads `self.device`), so accepting and ignoring
+     it reproduces the 3.10 behaviour.
+   - Restore `opencv-python-headless` **after** GroundingDINO — its pins drag
+     back a numpy-1 build. Cell 3's existing restore runs too early.
+10. **`--sam_variant sam` is an argparse error.** Their parser has
+    `default="sam"` but `choices=[fastsam, mobilesam, lighthqsam]`, so full
+    SAM ViT-H — their published config — is reachable **only by omitting the
+    flag**. Their line 410 (`if args.sam_variant != "sam"`) confirms it is the
+    intended default.
+
+**Verified end-to-end on room0 (2026-08-14):** SAM segmentation 8/8 frames in
+79 s, then their mapping 8/8 in 37 s, producing 39 detections → 26 after
+filtering → 23 after merging, saved to `pcd_saves/full_pcd_none_smoke.pkl.gz`.
+Extrapolated full-scene cost on an L4: ~96 min for 400 frames.
+
 ## Output schema (already defined — do not invent a new one)
 
 Stage 3 (`student_gpu_package/03_export_cg.py`) produces, per scene, under
