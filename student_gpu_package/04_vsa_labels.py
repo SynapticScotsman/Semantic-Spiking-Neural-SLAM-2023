@@ -193,6 +193,11 @@ def main():
     ap.add_argument("--oracle-radius", type=float, default=0.25,
                     help="max distance (m) for an observation to adopt a GT "
                          "class under --oracle labels")
+    ap.add_argument("--labels-from-points", action="store_true",
+                    help="the observations in object_points.json already carry "
+                         "final Replica-vocabulary labels (e.g. a ConceptGraphs "
+                         "frontend run) — skip our CLIP relabel entirely, which "
+                         "is the variable such a comparison holds fixed")
     ap.add_argument("--max-per-class", type=int, default=60)
     ap.add_argument("--grid", type=int, default=96)
     args = ap.parse_args()
@@ -201,28 +206,42 @@ def main():
 
     classes, _ = replica_class_list(gt_scene)
     print(f"{len(classes)} Replica classes (their vocabulary)")
-    lab = clip_relabel(scene, classes)
 
     pts = json.load(open(f"outputs/replica_{scene}/object_points.json"))["points"]
     n0 = len(pts)
-    if any(p.get("det") is None for p in pts):
-        # older object_points.json lacks det ids: rebuild the join by
-        # sweeping the csv's (frame, class) queues in order
-        from collections import defaultdict, deque
-        q = defaultdict(deque)
-        for r in csv.DictReader(open(f"outputs/replica_{scene}/"
-                                     "detections_crops.csv")):
-            q[(int(r["frame_idx"]), r["class_name"])].append(int(r["det_id"]))
+    if args.labels_from_points:
+        # The observations already carry final Replica-vocabulary labels — e.g.
+        # a ConceptGraphs frontend run, where their objects were labelled by
+        # their own clip_ft-vs-class-text assignment. Re-labelling those crops
+        # with our CLIP pass would (a) need detection crops that do not exist
+        # for their objects and (b) replace their labels with ours, which is
+        # exactly the variable this comparison is holding fixed.
+        pts = [p for p in pts if p.get("cls")]
+        print(f"labels taken from object_points.json (no CLIP relabel): "
+              f"{len(pts)}/{n0} observations, "
+              f"{len({p['cls'] for p in pts})} distinct classes")
+        if not pts:
+            raise SystemExit("FAIL: no observation carried a cls field")
+    else:
+        lab = clip_relabel(scene, classes)
+        if any(p.get("det") is None for p in pts):
+            # older object_points.json lacks det ids: rebuild the join by
+            # sweeping the csv's (frame, class) queues in order
+            from collections import defaultdict, deque
+            q = defaultdict(deque)
+            for r in csv.DictReader(open(f"outputs/replica_{scene}/"
+                                         "detections_crops.csv")):
+                q[(int(r["frame_idx"]), r["class_name"])].append(int(r["det_id"]))
+            for p in pts:
+                key = (p["frame"], p["cls"])
+                p["det"] = q[key].popleft() if q[key] else None
         for p in pts:
-            key = (p["frame"], p["cls"])
-            p["det"] = q[key].popleft() if q[key] else None
-    for p in pts:
-        p["cls"] = lab.get(p.get("det"), None) if p.get("det") is not None else None
-    pts = [p for p in pts if p["cls"]]
-    print(f"observations relabelled to Replica vocab: {len(pts)}/{n0}")
-    if not pts:
-        raise SystemExit("FAIL: relabel join produced zero observations — "
-                         "send this log to Paul")
+            p["cls"] = lab.get(p.get("det"), None) if p.get("det") is not None else None
+        pts = [p for p in pts if p["cls"]]
+        print(f"observations relabelled to Replica vocab: {len(pts)}/{n0}")
+        if not pts:
+            raise SystemExit("FAIL: relabel join produced zero observations — "
+                             "send this log to Paul")
 
     ep = build_eval_points(scene, gt_scene=gt_scene)
     E = np.load(ep, allow_pickle=True)
