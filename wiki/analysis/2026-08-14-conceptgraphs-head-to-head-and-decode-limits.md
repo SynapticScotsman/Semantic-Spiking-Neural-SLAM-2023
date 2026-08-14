@@ -74,42 +74,71 @@ harness. It was never a considered choice against alternatives; it is the
 obvious parameter-free readout and it went unquestioned until the per-class
 table exposed the 18 zeros.
 
-It is also standard practice, which is worth knowing before treating it as our
-bug. Penzkofer et al.'s **VSA4VQA** (arXiv:2405.03852) builds a *clean-up
+**VSA4VQA** (Penzkofer et al., CogSci 2024, arXiv:2405.03852) builds a *clean-up
 memory* as "a discretised grid of 100×100×10×10 points" and returns "the
-proposal with the highest similarity" — the same similarity-plus-argmax readout
-over a precomputed grid that we use, at almost the same grid resolution (ours is
-96×96).
+proposal with the highest similarity" — similarity-plus-argmax over a
+precomputed grid, at almost our grid resolution (ours is 96×96). It also
+documents our interference result: "when there are many objects, the
+orthogonality principle ... no longer holds and object SSPs are no longer
+orthogonal ... resulting in overlapping SSPs that cannot be disentangled
+correctly", with capacity improving 512 → 1024 → 2048 dimensions. And it encodes
+**four** dimensions, `S(x,y,w,h) = X^x ⊛ Y^y ⊛ W^w ⊛ H^h` — location *plus
+extent*.
 
-Two things they do that we do not:
+**SSPictR** (Penzkofer, Habashy, Eliasmith, Bulling — AIC/ECAI 2025) is the
+closest published system to ours: semantic labels plus spatial locations from
+segmentation maps, one 3,751-dim vector, "compressed but fully decodable".
+Three findings bear directly on tonight:
 
-1. **They encode four dimensions, not two**: `S(x,y,w,h) = X^x ⊛ Y^y ⊛ W^w ⊛ H^h`
-   — location *plus object extent*. Extent is precisely the information whose
-   absence collapses our vent and hanging plant onto the floor beneath them.
-2. **They document the same interference we measured**: "when there are many
-   objects, the orthogonality principle of the hyper-dimensional vector space no
-   longer holds and object SSPs are no longer orthogonal ... which in turn
-   results in overlapping SSPs that cannot be disentangled correctly", with
-   capacity improving from 512 → 1024 → 2048 dimensions.
+1. **It does NOT use cross-class argmax.** Decoding is per-object similarity
+   against a threshold (their Eq. 3): `ψ_j = ⟨M ⊛ obj_j^-1, ∫ φ(x,y)dxdy⟩`, and
+   "the set of similarity values larger than some threshold τ was used as the
+   decoded mask for object j". Classes are decoded **independently** and never
+   compete for a cell — the exact mechanism behind our 18 exact zeros. τ is
+   tuned per dataset (0.7 COCOStuff, 0.3 ADE20K); they later replace it with a
+   465K-parameter U-Net refining masks from the similarity maps, reaching
+   45.4 mIoU (COCOStuff) and 37.8 (ADE20K).
+2. **They found our capacity result independently.** Objects are bound to a
+   *bundle of SSPs covering the object's area*, and "encoding all pixels of a
+   given object degrades representation accuracy due to overloading the SSP
+   bundle. Therefore, we sampled the points for each object". That is our
+   `--obs-geometry sampled` plus the per-class cap, reached from the other
+   direction — useful corroboration.
+3. **They are 2D as well** (φ: x ∈ ℝ² ↦ ℝᵈ) — but they work on *images*, where
+   the image plane is the natural space. We map a room, so a floor projection
+   genuinely discards height. The limitation is ours, not inherited.
 
-Same author's **SSPictR** (Penzkofer 2025, collaborative-ai.org) encodes semantic
-labels plus spatial locations from segmentation maps into a single 3,751-dim
-vector — closer still to our setting. Worth reading properly; the PDF did not
-extract cleanly here.
+**Corrected implication.** An earlier version of this page said argmax is what
+the closest work does; that is wrong. VSA4VQA argmaxes over *proposals*, but
+SSPictR — the system most like ours — thresholds each class independently.
+Cross-class winner-take-all appears to be our own choice, and it is the one
+mechanism we have direct evidence against.
 
-**Implication for us:** argmax is defensible and conventional, so "we used
-argmax" is not a weakness to apologise for — but the field has already moved to
-encoding extent, and our 2D result is consistent with their reported failure
-mode. Adding a third axis is the same move VSA4VQA made for the same reason.
+## Next experiments, in order
 
-## Next experiment
+**1. Per-class thresholded decode (cheap, citable, targets the measured
+failure).** Replace cross-class argmax with SSPictR's rule: decode each class's
+similarity map independently and accept cells above a threshold. Classes stop
+competing, so a low-mass class is no longer erased by a heavy one. The scorer
+needs exactly one label per point, so overlaps still need resolving — but by
+per-class calibrated score, not raw magnitude. Note our z-score attempt was a
+crude version of this and failed (0.184 vs 0.187); a genuine per-class threshold
+with its own τ is a different and better-founded test. If it recovers several of
+the 18 zeros, the readout was the problem after all.
 
-Encode height (or extent) as an additional bound axis. Predictions to record
-first: the trace stays **32 KB** either way (bundling is size-invariant), but
-the same capacity spreads over a larger space, so expect an SNR cost — frequent
-classes may dip while vent / indoor-plant / book / lamp become recoverable at
-all. If mAcc rises while F-mIoU falls slightly, that is the trade, and for this
-metric it is the right one.
+**2. Encode height (or extent) as an additional bound axis.** The deeper fix,
+and the move VSA4VQA made for the same reason. Predictions to record first: the
+trace stays **32 KB** either way (bundling is size-invariant), but the same
+capacity spreads over a larger space, so expect an SNR cost — frequent classes
+may dip while vent / indoor-plant / book / lamp become recoverable at all. If
+mAcc rises while F-mIoU falls slightly, that is the trade, and for this metric
+it is the right one.
+
+**3. If both help, consider a learned refiner.** SSPictR's U-Net (465K params)
+beat their threshold. That is a much larger change in kind — it puts trained
+weights between the trace and the answer — so it belongs after 1 and 2, and its
+cost to the "interpretable, training-free memory" claim should be weighed
+explicitly.
 
 ## Caveats to carry into any writeup
 
