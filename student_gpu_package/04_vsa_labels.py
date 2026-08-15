@@ -333,24 +333,49 @@ def main():
     # shared. So a PER-AXIS length scale needs no new algebra — just a different
     # divisor per axis. room0 is 7.7 m by 4.6 m, so one scalar is already
     # imposing the same resolution on unequal extents.
-    ls = [float(v) for v in str(args.length_scale).split(",")]
-    if len(ls) == 1:
-        enc = ClassroomEncoders(HD, 0, ls[0], 20.0)
-        print(f"length scale {ls[0]} (isotropic)")
-    elif len(ls) == 2:
-        class _Aniso(ClassroomEncoders):
-            """Per-axis length scale. Same bases, same operations — only the
-            exponent's divisor differs between x and y. build_trace and the
-            decode grid both go through ctx_pos, so they stay consistent."""
-            def __init__(self, hd, seed, lx, ly, tl):
-                super().__init__(hd, seed, 1.0, tl)
-                self.lx, self.ly = lx, ly
-            def ctx_pos(self, x, y):
-                return (self.Bx ** float(x / self.lx)) * (self.By ** float(y / self.ly))
-        enc = _Aniso(HD, 0, ls[0], ls[1], 20.0)
-        print(f"length scale x={ls[0]} y={ls[1]} (anisotropic)")
-    else:
-        raise SystemExit("--length-scale takes one value or two (lx,ly)")
+    # Grammar: groups separated by '+', each group one value (isotropic) or two
+    # as lx,ly (per-axis).  "0.45,0.27"          -> single anisotropic scale
+    #                       "0.45,0.27+0.15,0.09" -> both scales superposed
+    scales = []
+    for grp in str(args.length_scale).split("+"):
+        v = [float(t) for t in grp.split(",")]
+        if len(v) == 1:
+            v = [v[0], v[0]]
+        elif len(v) != 2:
+            raise SystemExit(f"bad length-scale group '{grp}': want 'l' or 'lx,ly'")
+        scales.append((v[0], v[1]))
+
+    class _Enc(ClassroomEncoders):
+        """Per-axis and multi-scale fractional power encoding.
+
+        Per-axis is free: ctx_pos is already (Bx ** x/l) * (By ** y/l), so x and
+        y ride independent bases and only the divisor changes.
+
+        Multi-scale superposes the same position encoded at several scales:
+        phi(x) = mean_k [ Bx**(x/lx_k) * By**(y/ly_k) ]. A single scale forces a
+        choice measured on room0_cgfront — 0.20 gave the best mAcc (0.215) and
+        0.60 the best F-mIoU (0.351), because a narrow bump serves rare classes
+        and a wide one serves large ones. Superposing gives the kernel a sharp
+        core AND broad tails, so both can be served at once. Cross-scale terms
+        are near-orthogonal and act as noise, which is the cost.
+
+        build_trace and the decode grid both call ctx_pos, so whatever is
+        configured here applies identically to encoding and querying.
+        """
+        def __init__(self, hd, seed, scales, tl):
+            super().__init__(hd, seed, 1.0, tl)
+            self.scales = scales
+
+        def ctx_pos(self, x, y):
+            ps = [(self.Bx ** float(x / lx)) * (self.By ** float(y / ly))
+                  for lx, ly in self.scales]
+            return ps[0] if len(ps) == 1 else ps[0] + ps[1:]
+
+    enc = _Enc(HD, 0, scales, 20.0)
+    kind = ("isotropic" if len(scales) == 1 and scales[0][0] == scales[0][1]
+            else "anisotropic" if len(scales) == 1 else
+            f"multi-scale x{len(scales)}")
+    print(f"length scales {scales} ({kind})")
     sem = class_phasors(sorted({p["cls"] for p in pts}), HD)
     trace = build_trace(cap_per_class(pts, args.max_per_class), enc, sem, HD)
     trace /= max(np.abs(trace).max(), 1e-12)
