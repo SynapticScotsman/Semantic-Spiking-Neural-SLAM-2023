@@ -207,6 +207,12 @@ def main():
                          "classes compete on where their own field peaks. "
                          "Diagnostic for the winner-take-all pattern seen in "
                          "per_class_breakdown (18/24 classes exactly 0.000).")
+    ap.add_argument("--length-scale", type=float, default=LS,
+                    help=f"SSP length scale (default {LS}, inherited from the "
+                         "original harness). Sets the width of each "
+                         "observation's similarity bump: too wide and adjacent "
+                         "objects blur together, too narrow and the field does "
+                         "not reach the eval points between observations.")
     ap.add_argument("--max-per-class", type=int, default=60)
     ap.add_argument("--grid", type=int, default=96)
     args = ap.parse_args()
@@ -313,7 +319,12 @@ def main():
         if not pts:
             raise SystemExit(f"FAIL: oracle '{args.oracle}' left no observations")
 
-    enc = ClassroomEncoders(HD, 0, LS, 20.0)
+    # length scale sets how wide each observation's similarity bump is. If it is
+    # large relative to the spacing between objects, neighbouring classes blur
+    # into one another before any decode rule sees them — the leading suspect
+    # for confusions whose GT footprints do not overlap at all (measured
+    # 2026-08-14: indoor-plant -> vase 90% with zero shared floor cells).
+    enc = ClassroomEncoders(HD, 0, args.length_scale, 20.0)
     sem = class_phasors(sorted({p["cls"] for p in pts}), HD)
     trace = build_trace(cap_per_class(pts, args.max_per_class), enc, sem, HD)
     trace /= max(np.abs(trace).max(), 1e-12)
