@@ -29,13 +29,41 @@ import numpy as np
 PKG = os.path.dirname(os.path.abspath(__file__))
 
 
-def load_their_result(out_dir):
+def load_their_result(out_dir, prefer_post=True):
+    """Load their saved map, preferring the POST-PROCESSED one.
+
+    cfslam_pipeline_batch.py saves two maps per scene:
+
+        full_pcd_<suffix>.pkl.gz        the map as accumulated
+        full_pcd_<suffix>_post.pkl.gz   after their final denoise/merge pass
+
+    Selecting by max(getsize) picked the WRONG one every time, because the post
+    pass REMOVES objects and points and so the _post file is the smaller of the
+    two (room1: 23.0 MB vs 22.5 MB). That means every score reported for their
+    system up to 2026-08-15 was computed on their map with its last stage
+    missing -- an unfair comparison, and unfair in the direction that flatters
+    us. Suspected contributor to our measured 0.271 mean against their
+    published ~0.40.
+
+    prefer_post=False reproduces the old behaviour for an explicit A/B.
+    """
     cands = (glob.glob(os.path.join(out_dir, "**", "*.pkl.gz"), recursive=True)
              + glob.glob(os.path.join(out_dir, "**", "*.pkl"), recursive=True))
     if not cands:
         raise SystemExit(f"FAIL: no pkl under {out_dir}. Contents:\n"
                          + "\n".join(glob.glob(os.path.join(out_dir, "*"))))
-    path = max(cands, key=os.path.getsize)
+    post = [p for p in cands if "_post." in os.path.basename(p)]
+    if prefer_post and post:
+        path = max(post, key=os.path.getsize)
+        other = [p for p in cands if p not in post]
+        if other:
+            print(f"NOTE: using their POST-PROCESSED map "
+                  f"({os.path.getsize(path)/1e6:.1f} MB); the un-post-processed "
+                  f"one is {os.path.getsize(max(other, key=os.path.getsize))/1e6:.1f} MB")
+    else:
+        path = max(cands, key=os.path.getsize)
+        if prefer_post:
+            print("NOTE: no _post map found — scoring the un-post-processed map")
     print(f"loading {path}")
     op = gzip.open if path.endswith(".gz") else open
     with op(path, "rb") as f:
@@ -60,10 +88,17 @@ def main():
                          "point clouds. 'sampled' draws each observation's "
                          "position from the object's own pcd_np, preserving "
                          "extent at the same observation count.")
+    ap.add_argument("--no-post", action="store_true",
+                    help="score their UN-post-processed map, reproducing the "
+                         "behaviour before 2026-08-15. Only for an explicit A/B "
+                         "measuring what their post pass is worth — every "
+                         "reported comparison should use the post map, which is "
+                         "the one their own evaluation consumes.")
     args = ap.parse_args()
 
     res, src = load_their_result(args.cg_out
-                                 or os.path.join(PKG, "cg_out", args.scene))
+                                 or os.path.join(PKG, "cg_out", args.scene),
+                                 prefer_post=not args.no_post)
     # Documented layout: dict with 'objects' (MapObjectList) or the list itself
     objects = res.get("objects", res) if isinstance(res, dict) else res
     out_dir = os.path.join(PKG, "handoff", args.scene)
