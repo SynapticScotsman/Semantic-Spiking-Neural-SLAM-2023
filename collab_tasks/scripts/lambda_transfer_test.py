@@ -217,6 +217,7 @@ def main():
               f"({len(pts)} observations, {len(set(gt))} GT classes)")
         print(f"  {'ratio':>7}{'mag':>7}{'lx':>7}{'ly':>7}{'mAcc':>8}{'F-mIoU':>9}")
         best = None
+        grid_scores = {}
         for r in ratios:
             for m in mags:
                 lx, ly = m * np.sqrt(r), m / np.sqrt(r)
@@ -229,22 +230,54 @@ def main():
                     gt, pred, exclude=score05.CG_EXCLUDE_6)
                 print(f"  {r:>7.2f}{m:>7.2f}{lx:>7.2f}{ly:>7.2f}"
                       f"{macc:>8.3f}{fmiou:>9.3f}", flush=True)
+                grid_scores[(r, m)] = macc
                 if best is None or macc > best[0]:
                     best = (macc, fmiou, r, m, lx, ly)
+
+        # How much does SHAPE move the score, with size held fixed? And SIZE,
+        # with shape held fixed? If the first is small the "best ratio" above is
+        # a coin toss and must not be correlated against anything.
+        shape_span = float(np.mean([
+            max(grid_scores[(r, m)] for r in ratios)
+            - min(grid_scores[(r, m)] for r in ratios) for m in mags]))
+        size_span = float(np.mean([
+            max(grid_scores[(r, m)] for m in mags)
+            - min(grid_scores[(r, m)] for m in mags) for r in ratios]))
+
         results[s] = dict(extent_ratio=float(extent_ratio), best_macc=best[0],
                           best_fmiou=best[1], best_ratio=best[2],
-                          best_mag=best[3], lx=best[4], ly=best[5])
+                          best_mag=best[3], lx=best[4], ly=best[5],
+                          shape_span=shape_span, size_span=size_span)
         print(f"  -> best ratio {best[2]:.2f} at mAcc {best[0]:.3f} "
-              f"(extent ratio {extent_ratio:.2f})")
+              f"(extent ratio {extent_ratio:.2f}); shape moves mAcc by "
+              f"{shape_span:.3f}, size by {size_span:.3f}")
 
     # the actual test: does the winning lambda ratio track the room's shape?
+    # ASCII only: Windows consoles default to cp1252 and a lambda character
+    # here crashed the whole summary AFTER every scene had been swept -- an
+    # hour of compute reduced to a traceback for the sake of one glyph.
     print(f"\n{'='*72}\nDOES LAMBDA RATIO TRACK EXTENT RATIO?\n{'='*72}")
-    print(f"{'scene':<10}{'extent':>9}{'best λ ratio':>14}{'mAcc':>8}")
+    print(f"{'scene':<10}{'extent':>9}{'best ratio':>12}{'mAcc':>8}"
+          f"{'shape span':>12}{'size span':>11}")
     er, br = [], []
     for s, v in results.items():
-        print(f"{s:<10}{v['extent_ratio']:>9.2f}{v['best_ratio']:>14.2f}"
-              f"{v['best_macc']:>8.3f}")
+        print(f"{s:<10}{v['extent_ratio']:>9.2f}{v['best_ratio']:>12.2f}"
+              f"{v['best_macc']:>8.3f}{v['shape_span']:>12.3f}"
+              f"{v['size_span']:>11.3f}")
         er.append(v["extent_ratio"]); br.append(v["best_ratio"])
+
+    # Whether the correlation means anything depends on whether shape moves the
+    # score at all. Measured on our frontend: shape span ~0.007, size span
+    # ~0.023, so "best ratio" was largely picking noise. Report both, and say so.
+    ss = np.mean([v["shape_span"] for v in results.values()])
+    zs = np.mean([v["size_span"] for v in results.values()])
+    print(f"\nmean mAcc span across SHAPE (ratio, size held): {ss:.3f}")
+    print(f"mean mAcc span across SIZE  (magnitude, shape held): {zs:.3f}")
+    if ss < 2 * zs / 3:
+        print("Size dominates shape here. A 'best ratio' picked off a flat "
+              "surface is\nnoise, and any correlation computed from it is "
+              "correlating noise with\nroom shape. Treat the verdict below as "
+              "UNDERPOWERED, not as evidence.")
     if len(er) > 2:
         c = float(np.corrcoef(er, br)[0, 1])
         print(f"\nPearson r between extent ratio and best lambda ratio: {c:+.3f}")
