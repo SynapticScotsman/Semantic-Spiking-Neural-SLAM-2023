@@ -71,6 +71,7 @@ Semantic-Spiking-Neural-SLAM-2023/
 ├── sspslam/              ← The core library (the actual SLAM system)
 │   ├── sspspace.py       ← The maths for encoding positions and symbols as vectors
 │   ├── networks/         ← The neural network models (path integrator, memory, etc.)
+│   ├── objectmap/        ← Object-centric map: a view circle around each object
 │   ├── perception/       ← Vision tools (image features, CLIP, event cameras)
 │   ├── environments/     ← A 3D test room the agent can move around in
 │   └── utils/            ← Plotting and helper tools
@@ -82,6 +83,7 @@ Semantic-Spiking-Neural-SLAM-2023/
 │   ├── collect_3d_data.py          ← Collect new data from the 3D environment
 │   ├── run_slam_3d.py              ← Run the full 3D pipeline end-to-end
 │   ├── example_slam_walkthrough.ipynb  ← Step-by-step interactive tutorial ← START HERE
+│   ├── run_object_map.py               ← Object-centric map demo + measurements
 │   ├── slam_3d_dashboard.ipynb         ← Visualise and query a saved SLAM run
 │   └── test_*.py                       ← Automated checks to verify things work
 │
@@ -93,6 +95,7 @@ Semantic-Spiking-Neural-SLAM-2023/
 │   └── slam_features_*.npz         ← Saved results from a previous SLAM run
 │
 ├── PROJECT_OVERVIEW.md   ← This file
+├── OBJECT_CENTRIC_MAP.md ← The object-centric map: theory, API, measurements
 └── README.md             ← Technical theory and installation instructions
 ```
 
@@ -196,6 +199,7 @@ python experiments/run_slam_3d.py --policy explore --n-steps 2000
 | `slam_3d_dashboard.ipynb` | Interactive map viewer for saved results | numpy + matplotlib |
 | `slam_map_new.py` | Detailed 2D demo with walls and query plots | nengo + nengo_ocl (GPU) |
 | `run_slam_3d.py` | Collect 3D data then run SLAM | + miniworld |
+| `run_object_map.py` | Object-centric map: orbit an object, query it from any side | Just numpy |
 | `run_event_slam.py` | SLAM using neuromorphic event-camera data | numpy + nengo |
 | `run_event_orb_slam.py` | Event SLAM with visual odometry | + opencv |
 | `run_miniworld_slam.py` | SLAM in a 3D room with ORB visual tracking | + miniworld + opencv |
@@ -210,6 +214,8 @@ python experiments/run_slam_3d.py --policy explore --n-steps 2000
 
 | Script | Status |
 |--------|--------|
+| `test_object_map.py` | 🟢 |
+| `run_object_map.py` | 🟢 |
 | `test_semantic_encoding.py` | 🟢 |
 | `test_feature_extraction.py` | 🟢 |
 | `test_event_pipeline.py` | 🟢 |
@@ -265,6 +271,64 @@ In plain English:
 2. When an object is spotted, the system creates a vector representing *"this object is X metres in that direction"*
 3. These are stored in an **associative memory** that learns over time
 4. When a known object is seen again, the memory recalls where it should be — which is used to **correct any drift** in the position estimate
+
+---
+
+## Mapping Objects Instead of Places
+
+The map described above answers *"where is the red box?"*. It does not answer
+*"what does that box look like from the other side?"* — and it cannot, because
+everything it stores about appearance is tied to the spot the robot was
+standing in when it looked.
+
+`sspslam/objectmap/` adds a second kind of memory for exactly that. Think of
+it as giving every object its own little turntable:
+
+```
+        the view circle around one chair
+                    90°
+                     ·
+        135° ·               · 45°
+                  ( chair )
+        180° ·               · 0°   ← what you see standing here
+                     ·
+                    270°
+```
+
+Each object gets a **file**: a short list of *"from this angle, it looks like
+this"* pairs. The angle is measured **at the object**, not at the robot, so
+the file says something about the chair rather than about the floor. Walk
+round to a new side and you add an entry; walk past the same side again and
+it merges into the entry that is already there.
+
+Two things fall out of this that the place-based map cannot do:
+
+- **Orbit without looking.** Because the angle is encoded on a genuine circle
+  (the code repeats exactly after a full turn), you can rotate a view by 90°
+  with a single vector operation and get back what the object would look like
+  from there — no new image needed.
+- **Objects can move.** If somebody pushes the chair across the room, only
+  its position needs rewriting. It still looks the same from each side, so
+  the file survives intact. A map keyed on where the robot stood would have
+  to be re-walked.
+
+Two memories are kept, deliberately, rather than one:
+
+| memory | holds | answers |
+|---|---|---|
+| **scene map** | which objects exist, and where | "where is this chair?", "what's over there?" |
+| **object file** | how one object looks from each side | "what should I see from here?", "orbit it 90°" |
+
+Merging them into a single vector is measurably worse — position decoding
+degrades from 3 cm of error to about 7 m in a 14 m room. `OBJECT_CENTRIC_MAP.md`
+has the numbers, the maths, and the API.
+
+To see it work:
+
+```bash
+python experiments/test_object_map.py                    # 33 checks
+python experiments/run_object_map.py --plot              # demo + figure
+```
 
 ---
 

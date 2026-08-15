@@ -40,6 +40,7 @@ Other options are available, see `python run_slam.py --help` and `python run_pat
 ## Files and Folders
 * `sspslam`: The code for SSPs and the nengo SLAM and PI networks
     * `sspspace.py`: Defines classes for SSP representation mapping, including HexagonalSSPSpace, RandomSSPSpace, SSPSpace, SPSpace
+    * `objectmap`: Object-centric VSA cognitive map -- a scene map of object files, each holding what one instance looks like from which side. Periodic FPE over an object-centred view circle rather than grid cells over a room. Pure numpy/scipy. See `OBJECT_CENTRIC_MAP.md`.
     * `networks`: Nengo networks
         * `pathintegration.py`: The PathIntegration network. Continuously updates an SSP given a velocity signal via a set of VCOs with attractor dynamics.
         * `associativememory.py`: The AssociativeMemory network. Learns associations via PES and (optionally) Voja
@@ -55,6 +56,8 @@ Other options are available, see `python run_slam.py --help` and `python run_pat
     * `run_pathint.py`: Runs the PathIntegration network on a random path or path from a data file. Used for benchmarking and as an example use of sspslam.networks.PathIntegration.
     * `run_slam.py`: Runs the SLAMNetwork on random path or path from a data file and with random landmarks. Used for benchmarking and as an example use of sspslam.networks.SLAMNetwork (or sspslam.networks.SLAMLoihiNetwork if a loihi backend is used).
     * * `run_slamview.py`: Runs the SLAMViewNetwork
+    * `run_object_map.py`: Builds an object-centric map from a synthetic walk and measures every read-out (where is it, what is there, which side, orbit, object moved). `--plot` writes a summary figure.
+    * `test_object_map.py`: Checks for `sspslam.objectmap`
 
 
 ## SSP-SLAM
