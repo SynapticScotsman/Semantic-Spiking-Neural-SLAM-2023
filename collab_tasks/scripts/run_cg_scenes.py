@@ -210,6 +210,19 @@ def do_scene(scene: str, ws: str, args) -> dict:
     r.sh(["python", "student_gpu_package/03_export_cg.py", "--scene", scene])
     stage["export"] = "ok"
 
+    # 03_export_cg writes the HANDOFF (cg_labels / cg_objects / cg_observations)
+    # but NOT the observation stream our decode reads. That conversion is a
+    # separate stage, and leaving it out is what failed room1 after 57 minutes
+    # of GPU work had already succeeded — the artifacts were all fine, the
+    # pipeline just had a hole in it one step from the end.
+    r.mark("their observation stream -> our trace namespace")
+    r.sh(["python", "collab_tasks/scripts/cg_frontend_to_trace.py",
+          "--scene", scene])
+    op = f"outputs/replica_{scene}_cgfront/object_points.json"
+    if not os.path.exists(op):
+        raise RuntimeError(f"{op} still missing after cg_frontend_to_trace")
+    stage["cgfront"] = "ok"
+
     # A number per scene, at the current best length scale, so the run is not
     # opaque while it goes. This is NOT the sweep — that runs on a laptop
     # afterwards against these same artifacts, as often as we like.

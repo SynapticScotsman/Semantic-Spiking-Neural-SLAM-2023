@@ -238,8 +238,13 @@ def main():
 
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, "w") as f:
+        # provenance must name the scene actually rendered. This said
+        # "demo_replica_room_0" unconditionally, dating from when room0 was
+        # the only scene — harmless then, actively misleading the moment a
+        # second scene exists, because gt_instances.json is the durable record
+        # someone reads back when writing up.
         json.dump(dict(instances=instances, frame_check=check,
-                       source="vMAP demo_replica_room_0 renders",
+                       source=f"vMAP {vscene} renders", scene=args.scene,
                        stride=args.stride, min_px=args.min_px), f, indent=1)
     print(f"\n{len(instances)} instances -> {OUT}")
     for i in instances[:25]:
