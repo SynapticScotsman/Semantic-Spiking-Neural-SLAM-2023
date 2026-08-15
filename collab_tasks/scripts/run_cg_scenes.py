@@ -231,10 +231,28 @@ def do_scene(scene: str, ws: str, args) -> dict:
           "--scene", f"{scene}_cgfront", "--gt-scene", scene,
           "--labels-from-points", "--max-per-class", "400",
           "--length-scale", args.length_scale])
+    # THEIR labels live in handoff/<scene>/ (03_export_cg wrote them there);
+    # the eval points live in handoff/<scene>_cgfront/ (04 built them there
+    # from --gt-scene). The scorer reads both from ONE directory, so without
+    # this copy it silently reports "conceptgraphs: cg_labels.npz missing" and
+    # we get our number with nothing to compare it against — the head-to-head
+    # this whole run exists to produce.
+    src = f"student_gpu_package/handoff/{scene}/cg_labels.npz"
+    dst = f"student_gpu_package/handoff/{scene}_cgfront/cg_labels.npz"
+    if os.path.exists(src) and not os.path.exists(dst):
+        shutil.copy(src, dst)
+        r.say(f"  copied their labels into {os.path.dirname(dst)} so one "
+              "scorer judges both on the identical points")
+    elif not os.path.exists(src):
+        r.say(f"  WARNING: {src} absent — their score cannot be computed")
+
     out = subprocess.run(["python", "student_gpu_package/05_score.py",
                           "--scene", f"{scene}_cgfront"],
                          capture_output=True, text=True)
     r.say(out.stdout[-1500:])
+    if "cg_labels.npz missing" in out.stdout:
+        r.say("  WARNING: scored OUR backend only — no head-to-head for "
+              f"{scene}")
     stage["score"] = "ok"
 
     # Everything the laptop needs for the decode sweeps, on Drive. handoff/ is
