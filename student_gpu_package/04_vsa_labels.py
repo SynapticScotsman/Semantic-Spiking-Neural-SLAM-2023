@@ -207,12 +207,15 @@ def main():
                          "classes compete on where their own field peaks. "
                          "Diagnostic for the winner-take-all pattern seen in "
                          "per_class_breakdown (18/24 classes exactly 0.000).")
-    ap.add_argument("--length-scale", type=float, default=LS,
+    ap.add_argument("--length-scale", default=str(LS),
                     help=f"SSP length scale (default {LS}, inherited from the "
                          "original harness). Sets the width of each "
                          "observation's similarity bump: too wide and adjacent "
                          "objects blur together, too narrow and the field does "
-                         "not reach the eval points between observations.")
+                         "not reach the eval points between observations. Pass "
+                         "ONE value for an isotropic scale, or TWO as 'lx,ly' "
+                         "for a per-axis scale — ctx_pos already carries x and y "
+                         "against separate bases, so only the divisor changes.")
     ap.add_argument("--max-per-class", type=int, default=60)
     ap.add_argument("--grid", type=int, default=96)
     args = ap.parse_args()
@@ -324,7 +327,30 @@ def main():
     # into one another before any decode rule sees them — the leading suspect
     # for confusions whose GT footprints do not overlap at all (measured
     # 2026-08-14: indoor-plant -> vase 90% with zero shared floor cells).
-    enc = ClassroomEncoders(HD, 0, args.length_scale, 20.0)
+    #
+    # ctx_pos is (Bx ** x/l) * (By ** y/l): the exponential term already carries
+    # x and y separately against independent bases, and only the divisor is
+    # shared. So a PER-AXIS length scale needs no new algebra — just a different
+    # divisor per axis. room0 is 7.7 m by 4.6 m, so one scalar is already
+    # imposing the same resolution on unequal extents.
+    ls = [float(v) for v in str(args.length_scale).split(",")]
+    if len(ls) == 1:
+        enc = ClassroomEncoders(HD, 0, ls[0], 20.0)
+        print(f"length scale {ls[0]} (isotropic)")
+    elif len(ls) == 2:
+        class _Aniso(ClassroomEncoders):
+            """Per-axis length scale. Same bases, same operations — only the
+            exponent's divisor differs between x and y. build_trace and the
+            decode grid both go through ctx_pos, so they stay consistent."""
+            def __init__(self, hd, seed, lx, ly, tl):
+                super().__init__(hd, seed, 1.0, tl)
+                self.lx, self.ly = lx, ly
+            def ctx_pos(self, x, y):
+                return (self.Bx ** float(x / self.lx)) * (self.By ** float(y / self.ly))
+        enc = _Aniso(HD, 0, ls[0], ls[1], 20.0)
+        print(f"length scale x={ls[0]} y={ls[1]} (anisotropic)")
+    else:
+        raise SystemExit("--length-scale takes one value or two (lx,ly)")
     sem = class_phasors(sorted({p["cls"] for p in pts}), HD)
     trace = build_trace(cap_per_class(pts, args.max_per_class), enc, sem, HD)
     trace /= max(np.abs(trace).max(), 1e-12)
