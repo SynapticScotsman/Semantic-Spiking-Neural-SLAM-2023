@@ -96,6 +96,7 @@ Semantic-Spiking-Neural-SLAM-2023/
 │
 ├── PROJECT_OVERVIEW.md   ← This file
 ├── OBJECT_CENTRIC_MAP.md ← The object-centric map: theory, API, measurements
+├── FINDINGS.md           ← Measured results, latent recipe, pitfalls
 └── README.md             ← Technical theory and installation instructions
 ```
 
@@ -200,6 +201,7 @@ python experiments/run_slam_3d.py --policy explore --n-steps 2000
 | `slam_map_new.py` | Detailed 2D demo with walls and query plots | nengo + nengo_ocl (GPU) |
 | `run_slam_3d.py` | Collect 3D data then run SLAM | + miniworld |
 | `run_object_map.py` | Object-centric map: orbit an object, query it from any side | Just numpy |
+| `run_view_localisation.py` | Which direction am I viewing this object from? | numpy + scikit-image |
 | `run_event_slam.py` | SLAM using neuromorphic event-camera data | numpy + nengo |
 | `run_event_orb_slam.py` | Event SLAM with visual odometry | + opencv |
 | `run_miniworld_slam.py` | SLAM in a 3D room with ORB visual tracking | + miniworld + opencv |
@@ -216,6 +218,7 @@ python experiments/run_slam_3d.py --policy explore --n-steps 2000
 |--------|--------|
 | `test_object_map.py` | 🟢 |
 | `run_object_map.py` | 🟢 |
+| `run_view_localisation.py` | 🟡 needs `scikit-image` |
 | `test_semantic_encoding.py` | 🟢 |
 | `test_feature_extraction.py` | 🟢 |
 | `test_event_pipeline.py` | 🟢 |
@@ -326,7 +329,7 @@ has the numbers, the maths, and the API.
 To see it work:
 
 ```bash
-python experiments/test_object_map.py                    # 33 checks
+python experiments/test_object_map.py                    # 38 checks
 python experiments/run_object_map.py --plot              # demo + figure
 ```
 

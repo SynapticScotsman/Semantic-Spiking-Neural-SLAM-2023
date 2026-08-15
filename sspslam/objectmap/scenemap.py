@@ -37,13 +37,15 @@ import numpy as np
 
 from ..sspspace import HexagonalSSPSpace
 from .appearance import AppearanceCodec
-from .geometry import camera_bearing, view_azimuth, view_azimuth_elevation
+from .geometry import (camera_bearing, view_azimuth,
+                       view_azimuth_elevation, wrap_angle)
 from .objectfile import ObjectFile
 from .viewspace import CircularSSPSpace
 from .vsa import (AtomVocab, VectorCodebook, bind, bundle, cosine, normalize,
                   unbind)
 
-__all__ = ["ObjectCentricMap", "PlaceQuery", "ViewQuery"]
+__all__ = ["ObjectCentricMap", "PlaceQuery", "ViewQuery",
+           "ViewLocalisation"]
 
 
 class PlaceQuery:
@@ -76,6 +78,35 @@ class ViewQuery:
     def __repr__(self):
         return (f"ViewQuery(phi={np.round(self.phi, 3)}, "
                 f"best={self.best})")
+
+
+class ViewLocalisation:
+    """Result of asking which way round an object you are seeing it.
+
+    Attributes
+    ----------
+    phi : np.ndarray
+        Peak of the likelihood -- the estimated viewing direction.
+    score : float
+        Height of that peak.
+    margin : float
+        Peak minus the best competing peak outside the main lobe.  A small
+        margin means the object looks the same from more than one side, which
+        is a property of the object, not a failure of the estimate.
+    angles, field : np.ndarray
+        The full likelihood over the view manifold.
+    """
+
+    def __init__(self, phi, score, margin, angles, field):
+        self.phi = phi
+        self.score = score
+        self.margin = margin
+        self.angles = angles
+        self.field = field
+
+    def __repr__(self):
+        return (f"ViewLocalisation(phi={np.round(np.rad2deg(self.phi), 1)} deg, "
+                f"score={self.score:.3f}, margin={self.margin:+.3f})")
 
 
 class ObjectCentricMap:
@@ -429,6 +460,58 @@ class ObjectCentricMap:
                            restrict_to_object=restrict_to_object)
         out.bearing = camera_bearing(obj.position, robot_pos, robot_yaw)
         return out
+
+    def localise_view(self, obj_id, embedding, n_per_dim=720, key=None):
+        """*I can see this thing -- which side of it am I looking at?*
+
+        The view-circle twin of localising in space.  Localising in a room
+        means unbinding ``ID`` from the scene map and correlating the residue
+        against a grid of ``S_allo(x)``; the peak is where you are.
+        Localising on an object means correlating an observed crop key
+        against the object file read at every viewpoint; the peak is the
+        direction you are looking from.  Same operation, different manifold,
+        and no pose input -- appearance alone fixes the angle.
+
+        The whole field comes back, not just the peak, because its shape is
+        the informative part: a symmetric object gives several equal peaks
+        and no amount of confidence weighting will separate them.  Treat it
+        as a likelihood over viewpoint and fuse it with odometry rather than
+        trusting the argmax.
+
+        Parameters
+        ----------
+        obj_id : str
+        embedding : array_like or None
+            Crop embedding of the thing you are looking at.  Pass ``key``
+            instead if you have already encoded it.
+        n_per_dim : int
+            Resolution of the returned field.
+
+        Returns
+        -------
+        ViewLocalisation
+            ``phi`` (peak), ``score``, ``margin`` over the runner-up peak,
+            ``angles`` and ``field`` for the full likelihood.
+        """
+        if key is None:
+            key = self.appearance.encode(embedding)
+        book = self.objects[obj_id].view_book(self.view_space)
+        angles, field = self.view_space.view_likelihood(
+            book, np.asarray(key).reshape(-1), n_per_dim=n_per_dim)
+        flat = field.reshape(-1)
+        best = int(np.argmax(flat))
+        peak = angles.reshape(-1, self.view_dims)[best] if self.view_dims > 1 \
+            else np.array([angles[best]])
+
+        # Runner-up = best score outside the main lobe, which is what tells
+        # you whether the object is symmetric enough to alias.
+        lobe = self.view_space.lobe_width()
+        far = np.max(np.abs(wrap_angle(
+            angles.reshape(-1, self.view_dims) - peak)), axis=1) > 2 * lobe
+        runner = float(np.max(flat[far])) if far.any() else -np.inf
+        return ViewLocalisation(phi=peak, score=float(flat[best]),
+                                margin=float(flat[best] - runner),
+                                angles=angles, field=field)
 
     def orbit(self, view_code, delta):
         """Rotate a view code around the object by ``delta``, with no image.

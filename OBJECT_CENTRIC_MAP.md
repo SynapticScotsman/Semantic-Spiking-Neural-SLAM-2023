@@ -7,10 +7,13 @@ the object when somebody moves it.
 Same idea as fractional-power-encoded SSPs for space — but the manifold is a
 circle around an object instead of a grid over a floor.
 
+See **`FINDINGS.md`** for the measured results, the latent-conditioning
+recipe, and the pitfalls.
+
 ```
 sspslam/objectmap/          numpy + scipy only, no nengo
 experiments/run_object_map.py    end-to-end demo, prints measurements
-experiments/test_object_map.py   33 assertions
+experiments/test_object_map.py   38 assertions
 ```
 
 ```bash
@@ -164,6 +167,7 @@ mean.
 | Where are all the chairs? | `where_are('chair')` | unbind `CLASS` from the class bundle |
 | What does this side look like? | `view_of(id, φ)` | unbind `S_view(φ)`, clean up the key |
 | What should I see from here? | `expected_view_from(id, robot_pos, robot_yaw)` | derive `φ` from the two poses, then the above |
+| **Which side am I looking at?** | `localise_view(id, embedding)` | correlate the key against the file at every φ — one inverse FFT |
 | Orbit by Δ, no new image | `orbit(view_code, Δ)` | bind `S_view(Δ)` |
 | Does this match what I expect? | `verify(id, robot_pos, embedding)` | cosine of prediction against the live crop key |
 | The chair moved | `move_object(id, p_new)` | rewrite `S_allo`, keep the file |

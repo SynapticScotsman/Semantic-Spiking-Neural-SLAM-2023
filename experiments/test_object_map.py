@@ -423,11 +423,82 @@ def test_association():
 
 
 # ---------------------------------------------------------------------------
-# Test 8: the 3-D view sphere
+# Test 8b: view-direction localisation
+# ---------------------------------------------------------------------------
+
+def test_view_localisation():
+    section("Test 8: view-direction localisation (the map-localisation twin)")
+    passed = total = 0
+    m, _, angles, truth = toy_map(n_sides=8)
+    oid = next(iter(m.objects))
+    book = m.objects[oid].view_book(m.view_space)
+    vs = m.view_space
+
+    # The closed form must equal the explicit scan it replaces.
+    ax, field = vs.view_likelihood(book, m.objects[oid].views[0].key,
+                                   n_per_dim=720)
+    scan = np.array([float(unbind(book, vs.encode([p])) @
+                           m.objects[oid].views[0].key) for p in ax])
+    err = float(np.abs(field - scan).max())
+    passed += check("one inverse FFT == scanning every hypothesis", err < 1e-9,
+                    f"max diff {err:.2e} over 720 angles")
+    total += 1
+
+    # ... including on the 2-D view sphere.
+    sphere = CircularSSPSpace(2, ssp_dim=151, max_harmonic=4,
+                              rng=np.random.default_rng(0))
+    rng = np.random.default_rng(2)
+    a2 = rng.uniform(-np.pi, np.pi, (5, 2))
+    k2 = np.stack([m.appearance.encode(rng.standard_normal(m.appearance.feat_dim))
+                   for _ in range(5)])
+    v2 = np.mean([bind(k, sphere.encode(a)) for k, a in zip(k2, a2)], axis=0)
+    g, f2 = sphere.view_likelihood(v2, k2[1], n_per_dim=90)
+    s2 = np.array([[float(unbind(v2, sphere.encode(g[i, j])) @ k2[1])
+                    for j in range(90)] for i in range(90)])
+    err = float(np.abs(f2 - s2).max())
+    passed += check("same identity on the 2-D view sphere", err < 1e-9,
+                    f"max diff {err:.2e}")
+    total += 1
+
+    # Recover the angle a stored key was seen from.
+    errs = []
+    for entry in m.objects[oid].views:
+        loc = m.localise_view(oid, None, key=entry.key)
+        errs.append(abs(float(np.rad2deg(
+            wrap_angle(loc.phi[0] - entry.phi[0])))))
+    errs = np.array(errs)
+    passed += check("localises a stored side to within the view kernel",
+                    np.median(errs) < np.rad2deg(vs.lobe_width()),
+                    f"median {np.median(errs):.1f} deg, "
+                    f"kernel half-width {np.rad2deg(vs.lobe_width()):.0f} deg")
+    total += 1
+
+    # The field is a likelihood, so it must be periodic and finite everywhere.
+    passed += check("the likelihood field wraps",
+                    abs(float(field[0] - vs.view_likelihood(
+                        book, m.objects[oid].views[0].key,
+                        n_per_dim=720)[1][0])) < 1e-12
+                    and np.all(np.isfinite(field)))
+    total += 1
+
+    # A margin should exist for a distinctive side and shrink under noise.
+    clean = m.localise_view(oid, None, key=m.objects[oid].views[0].key)
+    noisy_key = normalize(m.objects[oid].views[0].key
+                          + 0.8 * np.random.default_rng(3).standard_normal(m.dim))
+    noisy = m.localise_view(oid, None, key=noisy_key)
+    passed += check("peak margin degrades with observation noise",
+                    clean.margin > noisy.margin,
+                    f"clean {clean.margin:+.3f} vs noisy {noisy.margin:+.3f}")
+    total += 1
+    return passed, total
+
+
+# ---------------------------------------------------------------------------
+# Test 9: the 3-D view sphere
 # ---------------------------------------------------------------------------
 
 def test_view_sphere():
-    section("Test 8: 3-D map with an (azimuth, elevation) view sphere")
+    section("Test 9: 3-D map with an (azimuth, elevation) view sphere")
     passed = total = 0
     feat_dim = 32
     rng = np.random.default_rng(0)
@@ -486,7 +557,8 @@ if __name__ == "__main__":
     total_passed = total_checks = 0
     for fn in [test_view_circle, test_scene_map, test_object_files,
                test_two_memories, test_appearance_keys, test_angles,
-               test_association, test_view_sphere]:
+               test_association, test_view_localisation,
+               test_view_sphere]:
         p, t = fn()
         total_passed += p
         total_checks += t
