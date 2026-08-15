@@ -88,6 +88,11 @@ def main():
                          "point clouds. 'sampled' draws each observation's "
                          "position from the object's own pcd_np, preserving "
                          "extent at the same observation count.")
+    ap.add_argument("--no-in-scene", action="store_true",
+                    help="assign their labels over the FULL class list instead "
+                         "of only classes present in the scene GT. Their eval "
+                         "restricts to in-scene classes; this reproduces our "
+                         "pre-2026-08-16 behaviour for an explicit A/B.")
     ap.add_argument("--no-post", action="store_true",
                     help="score their UN-post-processed map, reproducing the "
                          "behaviour before 2026-08-15. Only for an explicit A/B "
@@ -185,6 +190,42 @@ def main():
         tok = open_clip.get_tokenizer("ViT-H-14")
         # their n_exclude=6 list; suppressed BEFORE argmax exactly as they do
         EXCLUDE = ["other", "floor", "wall", "ceiling", "door", "window"]
+
+        # And the piece we were missing until 2026-08-16. Their eval builds
+        # ignore_index as excluded classes PLUS every class absent from this
+        # scene's GT (eval_replica_semseg.py lines 93-105), then suppresses all
+        # of it before the argmax (line 139):
+        #
+        #     existing_index     = gt_class.unique()
+        #     non_existing_index = setdiff1d(all_class_index, existing_index)
+        #     ignore_index       = append(ignore_index, non_existing_index)
+        #     object_class_sim[:, ignore_index] = -1e10
+        #
+        # So their objects can only be labelled with classes that actually
+        # occur in the room. Ours could pick anything in the 51-class list and
+        # then be scored wrong for it. Because mAcc is an UNWEIGHTED per-class
+        # mean, that asymmetry hits it far harder than frequency-weighted
+        # F-mIoU -- which is exactly the shape of our shortfall against their
+        # published numbers (mAcc at 67% of theirs, F-mIoU at 83%).
+        in_scene = None
+        if not args.no_in_scene:
+            for p in (f"{PKG}/handoff/{args.scene}_cgfront/eval_points.npz",
+                      f"{PKG}/handoff/{args.scene}/eval_points.npz"):
+                if os.path.exists(p):
+                    in_scene = set(np.load(p, allow_pickle=True)
+                                   ["gt_class"].astype(str).tolist())
+                    print(f"in-scene classes from {p}: {len(in_scene)}")
+                    break
+            if in_scene is None:
+                gp = f"outputs/replica_{args.scene}/gt_instances.json"
+                if os.path.exists(gp):
+                    in_scene = {i["cls"] for i in json.load(open(gp))["instances"]}
+                    print(f"in-scene classes from {gp}: {len(in_scene)}")
+            if in_scene is None:
+                print("WARNING: no GT found for in-scene suppression; their "
+                      "labels will be assigned over the FULL class list, which "
+                      "is not what their eval does")
+
         with torch.no_grad():
             tf = model.encode_text(
                 tok([f"an image of {c}" for c in class_names]).to(dev))
@@ -193,9 +234,18 @@ def main():
                 np.stack([np.asarray(f) for f in feats])).to(dev).float()
             of = of / of.norm(dim=-1, keepdim=True)
             sim = of @ tf.T
+            n_sup = 0
             for c in EXCLUDE:
                 if c in class_names:
                     sim[:, class_names.index(c)] = -1e10
+            if in_scene:
+                for j, c in enumerate(class_names):
+                    if c not in in_scene:
+                        sim[:, j] = -1e10
+                        n_sup += 1
+                print(f"suppressed {n_sup} classes absent from this scene "
+                      f"(their eval does this); {len(class_names)-n_sup-len(EXCLUDE)}"
+                      " remain selectable")
             idx = sim.argmax(dim=-1).cpu().numpy()
         for r, i in zip(obj_rows, idx):
             r["cls"] = class_names[int(i)]
