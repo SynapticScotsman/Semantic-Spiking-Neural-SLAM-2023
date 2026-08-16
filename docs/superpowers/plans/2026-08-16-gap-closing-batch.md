@@ -13,15 +13,87 @@
 - **ASCII-only in anything printed to stdout** — cp1252 consoles killed two finished runs this week. Non-ASCII allowed in docstrings/comments only.
 - **No torch import may execute locally**: every entry script installs the `_Absent` shim before importing `vsa_cognitive_mapping`.
 - **All 8 scenes, always**: room0 room1 room2 office0 office1 office2 office3 office4. The guard enforces this; never bypass the guard.
-- **Baseline is recomputed in-run, never quoted**: argmax · grid 96 · cap 400 · λ 0.45,0.27. Parity targets (mAcc): room0 0.270, room1 0.245, room2 0.337, office0 0.324, office1 0.299, office2 0.371, office3 0.278, office4 0.466, tolerance ±0.005. A parity failure is a **hard stop** — investigate, do not proceed.
+- **Baseline is recomputed in-run and checked against the STORED LABELS, not a score.** Config: argmax · grid 96 · cap 400 · λ 0.45,0.27. The gate is **exact label identity** with `handoff/<scene>_cgfront/vsa_labels.npz` — `(pred == stored).all()` must hold on all 8 scenes. **Verified 2026-08-16 before this plan was executed: a from-scratch rebuild reproduces the stored predictions at 100.0% on every scene**, so 100% is achievable and anything less is drift, not tolerance. Secondary sanity values (mAcc): room0 0.270, room1 0.245, room2 0.337, office0 0.324, office1 0.299, office2 0.371, office3 0.278, office4 0.466. A parity failure is a **hard stop** — investigate, do not proceed, do not loosen the gate.
+  - Rationale: comparing aggregate mAcc within a tolerance can pass while the label arrays differ — two different predictions can share a score. Label identity cannot be satisfied by coincidence, so it catches any drift in bundling, seeding, capping or grid indexing the moment it appears rather than after six mechanisms have been measured against a moved zero.
 - **Metrics via `05_score.macc_full` only** (`exclude=CG_EXCLUDE_6`). Never reimplement a metric.
-- **Pre-registered thresholds** (in `report.py`, used verbatim): SURVIVE if best-variant Δ mAcc > +0.005 OR Δ mF1 > +0.005; ADOPT-CANDIDATE additionally requires Δ mF1 > −0.005.
+- **Seed battery — every screen runs over five seed tuples** `SEEDS = [(0,7,11), (1,8,12), (2,9,13), (3,10,14), (4,15,16)]` as `(base_seed, codebook_seed, cap_seed)` feeding `_Enc`, `class_phasors` and `cap_per_class` respectively. Tuple 0 is the REFERENCE draw (the one the stored baseline was produced at). Rationale (audit 2026-08-17): all three draws were hardcoded; measured 8-scene baseline sd is 0.0093 (base), 0.0068 (codebook), 0.0049 (cap) — the largest is nearly twice the old decision threshold, and h4's verdict demonstrably flipped across codebook seeds (SURVIVES at 7,8,10; KILLED at 9,11).
+- **Pre-registered verdict rules** (in `report.py`, used verbatim). Deltas are PAIRED per tuple (variant minus that tuple's own baseline), then averaged across tuples; `sd` is the across-tuple sd of the delta. A delta is RESOLVED iff `|mean| >= 2*sd`. Verdicts: **ADOPT-CANDIDATE** = mAcc delta resolved and > +0.005 AND mF1 delta > −0.005; **SURVIVES** = mAcc or mF1 delta resolved and > +0.005; **KILLED** = deltas resolved and none > +0.005; **UNDECIDABLE** = not resolved (reported as such, never as KILLED — an effect inside the noise band is unmeasured, not absent).
+- **Machine-checkable predictions.** Each harness carries a `PREDICTIONS` list evaluated by the guard as HIT/MISS and written into the JSON (schema in Amendment A). The prose `PRED` string stays for humans; the dicts are the pre-registration. Commit harnesses BEFORE running so git history proves predictions predate results. A wrong prediction is a finding; an edited one is misconduct.
 - **Commits are local per task; push only at the end-of-stage checkpoint after Paul reviews the files** (his standing rule).
 - **Execution model tiers** (from `~/.claude/CLAUDE.md`, with Paul's override 2026-08-16):
   - **supervisor → `fable`** (main session; builds Stage 0, reviews every result against the guard, orders Stage 2)
   - test-builder (Tasks 4–8 harness authoring) → full model, inherit
   - workers (Tasks 9, 11 run-only) → `haiku`, `effort: low`, raw output only — a worker that interprets results is being used wrong
 - Working directory for every command: repo root `C:\Users\30068379\OneDrive - Western Sydney University\Code\Semantic-Spiking-Neural-SLAM-2023`.
+
+## Amendment A — 2026-08-17, post-audit (authoritative over any conflicting task text below)
+
+A 50-agent adversarial audit of this plan (run 2026-08-16 late evening) confirmed
+one critical finding with three sub-defects; a parallel probe verified the
+baseline zero at 100% label identity on all 8 scenes. The following amendments
+are AUTHORITATIVE where they conflict with code blocks in Tasks 1–10, and the
+built files in `collab_tasks/batch1/` are the source of truth once they exist
+and pass self-tests.
+
+**A1 — seed battery + variance-aware verdicts.** As in Global Constraints.
+`class_fields` gains a `seeds=(base, codebook, cap)` parameter threaded to
+`_Enc(HD, base, ...)`, `class_phasors(names, HD, seed=codebook)` and
+`cap_per_class(pts, cap, seed=capseed)`. `run_screen` loops tuples outermost;
+baseline is recomputed per tuple and cached to `outputs/batch1/cache/`
+(gitignored); deltas pair within tuple.
+
+**A2 — `_bundle` is a RAW SUM.** `build_trace` does not divide by class count;
+the plan's `/ max(w.sum(), 1e-12)` line is wrong and exact label parity holds
+only with the raw sum (verified). Weighted form: `sum(w * ph)` with `w == 1`
+reducing to `build_trace` exactly.
+
+**A3 — parity is seed-conditional.** Exact label identity with
+`vsa_labels.npz` plus the pinned mAcc check applies ONLY at `SEEDS[0]` — the
+stored labels exist only at that draw (measured: codebook seed 10 moves office0
+by 0.044, which would false-trigger the hard stop). At every other tuple the
+baseline is recomputed and used solely for pairing. The hard stop at the
+reference tuple is unchanged and must not be loosened.
+
+**A4 — h6 gains matched random-drop controls.** Filtering before `cap_per_class`
+changes the cap pool, so the RNG redraws ~30% of the bundled subset for reasons
+unrelated to geometry (measured: dropping 10 of 1150 observations swaps ~123 of
+400) — the same confound shape as the elevation inversion. For every `r{X}`
+variant, a `rand{X}` control drops the SAME COUNT per class uniformly at random
+(seeded per tuple). h6's geometric claim is evaluated as `delta(r{X}) −
+delta(rand{X})`, not against baseline alone. The seed battery additionally
+averages the redraw noise.
+
+**A5 — `cap400_sanity` relabelled.** `cap_per_class` draws are nested prefixes
+at fixed seed (verified: k200 ⊂ k400 ⊂ k800), so `cap400 == baseline` is true
+by construction. It stays as a code-path/plumbing check and is documented as
+providing zero evidence about draw sensitivity.
+
+**A6 — prediction schema.** Each harness defines
+`PREDICTIONS: list[dict]`, each `{id, text, metric, scope, test, value}` with
+`metric in {macc, mf1, mprec}`, `scope` a variant label or `"best"` or a
+`("rX","randX")` pair, and `test in {ge, le, within, scenes_ge, pair_ge}`
+evaluated on the across-tuple MEAN delta by `report.py`:
+`ge`: mean >= value · `le`: mean <= value · `within`: |mean| <= value ·
+`scenes_ge`: count of scenes with positive mean delta >= value ·
+`pair_ge`: mean(delta[a] − delta[b]) >= value for the named pair.
+The six pre-registered predictions:
+
+| harness | id | prediction (evaluated form) |
+|---|---|---|
+| h1 | h1-f1 | best variant: mf1 `ge` +0.005 |
+| h1 | h1-acc | best variant: macc `within` 0.010 |
+| h2 | h2-acc | best p/q variant: macc `ge` +0.005 |
+| h2 | h2-breadth | best p/q variant: macc `scenes_ge` 4 |
+| h3 | h3-acc | best k: macc `ge` +0.005 |
+| h4 | h4-flat | best non-400 cap: macc `le` +0.005 |
+| h5 | h5-null | best gamma: macc `within` 0.005 (expected UNDECIDABLE) |
+| h6 | h6-geo | each (rX, randX): macc `pair_ge` 0.0 for at least 2 of 3 pairs |
+| h6 | h6-f1 | best filter variant: mf1 `ge` +0.005 |
+
+**A7 — runtime.** The battery multiplies trace builds by 5. Baseline fields are
+cached per (scene, tuple) and shared: h1/h2 are F-transforms over the cache
+(cheap); h3/h4/h5/h6 rebuild traces per variant per tuple (~40–100 min each).
+Stage-1 total ≈ 4–6 h CPU. Stage 2 `MAX_COMBOS` drops to 48.
 
 ## File Structure
 
@@ -122,11 +194,17 @@ def _self_test():
     got = _bundle(obs, names, sem, enc.Bx.values, enc.By.values, None, None)
     assert np.allclose(got, want, atol=1e-9), "manual bundle != build_trace"
     print("   OK")
-    print("2/3 baseline mAcc parity on room0...")
+    print("2/3 baseline LABEL parity on room0 (must be exactly 100%)...")
     F, nm, cell = class_fields(data)
-    m = score(data["gt"], predict(F, nm, cell))
+    pred = predict(F, nm, cell)
+    stored = np.load(
+        "student_gpu_package/handoff/room0_cgfront/vsa_labels.npz",
+        allow_pickle=True)["pred_class"].astype(str)
+    agree = float((pred == stored).mean())
+    assert agree == 1.0, f"label agreement {agree:.4f}, must be 1.0"
+    m = score(data["gt"], pred)
     assert abs(m["macc"] - BASELINE_MACC["room0"]) <= 0.005, m["macc"]
-    print(f"   OK ({m['macc']:.3f})")
+    print(f"   OK (100% labels, mAcc {m['macc']:.3f})")
     print("3/3 synthetic blobs decode near 1.0...")
     blob = make_blob_data()
     F, nm, cell = class_fields(blob)
@@ -278,10 +356,24 @@ def run_screen(mechanism, prediction, variants, out_path=None):
     for s in SCENES:
         data = load_scene(s)
         F, nm, cell = default_fields(data)
-        base = score(data["gt"], predict(F, nm, cell))
-        dev = abs(base["macc"] - BASELINE_MACC[s])
-        if dev > 0.005:
-            raise SystemExit(f"HARD STOP: baseline parity fail on {s}: "
+        pred = predict(F, nm, cell)
+        # Exact label identity against the stored baseline predictions.
+        # Verified achievable at 100.0% on all 8 scenes on 2026-08-16, so
+        # anything below 100% is drift in bundling/seeding/capping/indexing,
+        # not tolerance. Score comparison is a weaker gate: two different
+        # label arrays can share an mAcc.
+        stored = np.load(
+            f"student_gpu_package/handoff/{s}_cgfront/vsa_labels.npz",
+            allow_pickle=True)["pred_class"].astype(str)
+        if not (pred == stored).all():
+            n = int((pred != stored).sum())
+            raise SystemExit(
+                f"HARD STOP: baseline label parity fail on {s}: "
+                f"{n}/{len(pred)} labels differ from vsa_labels.npz. "
+                "Do NOT loosen this gate - find the drift.")
+        base = score(data["gt"], pred)
+        if abs(base["macc"] - BASELINE_MACC[s]) > 0.005:
+            raise SystemExit(f"HARD STOP: baseline score parity fail on {s}: "
                              f"{base['macc']:.3f} vs {BASELINE_MACC[s]:.3f}")
         per["baseline"][s] = base
         for lab, fn in variants.items():
