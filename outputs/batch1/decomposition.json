@@ -1,0 +1,138 @@
+{
+ "room0": {
+  "counts": {
+   "unreachable": 4813,
+   "near_tie": 195,
+   "bleed": 839,
+   "misplaced": 567,
+   "local_loss": 1648
+  },
+  "base_macc": 0.2695997541695876,
+  "recoverable_macc_if_fixed": {
+   "unreachable": 0.602933087502921,
+   "near_tie": 0.2750448057879423,
+   "bleed": 0.29804761888777437,
+   "misplaced": 0.44771083538747164,
+   "local_loss": 0.45466266911224107
+  }
+ },
+ "room1": {
+  "counts": {
+   "unreachable": 3386,
+   "near_tie": 24,
+   "bleed": 734,
+   "misplaced": 257,
+   "local_loss": 1150
+  },
+  "base_macc": 0.24525530903762421,
+  "recoverable_macc_if_fixed": {
+   "unreachable": 0.7452553090376243,
+   "near_tie": 0.2471438752210367,
+   "bleed": 0.30044347450322767,
+   "misplaced": 0.30825428549617073,
+   "local_loss": 0.3799242918924375
+  }
+ },
+ "room2": {
+  "counts": {
+   "unreachable": 1700,
+   "near_tie": 52,
+   "bleed": 267,
+   "misplaced": 494,
+   "local_loss": 3155
+  },
+  "base_macc": 0.3365525177405479,
+  "recoverable_macc_if_fixed": {
+   "unreachable": 0.6698858510738813,
+   "near_tie": 0.34954839195704246,
+   "bleed": 0.3430983229555358,
+   "misplaced": 0.44311124793341805,
+   "local_loss": 0.5405662570423143
+  }
+ },
+ "office0": {
+  "counts": {
+   "unreachable": 8462,
+   "near_tie": 71,
+   "bleed": 143,
+   "misplaced": 713,
+   "local_loss": 3000
+  },
+  "base_macc": 0.3239312265366527,
+  "recoverable_macc_if_fixed": {
+   "unreachable": 0.6923522791682316,
+   "near_tie": 0.3277089607664803,
+   "bleed": 0.32585248183446913,
+   "misplaced": 0.40066126194522633,
+   "local_loss": 0.5491499224322033
+  }
+ },
+ "office1": {
+  "counts": {
+   "unreachable": 10785,
+   "near_tie": 57,
+   "bleed": 732,
+   "misplaced": 2277,
+   "local_loss": 488
+  },
+  "base_macc": 0.2985789780947906,
+  "recoverable_macc_if_fixed": {
+   "unreachable": 0.7691672133889083,
+   "near_tie": 0.29963167432564713,
+   "bleed": 0.3149574296580566,
+   "misplaced": 0.4089155982920025,
+   "local_loss": 0.3428204673027833
+  }
+ },
+ "office2": {
+  "counts": {
+   "unreachable": 1066,
+   "near_tie": 96,
+   "bleed": 829,
+   "misplaced": 2209,
+   "local_loss": 1975
+  },
+  "base_macc": 0.3708884308975044,
+  "recoverable_macc_if_fixed": {
+   "unreachable": 0.637555097564171,
+   "near_tie": 0.3801029228210479,
+   "bleed": 0.4784224458853119,
+   "misplaced": 0.463752078153675,
+   "local_loss": 0.5237211791658117
+  }
+ },
+ "office3": {
+  "counts": {
+   "unreachable": 3576,
+   "near_tie": 45,
+   "bleed": 117,
+   "misplaced": 13,
+   "local_loss": 2391
+  },
+  "base_macc": 0.2776645016403599,
+  "recoverable_macc_if_fixed": {
+   "unreachable": 0.7776645016403598,
+   "near_tie": 0.27834071144652905,
+   "bleed": 0.29497803493228264,
+   "misplaced": 0.33480735878321705,
+   "local_loss": 0.42486739975905097
+  }
+ },
+ "office4": {
+  "counts": {
+   "unreachable": 4249,
+   "near_tie": 12,
+   "bleed": 372,
+   "misplaced": 252,
+   "local_loss": 327
+  },
+  "base_macc": 0.46555473323422214,
+  "recoverable_macc_if_fixed": {
+   "unreachable": 0.7655547332342222,
+   "near_tie": 0.4662184500483815,
+   "bleed": 0.5585898543363574,
+   "misplaced": 0.47949278633156733,
+   "local_loss": 0.5923631089863605
+  }
+ }
+}

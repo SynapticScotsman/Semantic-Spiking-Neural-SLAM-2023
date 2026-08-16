@@ -1,0 +1,38 @@
+﻿scene     unreachable    near_tie       bleed   misplaced  local_loss
+---------------------------------------------------------------------
+room0            4813         195         839         567        1648
+room1            3386          24         734         257        1150
+room2            1700          52         267         494        3155
+office0          8462          71         143         713        3000
+office1         10785          57         732        2277         488
+office2          1066          96         829        2209        1975
+office3          3576          45         117          13        2391
+office4          4249          12         372         252         327
+
+mAcc upper bound if one category were FULLY fixed (baseline in col 2)
+scene       base unreachable    near_tie       bleed   misplaced  local_loss
+----------------------------------------------------------------------------
+room0      0.270       0.603       0.275       0.298       0.448       0.455
+room1      0.245       0.745       0.247       0.300       0.308       0.380
+room2      0.337       0.670       0.350       0.343       0.443       0.541
+office0    0.324       0.692       0.328       0.326       0.401       0.549
+office1    0.299       0.769       0.300       0.315       0.409       0.343
+office2    0.371       0.638       0.380       0.478       0.464       0.524
+office3    0.278       0.778       0.278       0.295       0.335       0.425
+office4    0.466       0.766       0.466       0.559       0.479       0.592
+MEAN       0.324       0.708       0.328       0.364       0.411       0.476
+
+headroom per category (mean bound minus mean baseline; theirs is 0.402):
+  unreachable  +0.384
+  near_tie     +0.004
+  bleed        +0.041
+  misplaced    +0.087
+  local_loss   +0.153
+
+tie-frac sensitivity (pooled counts across scenes):
+  frac 0.02: unreachable=38037  near_tie=238  bleed=4208  misplaced=6785  local_loss=14270
+  frac 0.05: unreachable=38037  near_tie=552  bleed=4033  misplaced=6782  local_loss=14134
+  frac 0.10: unreachable=38037  near_tie=1096  bleed=3800  misplaced=6780  local_loss=13825
+
+mechanism map: near_tie -> h1/h2; bleed -> h6/h3/h4; misplaced -> geometry (out of scope); unreachable -> frontend constant; local_loss -> h2/h3
+wrote outputs/batch1/decomposition.json
