@@ -180,27 +180,45 @@ def main():
             attop = next(r["macc"] for r in rows if r["dim"] == head)
             print(f"{s:<16} 4096 -> {at4096:.3f}   best {top:.3f}   "
                   f"{head} -> {attop:.3f}   headroom {attop-at4096:+.3f}")
-        gains = []
+        # Judge on BOTH metrics. The first version of this verdict looked only
+        # at mAcc, announced "FLAT", and missed that F-mIoU was still climbing
+        # (room0: 0.370 -> 0.431 across 32 -> 128 KB). mAcc is an unweighted
+        # per-class mean and saturates once each class wins its own region;
+        # F-mIoU is frequency-weighted and keeps sharpening the large regions
+        # well past that. Reporting one as though it were both overstates the
+        # result in our own favour.
+        gains, gains_f = [], []
         for rows in results.values():
-            a4 = next(r["macc"] for r in rows if r["dim"] == 4096)
             hi = max(r["dim"] for r in rows)
+            a4 = next(r["macc"] for r in rows if r["dim"] == 4096)
+            f4 = next(r["fmiou"] for r in rows if r["dim"] == 4096)
             gains.append(next(r["macc"] for r in rows if r["dim"] == hi) - a4)
-        g = float(np.mean(gains))
-        print(f"\nmean mAcc gained by going 4096 -> {max(dims)} "
-              f"({4096*8//1024} KB -> {max(dims)*8//1024} KB): {g:+.3f}")
+            gains_f.append(next(r["fmiou"] for r in rows if r["dim"] == hi) - f4)
+        g, gf = float(np.mean(gains)), float(np.mean(gains_f))
+        lo = min(dims)
+        print(f"\ngoing {4096} -> {max(dims)} ({4096*8//1024} KB -> "
+              f"{max(dims)*8//1024} KB):  mAcc {g:+.3f}   F-mIoU {gf:+.3f}")
         if g < 0.01:
-            print("FLAT: we are NOT capacity-limited at 32 KB. Quadrupling the "
-                  "budget buys\nnothing, so the deficit is the frontend or the "
-                  "decode, and the fixed-size\nclaim is strong -- 32 KB is "
-                  "sufficient, not merely what we happened to pick.")
+            print("mAcc is FLAT: not capacity-limited on per-class accuracy. The "
+                  "deficit is\nthe frontend or the decode, and the fixed-size "
+                  "claim is strong -- 32 KB is\nsufficient, not merely what we "
+                  "happened to pick.")
         elif g > 0.03:
-            print("STEEP: we ARE capacity-limited. Every decode result measured "
-                  "so far is a\nsecond-order effect on top of a first-order "
-                  "constraint, and the 32 KB\nfigure needs justifying rather "
-                  "than asserting.")
+            print("mAcc is STEEP: we ARE capacity-limited, and every decode "
+                  "result measured\nso far is second-order on top of a "
+                  "constraint we never looked at.")
         else:
-            print("MILD: some headroom, not decisive. Report the curve rather "
-                  "than a verdict.")
+            print("mAcc shows mild headroom — report the curve, not a verdict.")
+        if gf > 0.02:
+            print(f"But F-mIoU is NOT flat ({gf:+.3f}). Frequency-weighted "
+                  "overlap keeps improving\nwith dimension after per-class "
+                  "accuracy has saturated. Quote both, or the\nclaim is "
+                  "half-true in the direction that favours us.")
+        print(f"\nCompression: across {lo} -> {max(dims)} "
+              f"({lo*8//1024 or lo*8/1024:.0f} KB -> {max(dims)*8//1024} KB, "
+              f"{max(dims)//lo}x memory), mAcc moves "
+              f"{np.mean([max(r['macc'] for r in rows) - min(r['macc'] for r in rows) for rows in results.values()]):.3f} "
+              "on average.")
         os.makedirs(os.path.dirname(args.out), exist_ok=True)
         json.dump(results, open(args.out, "w"), indent=1)
         print(f"\nwrote {args.out}")
