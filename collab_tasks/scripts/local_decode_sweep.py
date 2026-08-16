@@ -79,9 +79,23 @@ def load_metric():
     return mod
 
 
-def fields(pts, xyz, a, b, grid, max_per_class):
+class _Enc(ClassroomEncoders):
+    """Per-axis length scale, same as 04_vsa_labels._Enc. The module-level LS of
+    0.6 was the INHERITED scalar; measured best on room0_cgfront is 0.45,0.27, so
+    sweeping decode rules at 0.6 would compare a new rule against the wrong
+    baseline and credit the rule with a length-scale gain."""
+
+    def __init__(self, hd, seed, lx, ly, tl):
+        super().__init__(hd, seed, 1.0, tl)
+        self.lx, self.ly = lx, ly
+
+    def ctx_pos(self, x, y):
+        return (self.Bx ** float(x / self.lx)) * (self.By ** float(y / self.ly))
+
+
+def fields(pts, xyz, a, b, grid, max_per_class, lx=0.45, ly=0.27):
     """Class response maps over the floor grid — identical to 04_vsa_labels."""
-    enc = ClassroomEncoders(HD, 0, LS, 20.0)
+    enc = _Enc(HD, 0, lx, ly, 20.0)
     sem = class_phasors(sorted({p["cls"] for p in pts}), HD)
     trace = build_trace(cap_per_class(pts, max_per_class), enc, sem, HD)
     trace /= max(np.abs(trace).max(), 1e-12)
@@ -131,6 +145,11 @@ def main():
     ap.add_argument("--max-per-class", type=int, default=400)
     ap.add_argument("--grid", type=int, default=96)
     ap.add_argument("--taus", default="0.5,1.0,1.5,2.0,3.0")
+    ap.add_argument("--length-scale", default="0.45,0.27",
+                    help="per-axis lx,ly. Default is the measured best, NOT the "
+                         "inherited 0.6 scalar — sweeping decode rules at the "
+                         "old length scale would credit the rule with a "
+                         "length-scale gain that has nothing to do with it.")
     args = ap.parse_args()
 
     if args.self_test:
@@ -161,7 +180,9 @@ def main():
 
     var = xyz.var(0)
     a, b = sorted(np.argsort(var)[-2:])
-    F, names, cell = fields(pts, xyz, a, b, args.grid, args.max_per_class)
+    lx, ly = [float(v) for v in args.length_scale.split(',')]
+    print(f'length scale {lx}, {ly}')
+    F, names, cell = fields(pts, xyz, a, b, args.grid, args.max_per_class, lx, ly)
     mod = load_metric()
 
     print(f"\n{'rule':<22}{'mAcc':>8}{'F-mIoU':>9}{'nonzero':>9}{'fallback':>10}")
