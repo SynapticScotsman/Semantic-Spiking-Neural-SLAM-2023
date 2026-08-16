@@ -69,7 +69,7 @@ def macc_fmiou(gt, pred, exclude=()):
         keep = ~np.isin(gt, list(exclude))
         gt, pred = gt[keep], pred[keep]
     classes = sorted(set(gt))
-    accs, ious, freqs = [], [], []
+    accs, ious, freqs, precs = [], [], [], []
     n = len(gt)
     for c in classes:
         g = gt == c
@@ -77,10 +77,45 @@ def macc_fmiou(gt, pred, exclude=()):
         tp = float(np.sum(g & p))
         accs.append(tp / max(g.sum(), 1))
         ious.append(tp / max(float(np.sum(g | p)), 1.0))
+        # PRECISION is not part of their protocol and is not comparable to any
+        # published figure -- it is recorded because mAcc is mean per-class
+        # RECALL and cannot see over-segmentation. Measured 2026-08-16: their
+        # class-agnostic map labels 78,869 of 200,000 points `vent`, floor to
+        # ceiling, for an object with 14 GT points. That scores recall 1.000,
+        # precision 0.002, and the benchmark shows only the 1.000. Optimising
+        # mAcc alone optimises toward exactly that failure.
+        precs.append(tp / max(float(p.sum()), 1.0))
         freqs.append(g.sum() / n)
     return (float(np.mean(accs)),
             float(np.sum(np.array(freqs) * np.array(ious))),
             len(classes))
+
+
+def macc_full(gt, pred, exclude=()):
+    """Everything macc_fmiou returns, plus mean per-class precision and F1.
+
+    Kept separate so macc_fmiou's signature and values stay byte-identical to
+    what every existing result was computed with -- the protocol numbers must
+    not move because we added a diagnostic.
+    """
+    if exclude:
+        keep = ~np.isin(gt, list(exclude))
+        gt, pred = gt[keep], pred[keep]
+    classes = sorted(set(gt))
+    rec, prec, f1 = [], [], []
+    for c in classes:
+        g, p = gt == c, pred == c
+        tp = float(np.sum(g & p))
+        r = tp / max(g.sum(), 1)
+        pr = tp / max(float(p.sum()), 1.0)
+        rec.append(r)
+        prec.append(pr)
+        f1.append(0.0 if r + pr == 0 else 2 * r * pr / (r + pr))
+    macc, fmiou, ncls = macc_fmiou(gt, pred)
+    return dict(macc=macc, fmiou=fmiou, n_classes=ncls,
+                mprec=float(np.mean(prec)), mf1=float(np.mean(f1)),
+                per_class={c: dict(recall=r, precision=p, f1=f)
+                           for c, r, p, f in zip(classes, rec, prec, f1)})
 
 
 def main():

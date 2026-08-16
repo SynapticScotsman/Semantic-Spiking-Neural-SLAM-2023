@@ -179,29 +179,47 @@ actual vent is a ceiling grille with **14 GT points**.
 | vent | **1.000** | **0.002** |
 | indoor-plant | **1.000** | **0.042** |
 
-**mAcc is mean per-class RECALL. Precision is never scored.** A map that emits
-one enormous mislabelled object scores perfectly on that class and the metric
-cannot see it. This is not cheating — it is their published configuration, and we
-reproduce their published figure to 99%. But it explains the gap mechanically:
+**mAcc is mean per-class RECALL. Precision is never scored**, so that particular
+error is invisible to the benchmark. On the strength of this I hypothesised that
+"a good part of the gap is our memory being honest about a frontend error their
+representation hides", and that the gap would narrow on a precision-aware metric.
 
-- **their readout is LOCAL** — nearest labelled point, so `sofa` survives even
-  with `vent` blanketing the room (sofa recall 0.912)
-- **our readout is GLOBAL** — every `vent` observation contributes to the field
-  everywhere, so vent mass steals sofa's cells (sofa recall 0.387)
+**MEASURED, AND REFUTED.** `macc_full` over all 8 scenes:
 
-Superposition is exactly the operation that lets one class's mass affect
-another's cell. An explicit list absorbs a wildly over-segmented object
-harmlessly; a bundle cannot. **A good part of the 0.078 gap is our memory being
-honest about a frontend error their representation hides.**
+| metric | theirs | ours | gap |
+|---|---|---|---|
+| mAcc (recall only) | 0.402 | 0.324 | **−0.078** |
+| mean precision | 0.290 | 0.151 | **−0.139** |
+| mean F1 | 0.272 | 0.162 | **−0.110** |
+
+The gap **widens** on precision. If anything mAcc flatters US — their precision is
+nearly double ours. The `vent` case is real but an outlier, not the pattern: in
+aggregate WE are the ones over-assigning labels, because our argmax must pick a
+class at every point with no abstain option and our fields bleed. Do not repeat
+the "the metric hides their error" claim; it does not survive 8 scenes.
+
+What survives from this thread, all independently measured:
+- their `vent` really is recall 1.000 / precision 0.002 on 39% of the map — a
+  genuine and unanalysed pathology in their class-agnostic variant, just not one
+  that explains the aggregate gap;
+- **our precision is the real deficit** (0.151 vs 0.290) and is the thing to
+  work on;
+- graceful degradation under a poor frontend (1.7x retained) is unaffected —
+  measured separately;
+- the small/thin-object wins are unaffected, and they match ConceptGraphs'
+  OWN stated limitation (their Sec III-H: "missing small or thin objects").
 
 Consequences:
-1. **Report precision and F1 alongside mAcc.** Optimising mAcc alone optimises
-   toward the failure mode we are trying to fix.
-2. **Reject implausible objects at export** — an object spanning the whole room
-   floor-to-ceiling is not a vent. Principled filtering, not metric-gaming.
-3. **A third FPE axis does not help** (`height_axis_test.py`: −0.059 mAcc; crude
-   ceiling cut −0.005). Elevation cannot separate a class that genuinely spans
-   floor to ceiling. The earlier "encode height" recommendation is withdrawn.
+1. **Report precision and F1 alongside mAcc always.** `05_score.macc_full` does
+   this; `macc_fmiou` is unchanged so protocol numbers stay comparable.
+2. **A third FPE axis does not help** (`height_axis_test.py`: −0.059 mAcc; crude
+   ceiling cut −0.005) — but that test was one scene, one guessed lz, untuned
+   floor scales and one trace size, so it is on the re-test list rather than
+   settled. `height_axis_sweep.py` is the proper version.
+3. Their paper poses **no position→semantics query at all** (verified against
+   the paper: all evaluated queries are text→object retrieval, Recall@1/2/3).
+   The Replica semseg is a COMPONENT evaluation demonstrating map quality, not
+   their headline. We have been competing on their supporting benchmark.
 
 Also settled by the crops: `cushion` is **not** stacked on `sofa`. The cushions
 sit on armchairs and sofa ends, interleaved at ~0.3–0.5 m — finer than our
