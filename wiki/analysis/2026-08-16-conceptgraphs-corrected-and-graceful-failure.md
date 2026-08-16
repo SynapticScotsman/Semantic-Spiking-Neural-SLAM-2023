@@ -163,6 +163,24 @@ configuration only. Sweep jointly, or re-test after anything upstream changes.
 5. Rewrite the published artifact — currently wrong on both numbers and
    mechanism.
 
+## Visual reports (keep these current — do not publish duplicates)
+
+Two shareable pages back this analysis. They are maintained as living documents:
+when numbers change, **update these URLs** rather than publishing new artifacts.
+
+| page | what it is for | URL |
+|---|---|---|
+| **32 KB Against a Point Cloud** | project status — headline numbers, what is settled vs open, what needs a GPU. For collaborators to orient. | https://claude.ai/code/artifact/468a16d4-ba92-42e4-a4e0-3013fb31aad1 |
+| **Where ConceptGraphs Wins** | diagnosis — per-class gap, floor maps, ranked plan. For deciding what to do next. | https://claude.ai/code/artifact/0b309e12-e4c6-4a69-8848-6325eefe6ae0 |
+
+Superseded, every number pre-correction, **do not share**:
+[What Limits the 32 KB Trace](https://claude.ai/code/artifact/865bb6d4-2bc2-4aa4-8877-e9d05cd522ae)
+· [Anisotropy Beats Superposition](https://claude.ai/code/artifact/35bd3a4a-3df1-44a5-86c6-1850ebfb309a)
+
+Maps are rendered as inline SVG (eval points binned to a 56x34 floor grid,
+majority class per cell) because matplotlib is not installed locally — see
+`collab_tasks/scripts/where_they_win.py`, which exports the floor JSON for it.
+
 ## Reproduce
 
 ```
