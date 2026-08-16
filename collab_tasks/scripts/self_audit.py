@@ -172,10 +172,10 @@ def main():
 
     g = st.mean(res[s]["gridless"][0] - res[s]["base"][0] for s in res)
     c = st.mean(res[s]["capall"][0] - res[s]["gridless"][0] for s in res)
-    print(f"\ngridless is worth {g:+.3f} mAcc — a FREE gain if positive, since it "
+    print(f"\ngridless is worth {g:+.3f} mAcc -- a FREE gain if positive, since it "
           f"only removes\na 0.08 m rounding artefact we imposed on ourselves and "
           "their labels never had.")
-    print(f"lifting the cap is worth {c:+.3f} mAcc on top — NOT free: it bundles "
+    print(f"lifting the cap is worth {c:+.3f} mAcc on top -- NOT free: it bundles "
           f"more\nobservations into the same 32 KB, so a gain means the old "
           '"saturates by 200"\nfinding was measured in a configuration that no '
           "longer holds.")

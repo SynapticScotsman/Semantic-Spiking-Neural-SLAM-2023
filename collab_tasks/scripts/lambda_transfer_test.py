@@ -158,6 +158,12 @@ def main():
     ap.add_argument("--verify", action="store_true",
                     help="check the fast separable grid against the naive "
                          "per-cell build before trusting any number from it")
+    ap.add_argument("--cgfront", action="store_true",
+                    help="use the ConceptGraphs frontend rather than ours. "
+                         "Ours cannot resolve kernel SHAPE at all — the mAcc "
+                         "span across all six ratios at fixed size is ~0.007 "
+                         "on room0, so the earlier 8-scene verdict was "
+                         "correlating noise with room shape.")
     ap.add_argument("--out", default="outputs/lambda_transfer.json")
     args = ap.parse_args()
 
@@ -167,8 +173,9 @@ def main():
     if args.verify:
         print("verifying the separable grid against the naive build...")
         s = args.scenes[0]
-        pts = json.load(open(f"outputs/replica_{s}/object_points.json"))["points"]
-        E = np.load(f"student_gpu_package/handoff/{s}/eval_points.npz",
+        tag = f"{s}_cgfront" if args.cgfront else s
+        pts = json.load(open(f"outputs/replica_{tag}/object_points.json"))["points"]
+        E = np.load(f"student_gpu_package/handoff/{tag}/eval_points.npz",
                     allow_pickle=True)
         xyz = E["xyz"]
         var = xyz.var(0)
@@ -196,7 +203,8 @@ def main():
     results = {}
 
     for s in args.scenes:
-        hp = f"student_gpu_package/handoff/{s}/eval_points.npz"
+        tag = f"{s}_cgfront" if args.cgfront else s
+        hp = f"student_gpu_package/handoff/{tag}/eval_points.npz"
         if not os.path.exists(hp):
             print(f"{s}: building eval points from the GT renders...", flush=True)
             os.makedirs(os.path.dirname(hp), exist_ok=True)
@@ -205,7 +213,9 @@ def main():
         xyz, gt = E["xyz"], E["gt_class"].astype(str)
         var = xyz.var(0)
         a, b = sorted(np.argsort(var)[-2:])
-        pts = json.load(open(f"outputs/replica_{s}/object_points.json"))["points"]
+        op = (f"outputs/replica_{tag}/object_points.json" if args.cgfront
+              else f"outputs/replica_{s}/object_points.json")
+        pts = json.load(open(op))["points"]
 
         G = json.load(open(f"outputs/replica_{s}/gt_instances.json"))["instances"]
         keep = [i for i in G if i["cls"] not in

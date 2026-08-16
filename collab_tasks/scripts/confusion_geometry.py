@@ -101,7 +101,7 @@ def main():
                          float(Z[mA].mean()), bz))
 
     print(f"{'GT class':<15}{'we said':<15}{'share':>7}{'A pts':>7}"
-          f"{'foot∩':>7}{'A z':>7}{'B z':>7}{'Δz':>7}   verdict")
+          f"{'foot^':>7}{'A z':>7}{'B z':>7}{'dz':>7}   verdict")
     print("-" * 100)
     stacked = vocab = unclear = 0
     for A, B, frac, nA, share, dz, az, bz in sorted(rows, key=lambda r: -r[2]):

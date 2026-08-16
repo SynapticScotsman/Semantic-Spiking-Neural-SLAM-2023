@@ -132,7 +132,7 @@ def main():
         ep = f"student_gpu_package/handoff/{cg}/eval_points.npz"
         op = f"outputs/replica_{cg}/object_points.json"
         if not (os.path.exists(ep) and os.path.exists(op)):
-            print(f"{s}: missing {ep if not os.path.exists(ep) else op} — skipping")
+            print(f"{s}: missing {ep if not os.path.exists(ep) else op} -- skipping")
             continue
         E = np.load(ep, allow_pickle=True)
         xyz, gt = E["xyz"], E["gt_class"].astype(str)
@@ -208,7 +208,7 @@ def main():
                   "result measured\nso far is second-order on top of a "
                   "constraint we never looked at.")
         else:
-            print("mAcc shows mild headroom — report the curve, not a verdict.")
+            print("mAcc shows mild headroom -- report the curve, not a verdict.")
         if gf > 0.02:
             print(f"But F-mIoU is NOT flat ({gf:+.3f}). Frequency-weighted "
                   "overlap keeps improving\nwith dimension after per-class "

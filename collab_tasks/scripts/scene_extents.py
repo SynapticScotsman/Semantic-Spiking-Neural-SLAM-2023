@@ -75,7 +75,7 @@ def main():
         print(f"\naspect ratio across {len(rows)} scenes: min {r.min():.2f} "
               f"max {r.max():.2f} spread {r.max()-r.min():.2f}")
         if r.max() - r.min() < 0.3:
-            print("SPREAD TOO SMALL — these rooms are near-identical in shape, so "
+            print("SPREAD TOO SMALL -- these rooms are near-identical in shape, so "
                   "an\naspect-ratio rule predicts almost nothing here and a sweep "
                   "cannot\ndistinguish it from a single good pair of numbers.")
         else:

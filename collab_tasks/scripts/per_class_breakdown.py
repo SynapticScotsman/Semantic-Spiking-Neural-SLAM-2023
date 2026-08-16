@@ -88,7 +88,7 @@ def main():
             lab = mod.transfer(C["xyz"], C["pred_class"].astype(object), exyz)
             theirs = np.array([v if v is not None else "__none__" for v in lab])
         else:
-            print(f"(no {p} — skipping their column)")
+            print(f"(no {p} -- skipping their column)")
 
     ours_acc = per_class_acc(gt, ours)
     their_acc = per_class_acc(gt, theirs) if theirs is not None else {}

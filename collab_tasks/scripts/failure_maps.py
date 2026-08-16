@@ -85,7 +85,7 @@ def main():
             theirs = np.array([v if v is not None else "__none__" for v in lab])
             print(f"loaded their labels from {p}")
         else:
-            print(f"(no {p} — their panel will be skipped)")
+            print(f"(no {p} -- their panel will be skipped)")
 
     # which classes fail despite having observations — the interesting ones
     rows = []
@@ -125,7 +125,7 @@ def main():
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
     except Exception as e:
-        print(f"\n(matplotlib unavailable: {e} — tables only, no figures)")
+        print(f"\n(matplotlib unavailable: {e} -- tables only, no figures)")
         return
 
     # overview: GT, ours, and (when available) theirs — same points, same colours,

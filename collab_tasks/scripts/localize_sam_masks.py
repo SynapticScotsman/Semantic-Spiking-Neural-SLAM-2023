@@ -195,10 +195,10 @@ def main():
     print(f"\nplaced {tot}/{len(rows)} detections "
           f"({n_mask} from SAM masks, {n_fallback} fell back to the box, "
           f"{n_skip} unusable)")
-    print(f"mask coverage {n_mask/max(tot,1):.1%} — a low number here means the "
+    print(f"mask coverage {n_mask/max(tot,1):.1%} -- a low number here means the "
           "experiment did not really test the hypothesis")
     print(f"wrote {out}  ({(time.time()-t0)/60:.1f} min)")
-    print("\nSTAGE OK — now score it:\n")
+    print("\nSTAGE OK -- now score it:\n")
     print(f"python student_gpu_package/04_vsa_labels.py "
           f"--scene {scene}_openvocab_sam --gt-scene {scene}")
     print(f"python student_gpu_package/05_score.py --scene {scene}_openvocab_sam")

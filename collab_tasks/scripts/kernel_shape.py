@@ -180,12 +180,12 @@ def main():
                 wy.append(half_width(offs, ky, ky[0]))
         peak, peak_sd = float(np.mean(px)), float(np.std(px))
         clut = float(np.mean(cl))
-        print(f"{spec:<32}{peak:>8.3f} ±{peak_sd:<5.3f}{clut:>9.4f}"
+        print(f"{spec:<32}{peak:>8.3f} +-{peak_sd:<5.3f}{clut:>9.4f}"
               f"{peak/clut:>11.1f}{np.nanmean(wx):>9.2f}{np.nanmean(wy):>9.2f}"
               f"   {note}")
         saved[spec] = np.stack([offs, kx_acc / n_acc, ky_acc / n_acc])
 
-    print("\npeak is kappa(x0, x0) — how strongly an observation matches its own "
+    print("\npeak is kappa(x0, x0) -- how strongly an observation matches its own "
           "location.\nA single scale is 1.000 everywhere by construction. For k "
           "bundled scales it is\n1/k on average, because only k of the k^2 cross "
           "terms are in phase.")

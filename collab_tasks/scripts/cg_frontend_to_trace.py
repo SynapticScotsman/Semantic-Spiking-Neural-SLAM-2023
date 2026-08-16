@@ -122,7 +122,7 @@ def main():
     json.dump(cfg, open(cfg_path, "w"), indent=2)
 
     print(f"wrote {out_dir}/object_points.json and {cfg_path}")
-    print("\nSTAGE OK — now score it:\n")
+    print("\nSTAGE OK -- now score it:\n")
     print(f"python {PKG}/04_vsa_labels.py --scene {dst_scene} "
           f"--gt-scene {scene} --labels-from-points")
     print(f"python {PKG}/05_score.py --scene {dst_scene}")

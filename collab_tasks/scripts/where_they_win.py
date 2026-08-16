@@ -117,7 +117,7 @@ def main():
     # where the gap actually lives, biggest contributors first
     losing = sorted([r for r in allrows if r["gap"] < -0.01],
                     key=lambda r: r["gap"])
-    print(f"\n{'='*84}\nWHERE THE GAP LIVES — classes they win, worst first"
+    print(f"\n{'='*84}\nWHERE THE GAP LIVES -- classes they win, worst first"
           f"\n{'='*84}")
     print(f"{'scene':<9}{'class':<15}{'GT pts':>7}{'our obs':>8}"
           f"{'ours':>7}{'theirs':>8}{'gap':>8}   we said instead")

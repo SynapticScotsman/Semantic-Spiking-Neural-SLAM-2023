@@ -201,7 +201,7 @@ def main():
     for scene in args.scene:
         out_dir = run_scene(scene, conf=args.conf)
 
-    print("\nSTAGE OK — next, for EACH scene run:\n")
+    print("\nSTAGE OK -- next, for EACH scene run:\n")
     for scene in args.scene:
         print(f"# --- {scene} ---")
         print(f"python -m vsa_cognitive_mapping.object_grounding \\")
