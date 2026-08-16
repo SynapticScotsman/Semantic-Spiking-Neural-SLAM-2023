@@ -163,6 +163,67 @@ configuration only. Sweep jointly, or re-test after anything upstream changes.
 5. Rewrite the published artifact — currently wrong on both numbers and
    mechanism.
 
+## The metric is recall-only, and it changes what the gap means
+
+Established 2026-08-16 by looking at the actual pixels
+(`collab_tasks/scripts/show_me_the_object.py`, which projects GROUND-TRUTH points
+into the camera trajectory — no CLIP, no SAM, no predicted label).
+
+**Their class-agnostic map labels 78,869 of 200,000 points `vent`**, spanning
+x −0.89…6.85 and z −1.50…1.29 — the whole room, floor to ceiling, 39% of their
+entire map. Transferred to the eval points that is 24% of the room. room0's
+actual vent is a ceiling grille with **14 GT points**.
+
+| class | their recall | their precision |
+|---|---|---|
+| vent | **1.000** | **0.002** |
+| indoor-plant | **1.000** | **0.042** |
+
+**mAcc is mean per-class RECALL. Precision is never scored.** A map that emits
+one enormous mislabelled object scores perfectly on that class and the metric
+cannot see it. This is not cheating — it is their published configuration, and we
+reproduce their published figure to 99%. But it explains the gap mechanically:
+
+- **their readout is LOCAL** — nearest labelled point, so `sofa` survives even
+  with `vent` blanketing the room (sofa recall 0.912)
+- **our readout is GLOBAL** — every `vent` observation contributes to the field
+  everywhere, so vent mass steals sofa's cells (sofa recall 0.387)
+
+Superposition is exactly the operation that lets one class's mass affect
+another's cell. An explicit list absorbs a wildly over-segmented object
+harmlessly; a bundle cannot. **A good part of the 0.078 gap is our memory being
+honest about a frontend error their representation hides.**
+
+Consequences:
+1. **Report precision and F1 alongside mAcc.** Optimising mAcc alone optimises
+   toward the failure mode we are trying to fix.
+2. **Reject implausible objects at export** — an object spanning the whole room
+   floor-to-ceiling is not a vent. Principled filtering, not metric-gaming.
+3. **A third FPE axis does not help** (`height_axis_test.py`: −0.059 mAcc; crude
+   ceiling cut −0.005). Elevation cannot separate a class that genuinely spans
+   floor to ceiling. The earlier "encode height" recommendation is withdrawn.
+
+Also settled by the crops: `cushion` is **not** stacked on `sofa`. The cushions
+sit on armchairs and sofa ends, interleaved at ~0.3–0.5 m — finer than our
+0.45 × 0.27 m kernel. That is a resolution problem, not an elevation one.
+
+## Re-test list — results measured under conditions that have since changed
+
+Five times this week a conclusion held only in the configuration it was measured
+in. These are all still open, not settled:
+
+| result | measured under | re-test when |
+|---|---|---|
+| threshold decode +0.014 | 2D smear, **3 scenes only** | all 8, after any export fix |
+| normalised decode +0.010 | 2D smear, 8 scenes | after any export fix |
+| per-axis λ 0.45,0.27 | 2D smear, fitted on room0 | after any export fix; needs a held-out scene regardless |
+| cap 400 optimal | 2D smear | after any export fix — the cap may be compensating for the smear |
+| gridless +0.007 | 2D smear | after any export fix |
+
+Note on the first row: I recorded the thresholded decode as a "dud". It was a
++0.014 improvement dismissed for not matching a hypothesis, on three scenes. That
+was the wrong standard when the target gap is 0.078.
+
 ## Visual reports (keep these current — do not publish duplicates)
 
 Two shareable pages back this analysis. They are maintained as living documents:
