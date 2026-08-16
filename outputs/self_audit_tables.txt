@@ -1,0 +1,27 @@
+scene      grid96/400  gridless   delta   gl/800  gl/1600  gl/ALL     obs
+------------------------------------------------------------------------
+room0           0.270     0.256  -0.014    0.262    0.268   0.273   13124   [164s]
+room1           0.245     0.256  +0.010    0.268    0.268   0.265    8383   [151s]
+room2           0.337     0.346  +0.009    0.324    0.241   0.234    8543   [150s]
+office0         0.324     0.311  -0.013    0.306    0.259   0.233   10956   [161s]
+office1         0.299     0.292  -0.007    0.272    0.269   0.262    7156   [137s]
+office2         0.371     0.374  +0.003    0.366    0.369   0.332   11061   [150s]
+office3         0.278     0.292  +0.014    0.275    0.300   0.276   12882   [148s]
+office4         0.466     0.515  +0.050    0.479    0.512   0.414   10047   [141s]
+------------------------------------------------------------------------
+  grid 96, cap 400  (current)    mAcc 0.324   F-mIoU 0.280
+  gridless, cap 400              mAcc 0.330   F-mIoU 0.281
+  gridless, cap 800              mAcc 0.319   F-mIoU 0.282
+  gridless, cap 1600             mAcc 0.311   F-mIoU 0.300
+  gridless, no cap               mAcc 0.286   F-mIoU 0.302
+
+gridless is worth +0.007 mAcc — a FREE gain if positive, since it only removes
+a 0.08 m rounding artefact we imposed on ourselves and their labels never had.
+lifting the cap is worth -0.044 mAcc on top — NOT free: it bundles more
+observations into the same 32 KB, so a gain means the old "saturates by 200"
+finding was measured in a configuration that no longer holds.
+
+reference: ConceptGraphs 0.402 on the same 8 scenes; the shared frontend
+caps mAcc at 0.609, so quote progress against that ceiling too.
+
+wrote outputs/self_audit.json
