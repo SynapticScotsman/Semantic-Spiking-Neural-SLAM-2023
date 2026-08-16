@@ -153,6 +153,9 @@ cython_debug/
 #.idea/
 
 # Large data files
+data/coil20/coil-20-proc/
+data/coil20/coil-20-proc.zip
+data/coil20/embeddings/
 data/shapes_6dof/
 data/shapes_6dof.zip
 data/tum_vie_synthetic.h5
@@ -171,3 +174,5 @@ snnhdc_fhrr_suite.yaml
 
 student_gpu_package/cg_dataset/
 student_gpu_package/cg_out/
+
+outputs/batch1/cache/
