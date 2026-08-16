@@ -1,6 +1,32 @@
 # ConceptGraphs head-to-head, and what actually limits our trace
 
-**Date:** 2026-08-14 · **Scene:** Replica room0 · **Status:** measured, single scene
+> ## SUPERSEDED — 2026-08-16. Do not quote numbers from this page.
+>
+> Every ConceptGraphs figure below was measured with two bugs in OUR scoring of
+> THEIR system, and both flattered us:
+>
+> 1. `03_export_cg.py` selected their map by `max(getsize)`. Their
+>    post-processing pass REMOVES points, so `_post` is the *smaller* file and
+>    max() always picked the un-post-processed map. Their own eval takes the
+>    newest pkl.gz (`eval_replica_semseg.py` line 123) — the `_post` one.
+> 2. Their eval suppresses every class ABSENT from the scene GT before the
+>    argmax (lines 93–105, 139). We let their objects choose from all 51 classes
+>    and then scored them wrong for it.
+>
+> Corrected, over all 8 Replica scenes: **theirs 0.402** (published
+> class-agnostic row: 0.406 — a 99% reproduction), **ours 0.324**, and we lead
+> on room2 and office1. Fixing the bugs lifted their score ~0.13 and ours ~0.11,
+> because our trace is bundled from their labels.
+>
+> The mechanism sections are also wrong: multi-scale dilution was refuted by
+> direct kernel measurement, and "decode rule: no improvement" was measured at
+> the inherited λ=0.6 against the buggy labels.
+>
+> **Current page: [2026-08-16-conceptgraphs-corrected-and-graceful-failure.md](2026-08-16-conceptgraphs-corrected-and-graceful-failure.md)**
+>
+> Kept as a record of what we believed and why, not as a source of numbers.
+
+**Date:** 2026-08-14 · **Scene:** Replica room0 · **Status:** SUPERSEDED (see above)
 
 One scorer, one eval point set (30,000 points), their `n_exclude 6` protocol,
 their GT. Every number below comes from `05_score.py`; nothing is a published
