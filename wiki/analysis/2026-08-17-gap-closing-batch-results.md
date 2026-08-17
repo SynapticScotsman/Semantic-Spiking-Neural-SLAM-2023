@@ -134,6 +134,35 @@ decode locality" to **"resolve below lambda without giving up the kernel"**
 the natural candidate, now with a mechanism-level reason to retest it
 targeted at interleaved compact classes). Stated as hypothesis, not result.
 
+### h3b: the targeted retest ran same day — UNDECIDABLE, not adopted
+
+`h3b_compact_lambda.py`, predictions frozen in `3fd8e21` before the run.
+Selection is geometry-only: per-CLUSTER RMS spread < 0.35 m (single linkage,
+0.30 m grid) — chosen because the first-draft single-centre rule missed
+`cushion` entirely (nine compact cushions look "spread out" scene-wide);
+caught and fixed BEFORE any screen ran. 48/85 scene-classes compact.
+
+| variant | Δ mAcc (5 tuples) | verdict |
+|---|---|---|
+| c0.4 | −0.0280 ± 0.0101 | KILLED |
+| c0.6 | −0.0017 ± 0.0113 | UNDECIDABLE |
+| **c0.8 (best)** | **+0.0065 ± 0.0074** | UNDECIDABLE (needs 0.0148 to resolve) |
+| rand0.6 (matched control) | −0.0033 ± 0.0051 | UNDECIDABLE |
+| inv0.6 (falsifier) | −0.0133 ± 0.0111 | UNDECIDABLE |
+
+Predictions, scored mechanically: **3 HIT / 2 MISS.** The two misses are the
+ones that matter: breadth (5/8 scenes, carried by room0 — drop it and the
+mean is +0.0045) and **targeting** (c0.6 beats its matched random control by
+only +0.0016 ± 0.0079, unresolved). The direction is consistent with the
+mechanism everywhere it can be read — gain is monotone in gamma toward
+mild shrink, over-shrink is killed, and shrinking the extended classes
+instead *hurts* (−0.0133) — but the mechanism's distinctive signature,
+*targeting matters*, was not demonstrated. Under the standing rules this is
+an open question at higher power, not an adoption and not a negative.
+Transparency note: the frozen PRED prose still described the first-draft
+rule; the code and constants that ran are the cluster rule and did not
+change after the freeze commit.
+
 ## Blocker-3 killers (2026-08-17 evening): both routes FAIL their gates
 
 Scoped by a 14-agent workflow (4 forensic lenses, adversarial verification: 2 of
