@@ -103,8 +103,11 @@ def main():
     pts = []
     for i, o in enumerate(obs):
         xyz = [o["x"], o["y"], o["z"]]
+        # `obj` is THEIR object id -- the join key to cg_objects.json and
+        # cg_clip_ft.npz. Dropping it (as this loop did before 2026-08-17)
+        # makes per-object identity unrecoverable downstream.
         pts.append(dict(frame=int(o["frame"]), cls=str(o["cls"]),
-                        conf=1.0, det=i,
+                        conf=1.0, det=i, obj=int(o["obj"]),
                         x=float(xyz[a]), y=float(xyz[b])))
     classes = sorted({p["cls"] for p in pts})
     print(f"{len(pts)} observations over {len(classes)} classes from "

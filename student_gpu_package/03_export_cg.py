@@ -260,6 +260,19 @@ def main():
     with open(os.path.join(out_dir, "cg_observations.json"), "w") as f:
         json.dump(obs_rows, f)
 
+    # Persist their per-object CLIP features (ViT-H-14, 1024-d). These were
+    # collected into `feats` at line 149 and then discarded on every export
+    # to date -- re-deriving them means re-downloading the 417 MB pkl.gz maps.
+    have = [(r["id"], f) for r, f in zip(obj_rows, feats) if f is not None]
+    if have:
+        np.savez_compressed(
+            os.path.join(out_dir, "cg_clip_ft.npz"),
+            obj_id=np.array([i for i, _ in have], np.int64),
+            clip_ft=np.stack([np.asarray(f, np.float32).reshape(-1)
+                              for _, f in have]))
+        print(f"wrote cg_clip_ft.npz: {len(have)}/{len(obj_rows)} objects "
+              f"carry clip_ft")
+
     P = np.concatenate(pts_all)
     L = np.concatenate(lab_all)
     if len(P) > args.eval_points:
