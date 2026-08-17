@@ -28,8 +28,9 @@
 \usepackage{url}
 \usepackage{cite}
 \usepackage[hidelinks]{hyperref}
-\usepackage{cuted}
-\usepackage{capt-of}
+% cuted/capt-of removed 2026-08-18: the strip guaranteed page-1 hero
+% placement but is fragile with two-column floats; a plain figure* on
+% page 2 is the accepted trade.
 
 \newcommand{\todo}[1]{\textcolor{red}{\textbf{[TODO: #1]}}}
 \newcommand{\bnd}{\odot}
@@ -98,13 +99,14 @@ degradation is what the fixed budget buys. The memory does not exceed
 the ceiling its perception sets.
 \end{abstract}
 
-% Page-1 teaser. A figure* cannot appear on the page it is declared on,
-% so this uses cuted's strip (not a float) plus capt-of.
+% Hero figure. cuted's strip guaranteed page-1 placement but breaks too
+% much (Paul, 2026-08-18); as a plain figure* LaTeX will defer it to the
+% top of page 2, which is accepted.
 % Regenerate with:  python tools/make_hero_figure.py
-\begin{strip}
+\begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/hero.png}
-\captionof{figure}{The whole system, drawn from its own state. Every
+\caption{The whole system, drawn from its own state. Every
 vector is shown as its phase angles and every one was computed by our
 implementation from the real Replica \texttt{room0} stream.
 \textbf{(a)} An observation is one multiply-add: a content atom bound to
@@ -122,7 +124,7 @@ current render is from the provisional pseudo-session split, so its
 markers are second-half cluster centroids and its memory is a half-walk.
 Restore the ``every ground-truth instance'' wording only after that.}}
 \label{fig:hero}
-\end{strip}
+\end{figure*}
 
 % =========================================================================
 \section{Introduction}

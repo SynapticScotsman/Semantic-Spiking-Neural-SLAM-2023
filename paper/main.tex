@@ -30,13 +30,9 @@
 % clickable references/URLs for the shared draft; drop if the PaperPlaza
 % compliance check objects at submission time
 \usepackage[hidelinks]{hyperref}
-% Full-width material on the page where it is written. A figure* CANNOT
-% appear on the page it is declared on: LaTeX defers double-column floats
-% to a later page, which is why the page-1 teaser kept landing on page 2.
-% cuted's "strip" is not a float, so it stays put; capt-of then supplies a
-% numbered caption outside a float environment.
-\usepackage{cuted}
-\usepackage{capt-of}
+% cuted/capt-of removed 2026-08-18: the strip guaranteed page-1 hero
+% placement but is fragile with two-column floats; a plain figure* on
+% page 2 is the accepted trade.
 
 % --- editorial TODO marker: strip before submission -----------------------
 \newcommand{\todo}[1]{\textcolor{red}{\textbf{[TODO: #1]}}}
@@ -84,7 +80,9 @@ one fixed-size vector. Observations are bound to positions by elementwise
 complex multiplication over Fourier Holographic Reduced Representation
 (FHRR) phasors, with continuous space encoded so that spatial
 composition is an exact group operation, and superposed into a single
-32\,KB trace; queries about objects, places and times are answered by the
+32\,KB trace ($D=8192$ unit-modulus phasors stored as phase angles alone,
+one float32 per dimension; 64\,KB under the complex64 convention);
+queries about objects, places and times are answered by the
 algebra's inverse operation in milliseconds on a laptop CPU, with no
 structure to traverse. Four properties are measured. Cross-traverse
 relocalisation on 7-Scenes \texttt{chess} reaches 0.36\,m median 3D error
@@ -92,6 +90,9 @@ from the 32\,KB trace, against 0.29\,m for exact nearest neighbour over
 the same descriptors at 32.8\,MB, in a size regime product quantisation
 cannot enter. Object grounding across all eight Replica scenes leaves
 zero memory-attributable misses against an explicit-instance ceiling.
+Compactness is not the claim --- explicit representations now reach
+kilobytes too --- the claim is that the size is fixed before deployment
+and that degradation is predicted rather than silent.
 Merging maps is vector addition: exact to floating-point reordering
 ($\sim$10$^{-15}$) and order-independent, where the equivalent
 instance-association merge over identical observations needs 622 greedy
@@ -105,29 +106,18 @@ merging assumes a shared coordinate frame.
 % -------------------------------------------------------------------------
 % PAGE-1 TEASER, as a "strip" rather than a figure*.
 %
-% Why not figure*: LaTeX defers every double-column float to a LATER page
-% than the one it is declared on, so a figure* teaser can never reach
-% page 1 -- no [!t], \usepackage{stfloats} or reordering changes that.
-% cuted's strip is not a float: it typesets full width exactly here.
-%
-% Consequences of not being a float: it will not move to avoid a bad
-% break, so keep it short (the art is 7.16 x 2.0 in), and the caption
-% needs \captionof rather than \caption.
-%
-% To sit it directly under the author block instead of under the
-% abstract, move this whole block to immediately after \maketitle.
-% If cuted is unavailable, the guaranteed fallback is a single-column
-% figure[!t] in column 1, which does land on page 1 -- regenerate the art
-% narrow and stacked for that.
-%
+% Hero as a plain figure*: lands at the top of page 2 (LaTeX defers
+% double-column floats past the page they are declared on); the page-1
+% guarantee cuted provided was judged not worth its fragility
+% (Paul, 2026-08-18).
 % Regenerate with:  python tools/make_hero_figure.py
 % Every photo, path, field and number is read from the measured inspector
 % payloads; nothing is drawn by hand.
 % -------------------------------------------------------------------------
-\begin{strip}
+\begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/hero.pdf}
-\captionof{figure}{\textbf{What the map \emph{is}.} Where a scene graph
+\caption{\textbf{What the map \emph{is}.} Where a scene graph
 accumulates a node per object and an edge per relation, this map is one
 vector, and storing, querying and merging are arithmetic on it. Every
 vector below is drawn as its phase angles, and every one was computed by
@@ -137,20 +127,21 @@ stream.
 to a fractional-power position code by an elementwise complex multiply
 (Eq.~\eqref{eq:fpe}), and the product is added into a running sum.
 \textbf{(b)} The whole map is that sum. All 8{,}028 detections of the
-walk superpose into 8{,}192 phases, 32\,KB, a size fixed before the robot
-moves and unchanged by how much it then sees.
+walk superpose into 8{,}192 phases at 4 bytes each, 32\,KB
+(Sec.~\ref{sec:traces} on the byte convention), a size fixed before the
+robot moves and unchanged by how much it then sees.
 \textbf{(c)} A question is one unbind. Dividing by the \texttt{chair}
 atom leaves a spatial belief \emph{field} over the floor rather than a
 lookup result; the peak sits on a true instance, and the green squares
 mark every ground-truth chair, including the ones a single argmax does
 not resolve (Sec.~\ref{sec:limitations}).
-\textbf{(d)} Two robots' maps combine by addition. The sum equals the
+\textbf{(d)} Four robots' maps combine by addition. The sum equals the
 jointly built map to $10^{-11}$ with no data association whatsoever;
 pooled over the eight Replica scenes it grounds 89\% against 84\% for the
 equivalent explicit instance merge, which needs 622 greedy association
 decisions to get there (Sec.~\ref{sec:merge-results}).}
 \label{fig:hero}
-\end{strip}
+\end{figure*}
 
 % =========================================================================
 \section{Introduction}
@@ -169,6 +160,20 @@ every downstream query needs code that \emph{traverses} the structure,
 that is, walks it element by element (follow this object node, then its
 edges, then test each neighbour) until it finds what the query asked
 for, and that walking code is specific to the structure it walks.
+
+Bounding that growth is now a named problem with its own survey. Across
+roughly 52 systems from 1989 to 2025, Pangaliman et al.\
+\cite{pangaliman2026memorysurvey} taxonomise spatial memory as dense,
+sparse, neural or hierarchical-semantic, and quantify the gap between
+stored map and runtime cost as the ratio of peak runtime memory to saved
+map size --- a ratio reaching 215 for a 47\,MB neural map. Their critique of the systems that \emph{do} bound size is
+the objection this paper must answer: hash-based maps cap the table, but
+quality ``degrades silently when scene complexity approaches table
+capacity, providing bounded memory rather than constant-quality
+scaling.'' Fixed size is therefore not the contribution on its own.
+\emph{Predicted} degradation is: the capacity law of Sec.~\ref{sec:law}
+says when the trace saturates, by how much, and what to do about it, and
+it called one such failure in advance of our finding it.
 
 This paper characterises the opposite design point: a map that does not
 grow. A robot that has driven for an hour and a robot that has driven for
@@ -236,18 +241,26 @@ Contributions:
 \item \textbf{Capacity law} (Sec.~\ref{sec:law}): an empirical law for
   superposition interference, $\chi(N)$, separating a mean term, a
   quadrature content/projection term, and a temporal-persistence factor;
-  it predicts a held-out condition to 1.4\% and correctly anticipated a
-  deployed failure and its fix.
+  it predicts a held-out condition to 1.4\%, diagnosed a deployed
+  failure, and predicted the direction of its fix.
 \item \textbf{Benchmark characterisation} (Sec.~\ref{sec:results}):
   cross-traverse relocalisation on 7-Scenes \texttt{chess} against
   storage-matched and storage-unmatched baselines; object grounding on
-  all eight Replica scenes with a full miss taxonomy; drift bounding
+  all eight Replica scenes with a full miss taxonomy; a head-to-head
+  against ConceptGraphs under its own evaluation, baseline reproduced
+  to 99\% of published first, in which the bounded memory overtakes the
+  unbounded map in every degraded-input condition tested; drift bounding
   under a 20$\times$ odometry-degradation sweep.
 \item \textbf{Exact merge} (Sec.~\ref{sec:merge-results}): map merging as
   vector addition, measured against an instance-association merge, count
-  grids, and raw-data union on identical observations; to our knowledge
-  the first use of VSA bundling as the \emph{between-robot} map-merge
-  operator, with the shared-frame assumption it rests on stated plainly.
+  grids, and raw-data union on identical observations. Bundling as a
+  between-robot merge operator was demonstrated for occupancy by VSA-OGM
+  \cite{snyder2026vsaogm}; we carry it to a bound spatial-semantic memory
+  and supply what a fused-accuracy number cannot: a measured agreement
+  check against the jointly built map, a head-to-head against
+  association-based merging on identical observations, and a count of the
+  association decisions avoided --- with the shared-frame assumption it
+  rests on stated plainly.
 \end{enumerate}
 
 % =========================================================================
@@ -271,9 +284,21 @@ randomness assumptions (Sec.~\ref{sec:law}), and we provide the
 conditioning rules and the capacity law that make the algebra work on
 them. HDC aggregation of image descriptors exists \emph{within} an agent
 for place recognition \cite{neubert2021hyperdimensional} and across
-clients in federated learning \cite{fedhd2022}; we found no prior
-robotics work using bundling as the map-merge operator \emph{between}
-robots' spatial memories.
+clients in federated learning \cite{fedhd2022}. Closest to us, VSA-OGM
+\cite{snyder2026vsaogm} already merges maps \emph{between} robots by
+bundling, on a synthetic LiDAR scene (2 agents) and Intel Campus
+quadrants (4 agents), reporting fused AUC 0.95 at roughly one point
+cloud's processing cost. Two differences set our result apart. What is
+merged: VSA-OGM bundles occupancy --- binary occupied/empty classes over
+a tiled grid of memory vectors --- where we bundle a spatial-semantic
+memory binding class, appearance, position, heading and time. And what is
+measured: VSA-OGM reports fused accuracy, not exactness, and does not
+compare against an association-based merge over identical observations
+(Sec.~\ref{sec:merge-results}). VSA-OGM also \emph{tiles} rather than
+bundling into one vector, because a single trace weights all regions
+equally, and lists memory-vector saturation as an open limitation; the
+capacity law of Sec.~\ref{sec:law} is what lets us keep the single
+fixed-size trace and say in advance when it will fail.
 
 \textbf{Scene graphs and open-vocabulary maps.} Hydra
 \cite{hughes2022hydra}, ConceptGraphs \cite{gu2024conceptgraphs},
@@ -282,7 +307,19 @@ ConceptFusion \cite{jatavallabhula2023conceptfusion}, HOV-SG
 mutable, relational structures with open-vocabulary semantics; planners
 operate on them directly \cite{agia2022taskography}. These systems and
 ours occupy different corners of a real trade-off: exact/mutable/growing
-state versus bounded/associative/approximate state. We adopt
+state versus bounded/associative/approximate state. Two 2026 results
+sharpen that trade-off in the graphs' favour on bytes, and we state it
+rather than let a reviewer state it for us. Clio \cite{maggio2024clio}
+compresses a graph by an agglomerative information bottleneck over
+natural-language tasks, keeping only task-relevant granularity;
+LOST-3DSG \cite{ferraina2026lost3dsg} replaces dense CLIP attributes
+with word2vec and sentence embeddings, representing a 21-object scene in
+3{,}297 bytes --- an order of magnitude below our trace, with instance
+identity intact, which is exactly what Sec.~\ref{sec:limitations}
+concedes we lack. Small is therefore no longer the differentiator, and
+we do not argue it: what no explicit representation offers is a
+footprint fixed \emph{before} deployment, an update cost independent of
+map age, and a merge cost independent of map content. We adopt
 ConceptGraphs' own evaluation for the semantic comparison
 (Sec.~\ref{sec:grounding}) rather than inventing a metric. Relational
 spatial memories with referring-expression interfaces \cite{farm2026}
@@ -332,6 +369,7 @@ Family & Merge operation & Cost / exactness \\
 Occupancy grids & cell-wise fusion after SE(2) search & $O$(area$\times$res) comms; approximate \\
 Pose/factor graphs & joint optimisation over stitched graph & 24--146\,MB per expt.\ \cite{tian2022kimeramulti}; estimate \\
 3D scene graphs & per-layer node association + re-optimisation & association errors persist \cite{chang2023hydramulti} \\
+Task-compressed graphs & association, then re-run compression & bottleneck is task-specific \cite{maggio2024clio} \\
 Neural implicit & consensus optimisation & many rounds; may diverge \\
 \textbf{VSA trace (ours)} & \textbf{elementwise addition} & \textbf{one 32\,KB vector; exact, commutative, associative} \\
 \bottomrule
@@ -394,6 +432,12 @@ f(x) \;=\; \operatorname{Re}\,\langle\, M \bnd \conj{c},\; S(x)\,\rangle,
 evaluated over a display grid; the answer is the field's argmax, and we
 recommend reporting the top-$k$ modes (Sec.~\ref{sec:setup}). The field
 \emph{is} the map; argmax is one readout of a full spatial belief.
+This bind-then-bundle write and its inverting query are not new to us:
+HyperSpace \cite{snyder2026hyperspace} formalises the same pair as the
+storage and query modules of a general spatial-VSA framework
+($m \leftarrow m \oplus (\phi_p(x) \otimes \phi_v(v))$, queried by
+positional inversion, cleanup and regression). We take the primitive as
+given and ask what a \emph{fixed} budget of it buys on real perception.
 
 Because a trace answers best the query shape it was built for, the memory
 keeps one trace per query family, in effect the algebra's secondary
@@ -407,12 +451,24 @@ capacity budget under the law of Sec.~\ref{sec:law}. Temporal
 \emph{range} queries use closed-form range kernels
 $T_{[a,b]} = \int_a^b T^{t}\,dt$ (per-frequency closed form), so a time
 interval costs the same one unbind as a time point. At $D=8192$, one
-trace is 8{,}192 phase angles at 4 bytes: 32\,KB. Footprint honesty:
+trace is 8{,}192 phase angles at 4 bytes: 32\,KB. \emph{Byte convention
+(load-bearing).} Because the phasors are unit-modulus, the map state is
+the phase angles alone, one float32 per dimension. The standard FHRR
+accounting stores a complex64 pair per dimension and would give
+$8D = 64$\,KB \cite{snyder2026hyperspace}; the magnitudes it stores are
+the constant we never need. Every byte count in this paper uses the
+phase-only convention, and doubling them recovers the complex64 reading.
+Footprint honesty:
 the trace is the \emph{map state}; the decode grid used to display a
 field is working memory derived from the shared basis, and dense decoding
 dominates query latency ($\sim$91\% in profiling) but is not needed by
 consumers that stay in the algebra, such as the drift filter of
-Sec.~\ref{sec:kalman-results}. Query latency is milliseconds on a laptop
+Sec.~\ref{sec:kalman-results}. HyperSpace
+\cite{snyder2026hyperspace} measures the same effect independently and
+from a different pipeline: similarity-driven cleanup and regression
+dominate end-to-end runtime in spatial domains, to the point where HRR
+and FHRR come out comparable despite FHRR's cheaper operators. The
+saving is available only to consumers that never decode. Query latency is milliseconds on a laptop
 CPU (2.7--15\,ms measured across our configurations at $D=4096$--8192).
 
 \subsection{Bounded per-class insertion}
@@ -424,9 +480,11 @@ predicts the consequence: a class stored 1{,}150 times buries one stored
 capped per content symbol (reservoir-style, $\le 60$ insertions per
 class), which is online, requires no second pass, and preserves merge
 exactness by construction. On Replica \texttt{room0} this raised
-grounding from 44\% to 62\% (all classes) exactly as the law's direction
-predicted.
-% provenance: tracker (ba); outputs/replica_room0/object_grounding.json
+provisional consistency-R@1 from 44\% to 62\% (all classes) exactly as
+the law's direction predicted; the final truth-scored protocol grounds
+5 of 6 GT-comparable classes (83\%).
+% provenance: tracker (ba->bb); outputs/replica_room0/object_grounding.json
+% (metric 'truth'); the 44->62 pair is the provisional consistency metric
 
 \subsection{Content conditioning, and a substitution law}
 \label{sec:conditioning}
@@ -491,7 +549,11 @@ non-target locations in units of one item's on-target signal:
 the interference amplitude per unit item signal ($\chi$ values are
 comparable only at matched $N$). Retrieval flips when interference mass
 competes with the on-target peak, so $\chi$'s growth in $N$ \emph{is} the
-capacity story.
+capacity story. This is the quantity whose absence forces tiling
+elsewhere: VSA-OGM \cite{snyder2026vsaogm} partitions the environment
+into per-region memory vectors and records saturation --- dimensionality
+or tile count having to grow with point count --- as an open limitation.
+A law for $\chi$ is what lets a single fixed-size trace stay single.
 
 \subsection{The law}
 Across controlled synthetic sweeps ($N$ to $10^6$;
@@ -616,7 +678,8 @@ Table~\ref{tab:chess} the storage/accuracy trade at a fixed frontend
 (EigenPlaces, z-scored on memory statistics): exact kNN over all stored
 descriptors is the ceiling; product quantisation \cite{jegou2011product}
 is the standard compression; the trace is $\sim$1000$\times$ smaller than
-the ceiling and lands within 0.07\,m of it. PQ at $m$=8 is excellent at
+the ceiling and lands 0.07\,m from it in median 3D error (0.36 vs.\
+0.29\,m). PQ at $m$=8 is excellent at
 2.1\,MB but \emph{cannot exist} at 32\,KB (its $256\times2048$
 codebook alone is $\sim$2\,MB), so the trace occupies a size regime
 with no PQ counterpart at this $N$. As published context on this scene,
@@ -651,7 +714,10 @@ the floor plane: the peak (white cross) lands on a true instance.}
 \caption{7-Scenes \texttt{chess}, official cross-traverse split
 (memory = 4 train traverses, queries = 2 test traverses; EigenPlaces
 z-scored; $D$=8192). 3D error is the retrieved frame's translation
-error.}
+error. Trace bytes are phase-only (one float32 per dimension,
+Sec.~\ref{sec:traces}); under the complex64 FHRR convention
+\cite{snyder2026hyperspace} the trace reads 64\,KB and the comparison is
+unchanged in kind.}
 \label{tab:chess}
 \centering
 \small
@@ -695,8 +761,9 @@ object stream (bounded insertion, one 32\,KB trace per scene,
 class (Fig.~\ref{fig:fields}); an answer grounds correctly if the decoded
 position lies within $r$ of a true instance of that class, with
 Monte-Carlo chance anchors.
-Pooled over 8 scenes and 37 scoreable GT classes: 88.1\% at $r$=1\,m
-(chance 18.2\%) and 78.6\% at $r$=0.5\,m (chance 5.9\%).
+Pooled over 8 scenes and 42 scoreable GT classes (37 of 42 ground
+correctly at $r$=1\,m): 88.1\% at $r$=1\,m (chance 18.2\%) and 78.6\%
+at $r$=0.5\,m (chance 5.9\%).
 % provenance: tracker (bd); outputs/replica_truth_aggregate.json
 These are \emph{characterisation} numbers: the protocol is bespoke, so
 they support internal comparisons only; the benchmark-native semantic
@@ -706,8 +773,8 @@ Three internal comparisons carry the finding. \emph{(1) Miss taxonomy:}
 of 5 pooled misses, 2 are classes the detector never saw and 3 are wrong
 label/depth on the stored observation; \textbf{memory-attributable
 misses are zero}. \emph{(2) Backend ablation at a fixed frontend:} on the
-identical observation stream, the 32\,KB trace (87\% mean) matches or
-beats an explicit instance list (84\%) and a raw observation store
+identical observation stream, the 32\,KB trace (89\% scene-mean) matches
+or beats an explicit instance list (86\%) and a raw observation store
 (81\%); on \texttt{office1} the trace grounded a table from a single
 stored observation that the clustering backend's minimum-count rule
 discarded. The trace gives nothing away to the structures it undercuts in
@@ -720,18 +787,102 @@ observations and the phantom classes they created.
 
 \emph{Benchmark-native comparison (adopted metric).} For the semantic
 head-to-head we run ConceptGraphs' own evaluation (their scorer, their
-ground truth, both systems producing the same output type) on the same
-8 scenes. Pre-registered expectation, stated before the run: under their
-\emph{all-classes} dense-labelling metric our object memory scores
-$\approx$0.076 mAcc versus their published $\sim$0.40
-\cite{gu2024conceptgraphs}, because wall/floor/ceiling dominate the
-points and a detector-fed object memory cannot label them; whichever
-class list their evaluation code actually scores is recorded and reported
-with the result. \todo{insert head-to-head table when the GPU run lands
-(student package / Colab L4 notebook); until then this subsection carries
-the pre-registration only. Their query-style protocol (R@1/2/3, e.g.\
-descriptive CLIP R@1 0.59) is the adopted shape for the object-level
-comparison.}
+ground truth, both systems producing the same output type). We evaluate
+on all 8 scenes of the standard NICE-SLAM/vMAP Replica render release
+--- the same data format their pipeline consumes --- but ConceptGraphs'
+own paper reports Replica results on 7 of these (\texttt{room0-2},
+\texttt{office0-3}, no \texttt{office4}): confirmed for their scene-graph
+construction table and consistent with every other Replica experiment in
+their paper, though their semantic-segmentation table does not restate
+the scene count next to it. We therefore report the 7-scene subset as
+the direct comparison against their published $\sim$0.40 mAcc
+\cite{gu2024conceptgraphs}, with the full 8-scene number reported
+alongside as broader coverage --- \texttt{office4} has no published
+ConceptGraphs baseline to compare against. Pre-registered expectation,
+stated before the run and confirmed: under their \emph{all-classes}
+dense-labelling metric our object memory scores $\approx$0.076 mAcc on
+\texttt{room0}, because wall/floor/ceiling dominate the points and a
+detector-fed object memory cannot label them. All comparison rows below
+therefore use their own object-class convention (\texttt{n\_exclude} 6,
+verified against their evaluation code rather than their paper), and
+the gap's sign is stable across all three of their published exclusion
+settings (\texttt{n\_exclude} 1/4/6: $-$0.060/$-$0.070/$-$0.078 mAcc).
+
+The run landed after two bugs in \emph{our} scoring of \emph{their}
+system were found and fixed --- we had selected their map file by size
+where their post-processing pass \emph{removes} points, and we had
+omitted their in-scene class restriction; both bugs flattered us. With
+their protocol reproduced faithfully, our measurement of their released
+pipeline lands at 0.402 mAcc / 0.356 F-mIoU against their published
+0.406 / 0.360 (98.9\% / 99.1\%, both metrics), which is what makes the
+comparison quotable. Both systems then consume the identical SAM+CLIP
+frontend stream; only the memory differs.
+
+\begin{table}[t]
+% provenance: outputs/batch1/table2_full.json (their scorer, 5 seed
+% tuples; ours_seed_sd mean 0.017); 7-scene cut = no office4
+\caption{Replica head-to-head under ConceptGraphs' own evaluation.
+Ours is one fixed 32\,KB trace per scene; theirs an unbounded
+point-cloud map. Mean over scenes; our across-seed sd averages 0.017.}
+\label{tab:replica}
+\centering
+\small
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+ & \multicolumn{2}{c}{7-scene matched} & \multicolumn{2}{c}{8-scene full} \\
+ & mAcc & F-mIoU & mAcc & F-mIoU \\
+\midrule
+published \cite{gu2024conceptgraphs} & -- & -- & 0.406 & 0.360 \\
+ConceptGraphs, measured & 0.370 & 0.376 & 0.402 & 0.356 \\
+\textbf{32\,KB trace (ours)} & 0.303 & 0.299 & 0.324 & 0.280 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The bounded memory holds 0.80$\times$ their mAcc, leads outright on two
+of eight scenes (\texttt{room2}, \texttt{office1}; paired sign test
+$p$=0.29, direction consistent), and the deficit is \emph{located}
+rather than diffuse. Per-cell forensics over every cell we lose
+attribute 62\% to observation-stream label placement --- cells where the
+stream's own nearest label is the wrong class, which no memory backend
+can repair (any local decoder over the same stream answers the same
+wrong class there) --- and 38\% to competitions inside one kernel
+length-scale: the GT class's nearest observation sits at a median
+4\,cm from the cell and the winner's at 15\,cm, both inside
+$\ell$=0.45\,m, where a continuous point cloud resolves the
+centimetre-scale interleaving and a kernel readout cannot
+(\texttt{sofa}$\to$\texttt{cushion}, physically interleaved objects, is
+29\% of this branch alone). Capacity is not the binding constraint:
+mAcc moves $\sim$0.06 across a 32$\times$ trace-size range (4--128\,KB),
+though F-mIoU still climbs over the same range, so both metrics are
+quoted.
+
+\emph{Degradation, the thesis measured.} The same degradation is
+applied to the shared input stream at matched rates --- sparse coverage,
+label corruption, pose jitter --- and each system re-runs its own
+prediction rule. At the worst level the trace retains 76--94\% of its
+own clean score where the point-cloud map retains 45--52\%, and the
+crossover is \emph{absolute}, not merely relative: in all nine
+scene$\times$mode sweeps tested (3 scenes $\times$ 3 modes) the 32\,KB
+trace ends above the unbounded map's raw score, e.g.\ \texttt{office4}
+at 5\% coverage 0.354 vs.\ 0.224, under 0.5\,m jitter 0.430 vs.\ 0.307.
+Superposition averages a corrupted observation into near-orthogonal
+noise that cleanup absorbs; an explicit nearest-neighbour structure has
+no averaging, so each bad point is simply wrong wherever it is closest.
+The same kernel smoothing that costs the 38\% sub-resolution deficit
+above is what buys this robustness --- two faces of one
+representational choice.
+% provenance: outputs/batch1/table2_full.json, table2 sign test;
+% outputs/degradation_sweep.json (9/9 absolute crossovers verified);
+% outputs/batch1/local_loss_forensics.json (62/38 split, medians);
+% wiki/analysis/2026-08-17-gap-closing-batch-results.md (corrected
+% 2026-08-18 mechanism section)
+
+Their query-style protocol (R@1/2/3 over text queries) remains the
+adopted shape for a future object-retrieval comparison; its 20
+affordance/negation query strings are published in their Appendix A4,
+but the relevance judgements are not, so that comparison awaits our own
+re-annotation and is reported separately when it exists.
 
 \begin{figure}[t]
 \centering
@@ -757,7 +908,12 @@ The instance-list row is the scene-graph merge in miniature: 622 greedy
 association decisions across the sweep, with wrong ones costing up to 16
 points on a scene; the merge step itself is where accuracy dies, which
 is exactly the failure mode multi-robot scene-graph systems build
-machinery to fight \cite{chang2023hydramulti}. The trace cannot make an
+machinery to fight \cite{chang2023hydramulti}. VSA-OGM
+\cite{snyder2026vsaogm} demonstrates the same additive merge for
+occupancy and reports fused accuracy; the comparison here is the one it
+does not run --- the same observations merged by association --- and the
+column it does not report, agreement with the jointly built map. The
+trace cannot make an
 association error because there are no associations; four robots each
 transmit one 32\,KB vector where a Kimera-Multi experiment moves
 24--146\,MB \cite{tian2022kimeramulti}; the problems solved differ
@@ -808,9 +964,11 @@ jumps 242 $\to$ 6.5$\pm$2.4. Sweeping odometry quality 20$\times$
 (Table~\ref{tab:kalman}), dead reckoning diverges to 17.6\,m while the
 fused estimate saturates at 0.62\,m, approximately the memory's own
 recall accuracy. That is the mechanism, stated plainly: the honest claim
-is not that the memory out-localises odometry (raw recall 0.620\,m does
-not beat 0.74\,m dead reckoning at low noise) but that \emph{a fixed-size
-associative memory caps unbounded drift at $O(D)$ per frame}. The optimal
+is not that the memory out-localises odometry (raw recall, median
+0.62\,m, does not reliably beat low-noise dead reckoning:
+0.87$\pm$0.50\,m over 10 noise seeds, dead reckoning winning 5 of 10)
+but that \emph{a fixed-size associative memory caps unbounded drift at
+$O(D)$ per frame}. The optimal
 gain rises monotonically with noise, as filter theory requires.
 
 \begin{table}[t]
@@ -878,7 +1036,7 @@ convention (Sec.~\ref{sec:merge-results}); frame recovery inside the
 algebra (correlation over the FPE group) is built but its robustness
 under partial overlap is unmeasured, so no claim is made.
 
-\textbf{Scale and scope.} Room-scale scenes, $\le$10$^4$ observations per
+\textbf{Scale and scope.} Room-scale scenes, $\sim$10$^4$ observations per
 trace, one self-collected platform for the filter experiments;
 single-split headline numbers carry seed tags, and the 5-seed spread on
 the classroom shows split-friendliness effects of $\sim$2$\times$.
@@ -901,9 +1059,13 @@ on identical observations. On a public relocalisation benchmark the trace
 recalls within 0.07\,m of exact nearest neighbour at $\sim$1000$\times$
 fewer bytes, in a size regime where standard compression cannot follow;
 on eight Replica scenes its grounding misses are entirely attributable to
-perception; and its interference is governed by a capacity law precise
-enough to predict a held-out condition to 1.4\% and to have called a
-deployed failure and its fix in advance. The law also supplies the
+perception; against a reproduced ConceptGraphs baseline under that
+system's own evaluation it holds 0.80$\times$ the accuracy of an
+unbounded map on clean input and overtakes it outright in every
+degraded-input condition tested; and its interference is governed by a
+capacity law precise enough to predict a held-out condition to 1.4\%,
+to diagnose a deployed failure, and to predict the direction of its
+fix. The law also supplies the
 deployment discipline (condition the content stream or bind a diverse
 key; cap per-class insertion) that makes the algebra work on real
 learned features.
