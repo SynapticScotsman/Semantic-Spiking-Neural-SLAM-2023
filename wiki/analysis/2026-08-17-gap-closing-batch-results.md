@@ -134,6 +134,54 @@ decode locality" to **"resolve below lambda without giving up the kernel"**
 the natural candidate, now with a mechanism-level reason to retest it
 targeted at interleaved compact classes). Stated as hypothesis, not result.
 
+### The field-native answer (2026-08-18): the losses are NOT near-ties
+
+Paul's objection, and it was right: every account above reports the gap as
+*shares of cells*, which is not the VSA answer and let a wrong story survive
+twice. `field_transect.py` and `field_why.py` answer it in the field's own
+quantities, on the 5,366 cells where our own class's nearest observation is
+closer and we still lose.
+
+**The kernel, measured from the trace's own `Bx`** (not the sinc idealisation):
+
+| d | k(d) |
+|---|---|
+| 4 cm | 0.9872 |
+| 15 cm | 0.8295 |
+| 26 cm | 0.5408 |
+| half-height | 27.6 cm |
+
+Moving from 4 cm to 15 cm away from an observation costs a class **16% of its
+field height**. So field height is set by *how much evidence sits nearby*,
+almost independently of *which class is closest*. Proximity — exactly the
+signal their nearest-neighbour readout is built on — is information our kernel
+is nearly blind to. **That is the gap, stated in VSA terms.**
+
+**One real cell** (room0, GT `sofa`, 4.4 cm from a sofa observation, 12.4 cm
+from a cushion one): `F_sofa = -1.06`, `F_cushion = +23.26`. Our own class's
+field is driven *below zero* within 4 cm of its own evidence. 17 sofa
+observations within one lambda of that cell against 73 cushion ones.
+
+**Three distinct signatures**, previously lumped together:
+
+| signature | share | what it is |
+|---|---|---|
+| interference (`f_gt <= 0`) | 7.7% | bundling crosstalk cancels our own field |
+| local mass (winner >= 2x obs in one lambda) | 22.9% | what per-class lambda attacks |
+| flat kernel (similar mass) | 69.5% | kernel cannot separate the two |
+
+**The correction that matters:** median loss is **1.87x** in field height, p90
+**5.67x**, and 12.4% are lost by more than 5x. These are *not* near-ties. That
+retro-explains the whole batch-1 result — h1, h2 and the abstain family all
+operate on the margin, and near_tie was only 5.8% of the gap, i.e. the entire
+reachable population. It also explains h3b: per-class lambda attacks the 22.9%
+local-mass slice only, which is why its direction was right (monotone in gamma,
+inverse hurts) and its magnitude never resolved.
+
+The 7.7% interference slice is the new and least comfortable finding: no
+kernel width, threshold, or per-class lambda can reach it. Only fewer competing
+items per trace, or a codebook with less overlap.
+
 ### h3b: the targeted retest ran same day — UNDECIDABLE, not adopted
 
 `h3b_compact_lambda.py`, predictions frozen in `3fd8e21` before the run.
