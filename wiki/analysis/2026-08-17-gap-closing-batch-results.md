@@ -102,6 +102,52 @@ representational choice.** Closing the rest of the gap means giving the decode
 locality without giving up the superposition — that is the next research
 question, and it is now measured, not speculative.
 
+## Blocker-3 killers (2026-08-17 evening): both routes FAIL their gates
+
+Scoped by a 14-agent workflow (4 forensic lenses, adversarial verification: 2 of
+8 claims survived), then two pre-registered killer experiments, both run same
+day, both CPU-local.
+
+**Route A — class-name retrieval by one unbind** (`collab_tasks/scripts/
+class_query_killer.py`, gate frozen in the scoping before the script existed):
+delta R@1 vs a class-agnostic null must be >= +0.20. **Measured +0.059** over 8
+scenes at 0.75 m. FAIL, not retrofitted. Label parity vs `vsa_labels.npz`
+1.0000 on all 8 scenes, so the reduction is correct. Diagnostics recorded, not
+claimed: the hit sets barely overlap (13 of 48/39); 16 of the null's 39 hits
+are on classes the trace NEVER observed (62 of 147 GT classes, 42%, absent from
+the cgfront stream); observed-classes-only delta is +0.30 at every radius but
+that denominator was chosen post hoc — hypothesis only. When the unbind hits it
+is exact: 7 of room0's 8 hits within 25 cm, median 2 cm.
+
+**Route B — CLIP through phasor projection** (`collab_tasks/scripts/
+clip_phasor_retention.py`, gate B1: retention >= 0.80 at d=4096): **measured
+0.674** (3 W draws, sd 0.08). FAIL. Ladder 0.409 / 0.674 / 0.798 at d = 1024 /
+4096 / 16384 — dimension-limited, not a wall, but 0.80 needs a 128 KB trace.
+Measured cone (E0, 500 real room0 crops, ViT-B/32, raw-argmax agreement with
+stored labels 1.0000): img-img same 0.877 / cross 0.746; img-TEXT correct
+0.292 / wrong 0.228 — the text channel works on a 0.064 margin over 101
+classes and O(1/sqrt(d)) projection noise eats it. Mean-centring — the fix that
+rescued the adversarial reviewer's SYNTHETIC probe — makes REAL features worse
+(0.466 vs 0.674): on real CLIP the shared cone carries class signal.
+
+**Table III status change:** their 20 affordance+negation query strings were
+published all along (their Appendix A4; redundant copy on the repo's `query`
+branch, commit 75e3ad5, with 316 AMT captions — the two sources differ on 1 of
+20 strings). Still unreleased: the manual relevance judgements, and their GT
+indexes their own object map. The open task is human labelling of which Replica
+GT instances answer each query — feasible, ours to do, must be reported as a
+re-annotation.
+
+**Export bugs fixed** (commit c3aae37): `03_export_cg.py` now persists their
+per-object `clip_ft` (was silently discarded every export — an appearance
+experiment on their frontend needed a fresh 417 MB download because of this);
+`cg_frontend_to_trace.py` now carries their `obj` id (was replaced by a running
+index, destroying per-object identity).
+
+Corrected in passing: the brief's "0.80 R@1 affordance" was wrong — 0.80 is
+their LLM on NEGATION; Replica affordance LLM is 0.57 (CLIP 0.43). The 1.00s
+are the REAL Lab scan, n=10.
+
 ## Method notes for reuse
 
 - Baseline zero proven by **exact label identity** (100% on all 8 scenes)
