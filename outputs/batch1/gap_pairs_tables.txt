@@ -1,0 +1,48 @@
+top (scene, GT -> we said) pairs per category:
+
+near_tie  (486 cells across all scenes)
+  room0     blinds          -> candle            106  (21.8%)
+  office2   sofa            -> cushion            45  ( 9.3%)
+  room0     blinds          -> lamp               34  ( 7.0%)
+  office1   pillow          -> blanket            25  ( 5.1%)
+  room0     blinds          -> pot                23  ( 4.7%)
+  room2     vase            -> shelf              19  ( 3.9%)
+  office3   sofa            -> cushion            18  ( 3.7%)
+  office0   sofa            -> indoor-plant       16  ( 3.3%)
+  room0     sofa            -> cushion            14  ( 2.9%)
+  room1     comforter       -> switch             11  ( 2.3%)
+  top-10 pairs carry 64% of near_tie
+
+bleed  (2485 cells across all scenes)
+  office1   pillow          -> blanket           317  (12.8%)
+  room1     comforter       -> switch            209  ( 8.4%)
+  office2   sofa            -> stool             165  ( 6.6%)
+  room0     blinds          -> indoor-plant      161  ( 6.5%)
+  office1   pillow          -> switch            151  ( 6.1%)
+  room1     comforter       -> picture           139  ( 5.6%)
+  room1     comforter       -> nightstand        123  ( 4.9%)
+  room0     blinds          -> switch            107  ( 4.3%)
+  room0     sofa            -> vase               98  ( 3.9%)
+  room0     sofa            -> candle             72  ( 2.9%)
+  top-10 pairs carry 62% of bleed
+
+local_loss  (5415 cells across all scenes)
+  office3   sofa            -> cushion           793  (14.6%)
+  office2   sofa            -> cushion           670  (12.4%)
+  room0     sofa            -> cushion           555  (10.2%)
+  office0   sofa            -> pillar            498  ( 9.2%)
+  room1     comforter       -> vent              335  ( 6.2%)
+  office2   sofa            -> tissue-paper      169  ( 3.1%)
+  office1   pillow          -> monitor           161  ( 3.0%)
+  office1   pillow          -> pillar            127  ( 2.3%)
+  office0   sofa            -> desk-organizer    124  ( 2.3%)
+  room0     blinds          -> indoor-plant      121  ( 2.2%)
+  top-10 pairs carry 66% of local_loss
+
+exemplar near_tie: room0 cell [4.515, 3.45] GT blinds (field 13.9997) vs said candle (field 14.5477)
+
+exemplar bleed: office1 cell [-1.047, 0.237] GT pillow (field 20.3726) vs said blanket (field 30.9111)
+
+exemplar local_loss: office3 cell [0.433, -1.751] GT sofa (field 34.5744) vs said cushion (field 49.4437)
+
+wrote outputs/batch1/gap_pairs.json
