@@ -579,9 +579,15 @@
      "office2": 0.0008830313126291789,
      "office3": -0.0157986493977745,
      "office4": 0.11400437843629392
+    },
+    "breadth": {
+     "n_improved": 6,
+     "leave_one_out_min": 0.0023724347094250613,
+     "carried_by": "office4",
+     "robust": false
     }
    },
-   "status": "ADOPT-CANDIDATE"
+   "status": "SCENE-DEPENDENT"
   },
   "combo_tau0.5_fallback": {
    "per_scene_per_tuple": {
@@ -900,9 +906,15 @@
      "office2": 0.0008830313126291789,
      "office3": -0.0157986493977745,
      "office4": 0.11400437843629392
+    },
+    "breadth": {
+     "n_improved": 6,
+     "leave_one_out_min": 0.0023724347094250613,
+     "carried_by": "office4",
+     "robust": false
     }
    },
-   "status": "ADOPT-CANDIDATE"
+   "status": "SCENE-DEPENDENT"
   },
   "combo_tau0.5_abstain": {
    "per_scene_per_tuple": {
@@ -1221,9 +1233,15 @@
      "office2": 0.0005981295075350723,
      "office3": -0.01585116703758952,
      "office4": 0.1119008243398052
+    },
+    "breadth": {
+     "n_improved": 6,
+     "leave_one_out_min": 0.0017717433933200385,
+     "carried_by": "office4",
+     "robust": false
     }
    },
-   "status": "ADOPT-CANDIDATE"
+   "status": "SCENE-DEPENDENT"
   },
   "combo_tau1.0_fallback": {
    "per_scene_per_tuple": {
@@ -1542,9 +1560,15 @@
      "office2": 0.0008830313126291789,
      "office3": -0.0157986493977745,
      "office4": 0.11400437843629392
+    },
+    "breadth": {
+     "n_improved": 6,
+     "leave_one_out_min": 0.0023724347094250613,
+     "carried_by": "office4",
+     "robust": false
     }
    },
-   "status": "ADOPT-CANDIDATE"
+   "status": "SCENE-DEPENDENT"
   },
   "combo_tau1.0_abstain": {
    "per_scene_per_tuple": {
@@ -1863,6 +1887,12 @@
      "office2": -0.002486445480714672,
      "office3": -0.017080115193156886,
      "office4": 0.09973142686602576
+    },
+    "breadth": {
+     "n_improved": 4,
+     "leave_one_out_min": -0.0015787912255149233,
+     "carried_by": "office4",
+     "robust": false
     }
    },
    "status": "SURVIVES"
@@ -2184,9 +2214,15 @@
      "office2": 0.0008830313126291789,
      "office3": -0.0157986493977745,
      "office4": 0.11400437843629392
+    },
+    "breadth": {
+     "n_improved": 6,
+     "leave_one_out_min": 0.0023724347094250613,
+     "carried_by": "office4",
+     "robust": false
     }
    },
-   "status": "ADOPT-CANDIDATE"
+   "status": "SCENE-DEPENDENT"
   },
   "combo_tau1.5_abstain": {
    "per_scene_per_tuple": {
@@ -2505,6 +2541,12 @@
      "office2": -0.010950213352556947,
      "office3": -0.021636394914100455,
      "office4": 0.06870199291145622
+    },
+    "breadth": {
+     "n_improved": 3,
+     "leave_one_out_min": -0.010912699641778698,
+     "carried_by": "office4",
+     "robust": false
     }
    },
    "status": "SURVIVES"
@@ -2826,9 +2868,15 @@
      "office2": 0.0008830313126291789,
      "office3": -0.0157986493977745,
      "office4": 0.11400437843629392
+    },
+    "breadth": {
+     "n_improved": 6,
+     "leave_one_out_min": 0.0023724347094250613,
+     "carried_by": "office4",
+     "robust": false
     }
    },
-   "status": "ADOPT-CANDIDATE"
+   "status": "SCENE-DEPENDENT"
   },
   "combo_tau2.0_abstain": {
    "per_scene_per_tuple": {
@@ -3147,6 +3195,12 @@
      "office2": -0.03184813840069088,
      "office3": -0.02839120363456301,
      "office4": 0.05148604999054614
+    },
+    "breadth": {
+     "n_improved": 2,
+     "leave_one_out_min": -0.02858778844548789,
+     "carried_by": "office4",
+     "robust": false
     }
    },
    "status": "SURVIVES"
@@ -3468,9 +3522,15 @@
      "office2": 0.0008830313126291789,
      "office3": -0.0157986493977745,
      "office4": 0.11400437843629392
+    },
+    "breadth": {
+     "n_improved": 6,
+     "leave_one_out_min": 0.0023724347094250613,
+     "carried_by": "office4",
+     "robust": false
     }
    },
-   "status": "ADOPT-CANDIDATE"
+   "status": "SCENE-DEPENDENT"
   },
   "combo_tau3.0_abstain": {
    "per_scene_per_tuple": {
@@ -3789,13 +3849,19 @@
      "office2": -0.06644905600629179,
      "office3": -0.038389716472059056,
      "office4": 0.013118035190615851
+    },
+    "breadth": {
+     "n_improved": 1,
+     "leave_one_out_min": -0.055683199453585096,
+     "carried_by": "office4",
+     "robust": false
     }
    },
    "status": "SURVIVES"
   }
  },
  "best_variant": "combo_tau0.5_abstain",
- "verdict": "ADOPT-CANDIDATE",
+ "verdict": "SCENE-DEPENDENT",
  "verdict_allowed": true,
  "problems": [],
  "predictions": [
@@ -3810,7 +3876,12 @@
    "test": "pair_ge",
    "value": -0.005,
    "hit": true,
-   "measured": -0.0008
+   "measured": [
+    -0.0008,
+    0.0003,
+    true
+   ],
+   "note": "gap must be resolved"
   },
   {
    "id": "s2-f1",
@@ -3823,7 +3894,12 @@
    "test": "pair_ge",
    "value": 0.0,
    "hit": true,
-   "measured": 0.0163
+   "measured": [
+    0.0163,
+    0.0028,
+    true
+   ],
+   "note": "gap must be resolved"
   },
   {
    "id": "s2-adopt",

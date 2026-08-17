@@ -579,6 +579,12 @@
      "office2": -0.009457736545052308,
      "office3": -0.053139373177772474,
      "office4": 0.10914719660581595
+    },
+    "breadth": {
+     "n_improved": 3,
+     "leave_one_out_min": -0.02062118971741312,
+     "carried_by": "office4",
+     "robust": false
     }
    },
    "status": "UNDECIDABLE"
@@ -900,6 +906,12 @@
      "office2": -0.0003510797444920111,
      "office3": -0.03133634783459284,
      "office4": 0.03861515650044069
+    },
+    "breadth": {
+     "n_improved": 3,
+     "leave_one_out_min": -0.021059073963792037,
+     "carried_by": "office4",
+     "robust": false
     }
    },
    "status": "UNDECIDABLE"
@@ -1221,6 +1233,12 @@
      "office2": 0.020938591085548373,
      "office3": -0.013031648119441209,
      "office4": 0.025964036676996982
+    },
+    "breadth": {
+     "n_improved": 3,
+     "leave_one_out_min": -0.0114863846217118,
+     "carried_by": "office4",
+     "robust": false
     }
    },
    "status": "UNDECIDABLE"

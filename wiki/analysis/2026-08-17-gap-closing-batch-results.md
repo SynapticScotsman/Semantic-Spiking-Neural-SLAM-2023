@@ -9,16 +9,41 @@ paired per-tuple deltas, a verdict only when `|mean| >= 2*sd`. Predictions were
 frozen in commit `da1d16d` (Stage 1) and `957429b` (Stage 2) BEFORE running.
 Prediction record: **7 HIT / 5 MISS of 12** — scored mechanically, not by us.
 
-## Adopted configuration
+## RETRACTED: there is no adopted configuration
 
-**z-score decode + tau 0.5 abstain** (`combo_tau0.5_abstain`):
-**Δ mAcc +0.0155 ± 0.0050, Δ mF1 +0.0178 ± 0.0018** vs baseline, ADOPT-CANDIDATE
-under the pre-registered rule (mAcc up, mF1 not down). At the reference draw:
-ours 0.324 → **0.333** against their 0.402 — **12% of the gap closed**.
+**First reported (2026-08-17 morning):** z-score decode + tau 0.5 abstain
+adopted at Δ mAcc +0.0155 ± 0.0050, 12% of the gap closed.
 
-Per-scene honesty: the battery mean is positive but uneven — at the reference
-draw it helps room0/room2/office4 (office4 +0.10) and *hurts* room1/office2/
-office3 by 0.01–0.02. The battery is what says the mean effect is real.
+**Retracted the same day.** A workflow audit flagged that the guard checked
+variance across *seed draws* but never concentration across *scenes*. Measured:
+
+| variant | mean, 8 scenes | **excl. office4** | office4 alone |
+|---|---|---|---|
+| `zscore_control` | +0.0163 | **+0.0024** | +0.1140 |
+| `combo_tau0.5_abstain` | +0.0155 | **+0.0018** | +0.1119 |
+
+Six of eight scenes improve, so the *direction* is real, but essentially all the
+*magnitude* is one scene. `report.py` now computes a leave-one-scene-out mean and
+returns **SCENE-DEPENDENT** rather than ADOPT-CANDIDATE when the effect does not
+survive removal of its best scene. Re-scoring every batch-1 result under that
+rule leaves **no adopted mechanism**:
+
+| mechanism | verdict (breadth-aware) | leave-one-out min | carried by |
+|---|---|---|---|
+| h2 z-score | SCENE-DEPENDENT | +0.0024 | office4 |
+| stage2 combo | SCENE-DEPENDENT | +0.0018 | office4 |
+| h1 threshold | SURVIVES (mF1 only) | −0.0354 | office3 |
+| h3 / h4 / h6 | UNDECIDABLE | −0.0115 / −0.0017 / −0.0057 | office4 / office4 / room1 |
+| h5 conf | KILLED (exact 0) | 0.0000 | — |
+
+**Our score therefore stands at 0.324 against their 0.402. The gap is not
+closed.** What the batch bought is instrumentation, six honest verdicts, and a
+diagnosis — not an improvement.
+
+**office4 is an outlier worth understanding in its own right**: baseline mAcc
+0.466 there against ~0.30 elsewhere, and it carries the apparent gain of three
+separate mechanisms. Any batch-2 candidate must pre-register a breadth clause
+(`scenes_ge >= 6`) and report the office4-excluded mean beside the headline.
 
 ## Stage-1 verdicts (guard table)
 

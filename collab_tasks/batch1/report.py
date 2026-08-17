@@ -79,14 +79,40 @@ def _deltas(per, lab):
         s: float(np.mean([per[lab][s][t]["macc"] - per["baseline"][s][t]["macc"]
                           for t in tuples]))
         for s in per["baseline"]}
+
+    # BREADTH (added 2026-08-17). The seed battery guards variance across
+    # DRAWS; it says nothing about concentration across SCENES. Measured
+    # failure that motivated this: the batch-1 adopted decode reads +0.0155
+    # over 8 scenes but +0.0018 with office4 removed -- 6 of 8 scenes improve,
+    # so the direction is real, but essentially all the magnitude is one
+    # scene. A mean carried by a single scene is not a general mechanism.
+    ps = out["per_scene_macc"]
+    scenes = sorted(ps)
+    loo = {s: float(np.mean([ps[o] for o in scenes if o != s]))
+           for s in scenes}
+    worst = min(loo, key=lambda s: loo[s])   # scene whose removal hurts most
+    out["breadth"] = dict(
+        n_improved=int(sum(v > 0 for v in ps.values())),
+        leave_one_out_min=loo[worst],
+        carried_by=worst,
+        robust=bool(loo[worst] > SURVIVE_EPS))
     return out
 
 
 def _status(d):
-    """Verdict for one variant from its delta block (Amendment A1 rules)."""
+    """Verdict for one variant from its delta block (Amendment A1 rules,
+    plus the 2026-08-17 breadth requirement).
+
+    ADOPT-CANDIDATE now additionally requires the effect to survive removal of
+    its best scene: a mean carried by one scene is SCENE-DEPENDENT, not
+    adoptable. Such variants fall back to SURVIVES so the effect is still
+    reported and can be investigated -- it is a narrowing, not a kill.
+    """
     ma, f1 = d["macc"], d["mf1"]
     if ma["resolved"] and ma["mean"] > SURVIVE_EPS \
             and f1["mean"] > ADOPT_F1_FLOOR:
+        if not d.get("breadth", {}).get("robust", True):
+            return "SCENE-DEPENDENT"
         return "ADOPT-CANDIDATE"
     if (ma["resolved"] and ma["mean"] > SURVIVE_EPS) or \
             (f1["resolved"] and f1["mean"] > SURVIVE_EPS):
@@ -96,7 +122,8 @@ def _status(d):
     return "UNDECIDABLE"
 
 
-_PRECEDENCE = ["ADOPT-CANDIDATE", "SURVIVES", "UNDECIDABLE", "KILLED"]
+_PRECEDENCE = ["ADOPT-CANDIDATE", "SCENE-DEPENDENT", "SURVIVES",
+               "UNDECIDABLE", "KILLED"]
 
 
 def _eval_prediction(p, deltas, best):
@@ -106,15 +133,35 @@ def _eval_prediction(p, deltas, best):
     def mean_of(lab):
         return deltas[lab][metric]["mean"]
 
+    def paired_gap(a, b):
+        """Per-tuple gap between two variants, with its own sd.
+
+        The first version compared only the means, so a gap sitting inside the
+        noise band read as a clean HIT -- and a variant that internally applies
+        an already-adopted mechanism could inherit that mechanism's gain
+        unchallenged. The gap now has to clear twice its own sd, exactly like a
+        delta against baseline.
+        """
+        pa = deltas[a][metric]["per_tuple"]
+        pb = deltas[b][metric]["per_tuple"]
+        g = np.asarray(pa, float) - np.asarray(pb, float)
+        m = float(g.mean())
+        sd = float(g.std(ddof=1)) if len(g) > 1 else 0.0
+        return m, sd, abs(m) >= 2 * sd
+
     if test == "pairs_majority_ge":
-        pairs = p["scope"]                      # list of [a, b]
-        gaps = [mean_of(a) - mean_of(b) for a, b in pairs]
-        hit = sum(g >= value for g in gaps) > len(gaps) / 2
-        return dict(p, hit=bool(hit), measured=[round(g, 4) for g in gaps])
+        res = [paired_gap(a, b) for a, b in p["scope"]]
+        ok = [(m >= value and r) for m, _, r in res]
+        return dict(p, hit=bool(sum(ok) > len(res) / 2),
+                    measured=[[round(m, 4), round(sd, 4), r]
+                              for m, sd, r in res],
+                    note="each gap must be resolved")
     if test == "pair_ge":
         a, b = p["scope"]
-        g = mean_of(a) - mean_of(b)
-        return dict(p, hit=bool(g >= value), measured=round(g, 4))
+        m, sd, r = paired_gap(a, b)
+        return dict(p, hit=bool(m >= value and r),
+                    measured=[round(m, 4), round(sd, 4), r],
+                    note="gap must be resolved")
 
     lab = best if p["scope"] == "best" else p["scope"]
     if lab not in deltas:
@@ -176,10 +223,16 @@ def report(mechanism, prediction, per, out_path, predictions=None):
                 verdict = want
                 break
         d = deltas[best]
+        br = d.get("breadth", {})
         print(f"VERDICT [{mechanism}] best={best} "
               f"dmacc={d['macc']['mean']:+.4f}+-{d['macc']['sd']:.4f} "
               f"dmf1={d['mf1']['mean']:+.4f}+-{d['mf1']['sd']:.4f} "
               f"-> {verdict}")
+        if br:
+            print(f"  breadth: {br['n_improved']}/8 scenes improved; "
+                  f"drop {br['carried_by']} and the mean becomes "
+                  f"{br['leave_one_out_min']:+.4f} "
+                  f"({'robust' if br['robust'] else 'CARRIED BY ONE SCENE'})")
         print(f"  (selected over {n_var} variants; the 2*sd resolution rule "
               "is the multiple-comparisons brake -- treat a marginal best "
               "among many variants with suspicion)")

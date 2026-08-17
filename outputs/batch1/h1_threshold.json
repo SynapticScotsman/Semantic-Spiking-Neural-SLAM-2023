@@ -579,6 +579,12 @@
      "office2": 0.0011210151354000496,
      "office3": -1.4051708425666387e-05,
      "office4": 0.0008539572759526548
+    },
+    "breadth": {
+     "n_improved": 5,
+     "leave_one_out_min": 0.00016452266478269507,
+     "carried_by": "office2",
+     "robust": false
     }
    },
    "status": "UNDECIDABLE"
@@ -900,6 +906,12 @@
      "office2": 0.0008926394574097829,
      "office3": -7.550374223296297e-05,
      "office4": -0.0009564807159726074
+    },
+    "breadth": {
+     "n_improved": 1,
+     "leave_one_out_min": -0.0007858987934591357,
+     "carried_by": "office2",
+     "robust": false
     }
    },
    "status": "SURVIVES"
@@ -1221,6 +1233,12 @@
      "office2": 0.0004743392384426448,
      "office3": 0.00022999590331600482,
      "office4": 0.006695670872091053
+    },
+    "breadth": {
+     "n_improved": 5,
+     "leave_one_out_min": -0.0002318296241243214,
+     "carried_by": "office4",
+     "robust": false
     }
    },
    "status": "UNDECIDABLE"
@@ -1542,6 +1560,12 @@
      "office2": -0.002280850286755687,
      "office3": -0.0009624415693225696,
      "office4": -0.0035662938260711654
+    },
+    "breadth": {
+     "n_improved": 0,
+     "leave_one_out_min": -0.004605754500359403,
+     "carried_by": "office3",
+     "robust": false
     }
    },
    "status": "SURVIVES"
@@ -1863,6 +1887,12 @@
      "office2": 0.0015742610447282202,
      "office3": 0.00042542902794052707,
      "office4": -0.0004571591696913013
+    },
+    "breadth": {
+     "n_improved": 4,
+     "leave_one_out_min": -0.00043538169203814644,
+     "carried_by": "office2",
+     "robust": false
     }
    },
    "status": "UNDECIDABLE"
@@ -2184,6 +2214,12 @@
      "office2": -0.00836733479096292,
      "office3": -0.005012762174947028,
      "office4": -0.03052193759708747
+    },
+    "breadth": {
+     "n_improved": 0,
+     "leave_one_out_min": -0.016908069690533666,
+     "carried_by": "office3",
+     "robust": false
     }
    },
    "status": "SURVIVES"
@@ -2505,6 +2541,12 @@
      "office2": -0.00020647231894199702,
      "office3": 0.0004812640942435054,
      "office4": -0.00014564047143265091
+    },
+    "breadth": {
+     "n_improved": 3,
+     "leave_one_out_min": -0.0002586081905224151,
+     "carried_by": "room2",
+     "robust": false
     }
    },
    "status": "UNDECIDABLE"
@@ -2826,6 +2868,12 @@
      "office2": -0.02709225757194591,
      "office3": -0.010383063537335624,
      "office4": -0.04804389373116177
+    },
+    "breadth": {
+     "n_improved": 0,
+     "leave_one_out_min": -0.035355239766723646,
+     "carried_by": "office3",
+     "robust": false
     }
    },
    "status": "SURVIVES"
@@ -3147,6 +3195,12 @@
      "office2": -0.0026304864521790594,
      "office3": -0.0033503484038243216,
      "office4": 0.0
+    },
+    "breadth": {
+     "n_improved": 3,
+     "leave_one_out_min": -0.0008145812681008343,
+     "carried_by": "room2",
+     "robust": false
     }
    },
    "status": "UNDECIDABLE"
@@ -3468,6 +3522,12 @@
      "office2": -0.06535569476810807,
      "office3": -0.023642046717353166,
      "office4": -0.08669763301214914
+    },
+    "breadth": {
+     "n_improved": 0,
+     "leave_one_out_min": -0.06642258038741387,
+     "carried_by": "office3",
+     "robust": false
     }
    },
    "status": "SURVIVES"

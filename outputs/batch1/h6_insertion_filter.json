@@ -579,6 +579,12 @@
      "office2": -0.0863421651286764,
      "office3": -0.001374911453029748,
      "office4": 2.3504899325643704e-05
+    },
+    "breadth": {
+     "n_improved": 1,
+     "leave_one_out_min": -0.03362443620430542,
+     "carried_by": "office4",
+     "robust": false
     }
    },
    "status": "UNDECIDABLE"
@@ -900,6 +906,12 @@
      "office2": -0.005660317580111896,
      "office3": 0.005809651713178909,
      "office4": -0.004527228053134424
+    },
+    "breadth": {
+     "n_improved": 2,
+     "leave_one_out_min": -0.006687136817915452,
+     "carried_by": "office3",
+     "robust": false
     }
    },
    "status": "UNDECIDABLE"
@@ -1221,6 +1233,12 @@
      "office2": -0.09074458448077859,
      "office3": 0.0034305967050599407,
      "office4": -0.0008945857168809023
+    },
+    "breadth": {
+     "n_improved": 2,
+     "leave_one_out_min": -0.030095989859484775,
+     "carried_by": "office3",
+     "robust": false
     }
    },
    "status": "UNDECIDABLE"
@@ -1542,6 +1560,12 @@
      "office2": -0.008463211471972376,
      "office3": 0.0032136935087043296,
      "office4": -0.004586686365304726
+    },
+    "breadth": {
+     "n_improved": 2,
+     "leave_one_out_min": -0.0057092548657936,
+     "carried_by": "room1",
+     "robust": false
     }
    },
    "status": "UNDECIDABLE"
@@ -1863,6 +1887,12 @@
      "office2": -0.08814604149458846,
      "office3": -0.0009035265108203961,
      "office4": -0.0008945857168809023
+    },
+    "breadth": {
+     "n_improved": 1,
+     "leave_one_out_min": -0.02900469186038046,
+     "carried_by": "room0",
+     "robust": false
     }
    },
    "status": "UNDECIDABLE"
@@ -2184,6 +2214,12 @@
      "office2": -0.006493937600398003,
      "office3": 0.0008594546517660007,
      "office4": 0.0009235961013009386
+    },
+    "breadth": {
+     "n_improved": 5,
+     "leave_one_out_min": -0.003993359961988677,
+     "carried_by": "office0",
+     "robust": false
     }
    },
    "status": "UNDECIDABLE"
@@ -2216,10 +2252,23 @@
    "value": 0.0,
    "hit": false,
    "measured": [
-    -0.0243,
-    -0.0213,
-    -0.0223
-   ]
+    [
+     -0.0243,
+     0.004,
+     true
+    ],
+    [
+     -0.0213,
+     0.0052,
+     true
+    ],
+    [
+     -0.0223,
+     0.0033,
+     true
+    ]
+   ],
+   "note": "each gap must be resolved"
   },
   {
    "id": "h6-f1",

@@ -579,6 +579,12 @@
      "office2": -0.0011356482233481845,
      "office3": -0.029327718959242615,
      "office4": 0.08213028673853115
+    },
+    "breadth": {
+     "n_improved": 4,
+     "leave_one_out_min": -0.0017066708678527363,
+     "carried_by": "office4",
+     "robust": false
     }
    },
    "status": "UNDECIDABLE"
@@ -900,6 +906,12 @@
      "office2": 0.004663056730689041,
      "office3": -0.02364070288641798,
      "office4": 0.10091373903830665
+    },
+    "breadth": {
+     "n_improved": 5,
+     "leave_one_out_min": -0.005312464138033526,
+     "carried_by": "office4",
+     "robust": false
     }
    },
    "status": "UNDECIDABLE"
@@ -1221,6 +1233,12 @@
      "office2": 0.0,
      "office3": 0.0,
      "office4": 0.0
+    },
+    "breadth": {
+     "n_improved": 0,
+     "leave_one_out_min": 0.0,
+     "carried_by": "office0",
+     "robust": false
     }
    },
    "status": "KILLED"
@@ -1542,6 +1560,12 @@
      "office2": -0.006473667796054561,
      "office3": -0.0019942762823128013,
      "office4": -0.004602418706044176
+    },
+    "breadth": {
+     "n_improved": 2,
+     "leave_one_out_min": -0.009646833094791874,
+     "carried_by": "room1",
+     "robust": false
     }
    },
    "status": "UNDECIDABLE"
