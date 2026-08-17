@@ -134,6 +134,43 @@ decode locality" to **"resolve below lambda without giving up the kernel"**
 the natural candidate, now with a mechanism-level reason to retest it
 targeted at interleaved compact classes). Stated as hypothesis, not result.
 
+### CORRECTED AGAIN 2026-08-18: 62% of our "local losses" were never gap
+
+A category error that sat in every writeup above, including the forensics
+earlier the same day. `error_decomposition.decompose()` classifies **every
+cell where OUR prediction is wrong** (14,134). `gap_anatomy.py` measured the
+**8,386 cells where THEY are right and we are wrong** — the actual gap. Those
+are different populations, and local_loss shares were being quoted as "shares
+of the gap". `shared_ceiling.py` settles it, using their transferred labels
+and their scorer:
+
+| proximity branch | cells | GAP (they win) | SHARED (both wrong) |
+|---|---|---|---|
+| winner's obs nearer | 8,768 | 1,089 (12.4%) | **7,679 (87.6%)** |
+| GT's obs nearer | 5,366 | **4,326 (80.6%)** | 1,040 (19.4%) |
+| **total** | 14,134 | 5,415 (38.3%) | 8,719 (61.7%) |
+
+The two branches map almost exactly onto shared-ceiling versus real gap:
+
+- The **62% branch** — where the stream's own nearest label is wrong — is
+  **87.6% cells neither system gets right.** A shared input ceiling, like the
+  0.609 frontend ceiling. Never our decode deficit, and correctly unreachable
+  by any decode, kernel, or lambda change.
+- The **38% branch** — where we are nearer and still lose — is **80.6% real
+  gap.** That is precisely the population `field_why.py` analysed, so the
+  interference / local-mass / flat-kernel split below stands on the right
+  cells (80.6% pure, 19.4% shared contamination — stated, not hidden).
+
+**Reachable headroom**, fixing only the cells they get right while keeping the
+cells we win: **0.3235 → 0.4366, i.e. +0.113 mAcc.** It exceeds their 0.402
+because we retain the 21 classes and 2 scenes where we lead.
+
+Provenance note: the 87.6% figure was first produced by a workflow subagent
+that wrote json to `outputs/batch1/` without saving a script. Those files were
+deleted and the number re-derived independently by `shared_ceiling.py`, which
+reproduces it exactly. The same agent's headroom figure (+0.081) could not be
+reproduced and is not carried forward.
+
 ### The field-native answer (2026-08-18): the losses are NOT near-ties
 
 Paul's objection, and it was right: every account above reports the gap as
