@@ -1,0 +1,178 @@
+{
+ "room0": {
+  "ours": 0.2695997541695876,
+  "adopted": 0.276913797067298,
+  "theirs": 0.38620724669933226,
+  "gap_cells": 2170,
+  "by_cat": {
+   "unreachable": 0,
+   "near_tie": 195,
+   "bleed": 692,
+   "misplaced": 0,
+   "local_loss": 1283
+  },
+  "recovered_by_cat": {
+   "unreachable": 0,
+   "near_tie": 30,
+   "bleed": 6,
+   "misplaced": 0,
+   "local_loss": 123
+  },
+  "only_ours": 159,
+  "both_wrong": 5892
+ },
+ "room1": {
+  "ours": 0.24525530903762421,
+  "adopted": 0.23121302099890811,
+  "theirs": 0.37025683637289425,
+  "gap_cells": 1221,
+  "by_cat": {
+   "unreachable": 0,
+   "near_tie": 18,
+   "bleed": 570,
+   "misplaced": 0,
+   "local_loss": 633
+  },
+  "recovered_by_cat": {
+   "unreachable": 0,
+   "near_tie": 0,
+   "bleed": 27,
+   "misplaced": 0,
+   "local_loss": 17
+  },
+  "only_ours": 627,
+  "both_wrong": 4330
+ },
+ "room2": {
+  "ours": 0.3365525177405479,
+  "adopted": 0.3568508025202711,
+  "theirs": 0.3288149932862398,
+  "gap_cells": 217,
+  "by_cat": {
+   "unreachable": 0,
+   "near_tie": 21,
+   "bleed": 64,
+   "misplaced": 0,
+   "local_loss": 132
+  },
+  "recovered_by_cat": {
+   "unreachable": 0,
+   "near_tie": 20,
+   "bleed": 0,
+   "misplaced": 0,
+   "local_loss": 5
+  },
+  "only_ours": 817,
+  "both_wrong": 5451
+ },
+ "office0": {
+  "ours": 0.3239312265366527,
+  "adopted": 0.32016606241316525,
+  "theirs": 0.37654558308948066,
+  "gap_cells": 1176,
+  "by_cat": {
+   "unreachable": 0,
+   "near_tie": 71,
+   "bleed": 142,
+   "misplaced": 0,
+   "local_loss": 963
+  },
+  "recovered_by_cat": {
+   "unreachable": 0,
+   "near_tie": 21,
+   "bleed": 5,
+   "misplaced": 0,
+   "local_loss": 7
+  },
+  "only_ours": 209,
+  "both_wrong": 11213
+ },
+ "office1": {
+  "ours": 0.2985789780947906,
+  "adopted": 0.2954581815674707,
+  "theirs": 0.28544768423008277,
+  "gap_cells": 1077,
+  "by_cat": {
+   "unreachable": 0,
+   "near_tie": 53,
+   "bleed": 570,
+   "misplaced": 0,
+   "local_loss": 454
+  },
+  "recovered_by_cat": {
+   "unreachable": 0,
+   "near_tie": 15,
+   "bleed": 31,
+   "misplaced": 0,
+   "local_loss": 8
+  },
+  "only_ours": 37,
+  "both_wrong": 13262
+ },
+ "office2": {
+  "ours": 0.3708884308975044,
+  "adopted": 0.35579352212091114,
+  "theirs": 0.4841862715368444,
+  "gap_cells": 1338,
+  "by_cat": {
+   "unreachable": 0,
+   "near_tie": 82,
+   "bleed": 317,
+   "misplaced": 0,
+   "local_loss": 939
+  },
+  "recovered_by_cat": {
+   "unreachable": 0,
+   "near_tie": 61,
+   "bleed": 10,
+   "misplaced": 0,
+   "local_loss": 138
+  },
+  "only_ours": 528,
+  "both_wrong": 4837
+ },
+ "office3": {
+  "ours": 0.2776645016403599,
+  "adopted": 0.26020771265571596,
+  "theirs": 0.3593215499495895,
+  "gap_cells": 1072,
+  "by_cat": {
+   "unreachable": 0,
+   "near_tie": 42,
+   "bleed": 76,
+   "misplaced": 0,
+   "local_loss": 954
+  },
+  "recovered_by_cat": {
+   "unreachable": 0,
+   "near_tie": 25,
+   "bleed": 0,
+   "misplaced": 0,
+   "local_loss": 147
+  },
+  "only_ours": 106,
+  "both_wrong": 5070
+ },
+ "office4": {
+  "ours": 0.46555473323422214,
+  "adopted": 0.5694926612069061,
+  "theirs": 0.6249733772385364,
+  "gap_cells": 115,
+  "by_cat": {
+   "unreachable": 0,
+   "near_tie": 4,
+   "bleed": 54,
+   "misplaced": 0,
+   "local_loss": 57
+  },
+  "recovered_by_cat": {
+   "unreachable": 0,
+   "near_tie": 0,
+   "bleed": 1,
+   "misplaced": 0,
+   "local_loss": 11
+  },
+  "only_ours": 121,
+  "both_wrong": 5097
+ }
+}
