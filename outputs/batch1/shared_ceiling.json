@@ -1,0 +1,135 @@
+{
+ "totals": {
+  "local_loss": 14134,
+  "W": 8768,
+  "G": 5366,
+  "gap_W": 1089,
+  "shared_W": 7679,
+  "gap_G": 4326,
+  "shared_G": 1040
+ },
+ "per_scene": {
+  "room0": {
+   "local_loss": 1648,
+   "W": 554,
+   "G": 1094,
+   "gap_W": 276,
+   "shared_W": 278,
+   "gap_G": 1007,
+   "shared_G": 87
+  },
+  "room1": {
+   "local_loss": 1150,
+   "W": 609,
+   "G": 541,
+   "gap_W": 141,
+   "shared_W": 468,
+   "gap_G": 492,
+   "shared_G": 49
+  },
+  "room2": {
+   "local_loss": 3155,
+   "W": 2728,
+   "G": 427,
+   "gap_W": 85,
+   "shared_W": 2643,
+   "gap_G": 47,
+   "shared_G": 380
+  },
+  "office0": {
+   "local_loss": 3000,
+   "W": 2075,
+   "G": 925,
+   "gap_W": 117,
+   "shared_W": 1958,
+   "gap_G": 846,
+   "shared_G": 79
+  },
+  "office1": {
+   "local_loss": 488,
+   "W": 87,
+   "G": 401,
+   "gap_W": 70,
+   "shared_W": 17,
+   "gap_G": 384,
+   "shared_G": 17
+  },
+  "office2": {
+   "local_loss": 1975,
+   "W": 1127,
+   "G": 848,
+   "gap_W": 159,
+   "shared_W": 968,
+   "gap_G": 780,
+   "shared_G": 68
+  },
+  "office3": {
+   "local_loss": 2391,
+   "W": 1517,
+   "G": 874,
+   "gap_W": 234,
+   "shared_W": 1283,
+   "gap_G": 720,
+   "shared_G": 154
+  },
+  "office4": {
+   "local_loss": 327,
+   "W": 71,
+   "G": 256,
+   "gap_W": 7,
+   "shared_W": 64,
+   "gap_G": 50,
+   "shared_G": 206
+  }
+ },
+ "headroom": {
+  "room0": {
+   "base": 0.2695997541695876,
+   "fix_their_right": 0.3985773177383232,
+   "fix_everything": 1.0
+  },
+  "room1": {
+   "base": 0.24525530903762421,
+   "fix_their_right": 0.3999390615276838,
+   "fix_everything": 1.0
+  },
+  "room2": {
+   "base": 0.3365525177405479,
+   "fix_their_right": 0.38090581806438867,
+   "fix_everything": 1.0
+  },
+  "office0": {
+   "base": 0.3239312265366527,
+   "fix_their_right": 0.3972890074436848,
+   "fix_everything": 1.0
+  },
+  "office1": {
+   "base": 0.2985789780947906,
+   "fix_their_right": 0.35202143137191877,
+   "fix_everything": 1.0
+  },
+  "office2": {
+   "base": 0.3708884308975044,
+   "fix_their_right": 0.5544855967181574,
+   "fix_everything": 1.0
+  },
+  "office3": {
+   "base": 0.2776645016403599,
+   "fix_their_right": 0.3648198309449183,
+   "fix_everything": 1.0
+  },
+  "office4": {
+   "base": 0.46555473323422214,
+   "fix_their_right": 0.6446442165218927,
+   "fix_everything": 1.0
+  }
+ },
+ "summary": {
+  "gap_pct": 38.31187208150559,
+  "shared_pct": 61.68812791849441,
+  "shared_pct_in_W": 87.57983576642336,
+  "base": 0.32350318141891116,
+  "reachable": 0.43658528504137095,
+  "perfect": 1.0
+ }
+}
