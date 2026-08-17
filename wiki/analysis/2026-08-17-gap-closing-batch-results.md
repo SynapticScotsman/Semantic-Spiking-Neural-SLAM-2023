@@ -102,6 +102,38 @@ representational choice.** Closing the rest of the gap means giving the decode
 locality without giving up the superposition — that is the next research
 question, and it is now measured, not speculative.
 
+### CORRECTED 2026-08-18: the "global mass" mechanism did not survive per-cell measurement
+
+`local_loss_forensics.py` asked, for every local_loss cell, whose observation
+point is actually nearer — measured against the CAPPED stream the trace
+contains (cap 400, reference draw). 14,134 cells:
+
+| branch | share | median d(GT) | median d(winner) | what it means |
+|---|---|---|---|---|
+| winner's point is NEARER | **62%** | 0.26 m | **0.03 m** | the stream's own nearest label is wrong; ANY local decoder over our stream answers the same wrong class. Frontend label placement, not decode. |
+| GT's point is nearer | **38%** | **0.04 m** | 0.15 m | the decode loses despite proximity — see below |
+
+In the 38% branch, none of the candidate mechanisms discriminates: global
+mass is **cap-equalised** (median 400 vs 400), the winner has more obs within
+0.45 m in only 47% (coin flip), within 0.9 m in 50%, and the GT class is more
+spread out in only 46%. What is true: **80% of these cells have the winner's
+point also inside one lambda (0.45 m), and 52% inside two grid cells
+(0.16 m)**. The competition happens at cm scales INSIDE the kernel width,
+where lambda cannot tell 4 cm from 15 cm — while their continuous point cloud
+resolves it exactly. sofa→cushion (physically interleaved objects) alone is
+29% of this branch.
+
+So the paragraph above is retracted as a *mechanism*: the 65% is not "global
+mass beats local density". It is (a) wrong local labels in the shared stream,
+62%, which no decode can fix, plus (b) sub-resolution ties, 38%, which are a
+*resolution* problem (lambda and grid), not an evidence-globality problem.
+The robustness half of the story survives — kernel smoothing is still why
+degradation is graceful — but the research question changes from "give the
+decode locality" to **"resolve below lambda without giving up the kernel"**
+(per-class lambda for compact classes — h3, UNDECIDABLE at batch-1 power — is
+the natural candidate, now with a mechanism-level reason to retest it
+targeted at interleaved compact classes). Stated as hypothesis, not result.
+
 ## Blocker-3 killers (2026-08-17 evening): both routes FAIL their gates
 
 Scoped by a 14-agent workflow (4 forensic lenses, adversarial verification: 2 of
