@@ -405,6 +405,50 @@ are the REAL Lab scan, n=10.
 - Everything ran CPU-local off a warm cache: Stage 1 ~38 min, Stage 2 ~4 min.
 
 
+## The frontend is the binding constraint (2026-08-18) — the number to cite
+
+Asked whether cluttered indoor scenes strain the memory's CAPACITY. They do
+not; they strain its RESOLUTION, and the frontend dominates both. Measured by
+`collab_tasks/batch1/proximity_ceiling.py`, 8 cgfront scenes:
+
+| quantity | value |
+|---|---|
+| eval points whose own GT class is ABSENT from the observation stream entirely | **74.1%** |
+| eval points with ANY observation of their own GT class within one lambda (0.45 m) | **21.3%** |
+| our wrong cells that ConceptGraphs also gets wrong (shared input limit) | **61.7%** |
+| ceiling for ANY decoder over our stream (kNN-5, unbounded storage) | **0.3844** |
+| ConceptGraphs | 0.4020 |
+
+**74.1% of the metric is unreachable for our memory because the detector never
+reported that class at that place.** No representation can decode an atom that
+was never bound into it. This is the single strongest number for the claim that
+the vision frontend, not the memory, is the binding constraint — and it is
+measured on THEIR SAM+CLIP frontend, so it is not an artifact of our detector.
+
+Note the two ceilings are different things and both matter: 0.3844 is what a
+perfect READOUT over this stream could reach (so ~0.018 of the gap is
+information the stream never carried), while 74.1% is how much of the metric
+the stream never addressed at all.
+
+### Why clutter is a lambda problem, not a D problem
+
+Capacity in the VSA sense scales with the number of distinct CLASS ATOMS in
+the bundle (7-16 here), not with the number of insertions (~13k), because
+`T = sum_c sem[c] * sum_{o in c} phi(x_o)` collapses all observations of a
+class into one bound term. Nine cushions cost what one cushion costs.
+
+Clutter therefore does not raise the superposition load. What it does is place
+distinct objects closer together than the FPE similarity kernel can separate:
+k(d) has half-height at 27.6 cm for lambda = 0.45 m, and `sofa -> cushion`
+(physically interleaved) is 29% of the GT-nearer failure branch, with 52% of
+those cells having the competitor inside two grid cells (0.16 m).
+
+**D controls crosstalk; lambda controls resolution.** Raising D improves SNR
+against interference but does not narrow the kernel, which is why mAcc is flat
+from 4 KB to 128 KB. And lambda cannot simply be shrunk: `lambda_sweep8.py`
+shows 0.45 is a sharp optimum on both metrics across 8/8 scenes, with halving
+or doubling costing ~0.25 mAcc.
+
 ## RETRACTION + RE-BASELINE (2026-08-18, evening)
 
 Two independent things landed together. Both change what can be quoted.
