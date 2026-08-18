@@ -115,8 +115,15 @@ Seven sentences, one job each:
     datasets and the baselines --- and say how you strengthened the
     opposition: reproduced their published result first, matched operating
     points, handed them privileged information.
-  \item \textbf{The result, including where it loses.} A trade-off stated in
-    one sentence is far stronger than a win stated in two.
+  \item \textbf{The result, with its boundary condition.} Give the win and
+    the axis it was traded on --- the scope within which the claim holds ---
+    rather than the bare deficit. ``Within $X$ of the dense baseline at a
+    thousandth the memory, and ahead of it in every degraded condition
+    tested'' is honest, quotable, and standard. A \emph{lost comparison}
+    belongs in the results table with a diagnosis, not in the abstract:
+    reviewers have little precedent for reading an abstract-level concession
+    charitably, and it displaces the sentence that should be selling the
+    work.
   \item \textbf{The thesis, coined.} The sentence you want quoted.
 \end{enumerate}
 
@@ -242,6 +249,7 @@ answered --- does more for comprehension than a page of generality.
 
 % =========================================================================
 \section{Results}
+\label{sec:results}
 
 The results section is not a report of what you ran. It is a sequence of
 claims, each with evidence attached.
@@ -320,11 +328,25 @@ component doing what we claim?} Two useful disciplines:
 
 \subsection*{Losses and negative results}
 
-Put them in the main table, with a one-sentence mechanistic diagnosis. A loss
-you explain becomes evidence that you understand the system; a loss the
-reviewer finds becomes evidence that you did not. If the loss is consistent
-with your thesis --- you traded accuracy for size, and here is the accuracy ---
-then reporting it \emph{is} the argument, not a concession to it.
+Put them in the main table, with a one-sentence mechanistic diagnosis in the
+results text and the mechanism echoed in the discussion. A loss you explain
+becomes evidence that you understand the system; a loss the reviewer finds
+becomes evidence that you did not. If the loss is consistent with your thesis
+--- you traded accuracy for size, and here is the accuracy --- then reporting
+it \emph{is} the argument, not a concession to it.
+
+\lead{Diagnose, do not merely disclose.} Leaving a lost row in a table
+unremarked is survivable but wasteful: it reads as an oversight rather than a
+finding. Naming the mechanism converts the same number into a demonstration
+that you know where your method's boundary is, and pre-empts the reviewer who
+was about to point it out.
+
+\lead{Placement matters more than candour.} Be candid in the results and the
+discussion, where a reader has the context to weigh the loss. Do not lead the
+abstract with a deficit: state the trade axis and its scope condition there
+instead. Honesty about a boundary reads as command of the problem; honesty
+about a shortfall, before the reader knows what was bought with it, reads as
+weakness.
 
 Distinguish clearly between three different statements, because they carry
 different weight: \emph{we measured no effect} (with the power to detect one),
@@ -407,6 +429,115 @@ not a summary of the paper --- the reader has just read the paper.
 \end{itemize}
 
 % =========================================================================
+\section{Getting accepted in a track}
+
+Everything above helps a paper be admired. Acceptance is a different and
+earlier problem, decided by a handful of anonymous reviewers working from a
+scoring form, and the writing that survives that process is not quite the
+writing that wins prizes. Prize-winning prose is bold and coins a frame;
+accepted prose is bold \emph{and} defensive --- it closes the objection
+before the reviewer has to raise it. A student's first paper needs the second
+skill more than the first.
+
+\lead{Your first keyword chooses your reviewers.} At IEEE conferences the
+author's first keyword routes the paper to an Editor, who selects the
+Associate Editor, who recruits the reviewers --- and scores are then
+normalised against the other papers filed under that keyword. That single
+dropdown therefore decides both who judges the work and what it is judged
+against. Choose the community that will recognise your contribution
+\emph{as} a contribution: a paper about memory efficiency filed under a
+keyword whose other submissions are all accuracy papers will be read by
+people for whom your headline result is a loss. This is the highest-leverage
+thirty seconds of the whole submission.
+
+\lead{Assume there is no second turn.} Some venues run an author-response
+phase; others do not, and at those the submitted PDF is the only thing that
+will ever argue your case. Check the call for papers, and if there is no
+rebuttal, write as though every reviewer objection must be answered inside
+the paper. This is what makes the in-text objection-answering habit
+(Section~\ref{sec:results}) a scoring matter rather than a stylistic one.
+
+\subsection*{Learn the conventions from the tables, not the prose}
+
+The single most useful thing you can do before designing an experiment:
+\textbf{take the five papers whose rows you intend your results to sit
+beside, and read their tables --- the headers, the units, the scene lists,
+the columns that always exist --- then adopt those axes exactly.}
+
+A track's real expectations live in its table headers. If the field reports
+median error in centimetres over all seven scenes of a benchmark, and you
+report mean error in metres on one scene, your number is not worse --- it is
+\emph{uncomparable}, and an uncomparable number cannot be credited however
+good it is. Reviewers experience this as an inability to place you, which
+converts into a middling score rather than an argument.
+
+Two corollaries:
+
+\begin{itemize}
+  \item \textbf{Claiming a benchmark's axis obliges you to cite the line of
+    work that owns it.} Reporting on a standard dataset while ignoring the
+    method family that defined its numbers reads as unfamiliarity with the
+    field, which is more damaging than a weak result.
+  \item \textbf{Report the whole benchmark, not the convenient subset.} One
+    scene, one metric, or one parameter setting is not a result, and a
+    partial table invites the reviewer to assume the omitted cases are worse.
+\end{itemize}
+
+\subsection*{Defuse your subfield's standing objections}
+
+Every subfield has three or four objections it raises reflexively. They are
+discoverable: read recent accepted papers and notice what they pre-empt
+without being asked. The presence of a defusing move is visible even when the
+objection is not. Then perform the same move, explicitly. The general
+patterns:
+
+\begin{itemize}
+  \item \textbf{``Compared against what, in what units?''} Any efficiency or
+    compactness claim belongs as a \emph{column in the same table} as the
+    accuracy number, on the same data, beside the baselines --- never as an
+    adjective in prose. And if you claim a resource, you owe its companion:
+    a memory claim without a latency number invites the suspicion that the
+    latency is bad.
+  \item \textbf{``It only works at the scale you tested.''} Give one
+    stress axis --- performance against scene size, object count, sequence
+    length --- even if it degrades. A measured degradation curve reads as
+    characterisation; silence reads as a limit you are hiding.
+  \item \textbf{``The gain comes from a component, not your contribution.''}
+    Hold everything else fixed and vary only your part. If your system
+    consumes another system's outputs, run both backends on the identical
+    stream and say so in the abstract, not in a mid-section aside.
+  \item \textbf{``No real-robot results.''} If your named comparison has
+    hardware and you do not, the asymmetry is visible. Short of a robot, use
+    real recorded sensor data rather than simulation alone, and use the video
+    attachment.
+\end{itemize}
+
+\subsection*{Do not import another venue's shape}
+
+Venues differ in ways that are invisible until they cost you. Page limits may
+or may not include references; supplementary material may be unlimited,
+capped, or forbidden; a Limitations section is mandatory at some venues and
+merely optional at others; review may be single- or double-anonymous. A paper
+shaped for a venue that excludes references from its limit and permits a large
+appendix can carry one to two pages more content than the same work at a venue
+that counts everything --- so a structure copied across without checking will
+either overflow or waste space.
+
+Where a video is permitted it is often the only overflow channel available.
+Make it self-contained and free of identifying branding, and make sure the
+paper stands without it: reviewers are not always required to watch.
+
+\subsection*{What a score means}
+
+Review scales run from a clear accept, through a wide borderline band, to a
+clear reject. Most papers land in the borderline band, and most decisions are
+made there --- which means the marginal effort is best spent not on making a
+good result better, but on removing the specific reasons a sympathetic
+reviewer would still hesitate: an uncomparable metric, a missing baseline, an
+unexplained loss, a claim without a condition, a limitation the reviewer
+found before you admitted it.
+
+% =========================================================================
 \section{Anti-patterns}
 
 \begin{itemize}
@@ -457,17 +588,47 @@ Run against a draft that already exists, roughly in order of value per minute.
   \ck No promotional adjectives; no mechanism-free verbs; no throat-clearing.
 \end{itemize}
 
+\noindent Before submitting:
+
+\begin{itemize}[leftmargin=*]
+  \ck Metrics, units and dataset splits match the papers your results sit
+    beside --- checked against their tables, not their prose.
+  \ck The benchmark is reported whole, not as a convenient subset.
+  \ck The work that owns each benchmark you use is cited and, where
+    relevant, compared against.
+  \ck Your subfield's three standing objections are each answered in the
+    text, unprompted.
+  \ck Any resource claim is a table column, with its companion measurement
+    (memory with latency, speed with accuracy).
+  \ck One stress axis reported, even where performance degrades.
+  \ck First keyword chosen for the community that will recognise the
+    contribution.
+  \ck Every reviewer objection you can predict is answered inside the paper,
+    on the assumption that there is no rebuttal.
+\end{itemize}
+
 % =========================================================================
 \section*{Before submission}
 \addcontentsline{toc}{section}{Before submission}
 
-Check the current call for papers rather than trusting a previous cycle:
-the page limit and whether references count toward it; whether review is
-anonymous, and what must therefore be stripped from the author block,
-acknowledgements, grant numbers and figure captions; whether supplementary
-material is permitted and reviewed, or whether everything load-bearing must
-sit inside the page limit; any disclosure requirements; and whether a
-preprint or a version carrying a DOI affects eligibility.
+Check the current call for papers rather than trusting a previous cycle, or
+a colleague's memory of one:
+
+\begin{itemize}
+  \item the page limit, and whether references count toward it;
+  \item whether review is anonymous, and what must therefore be stripped from
+    the author block, acknowledgements, grant numbers, figure captions and
+    self-citations;
+  \item whether supplementary material is permitted and whether reviewers are
+    obliged to look at it, or whether everything load-bearing must sit inside
+    the page limit;
+  \item whether there is an author-response phase, since its absence means
+    every objection must be pre-empted in the submitted PDF;
+  \item video specifications, if a video is allowed;
+  \item any disclosure requirements, including for AI tool use;
+  \item whether a preprint is permitted, and whether a prior version carrying
+    a DOI makes the work ineligible.
+\end{itemize}
 
 \end{document}
 
