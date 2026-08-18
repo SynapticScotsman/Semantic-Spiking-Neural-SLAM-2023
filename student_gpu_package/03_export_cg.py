@@ -195,32 +195,44 @@ def main():
     _rss("after freeing their map")
 
     if len({r["cls"] for r in obj_rows}) <= 1 and feats and feats[0] is not None:
-        import torch, open_clip
-        try:
-            from conceptgraph.dataset.replica_constants import (
-                REPLICA_CLASSES, REPLICA_EXISTING_CLASSES)
-            class_names = [REPLICA_CLASSES[i] for i in REPLICA_EXISTING_CLASSES]
-        except Exception as e:
-            raise SystemExit(f"cannot import their class list: {e}")
+        import torch
+
+        # ---- cache FIRST ----------------------------------------------
+        # The cache holds BOTH the class list and its text embeddings, and
+        # neither depends on the scene. Checking it before any import means a
+        # cache hit needs neither `conceptgraph` NOR ViT-H-14 -- which matters
+        # because both have failed mid-run: the import raised
+        # "No module named 'conceptgraph'" on one scene while succeeding on
+        # its neighbours, and loading the model per scene is what OOM-kills a
+        # standard Colab runtime.
+        _cache = os.path.join(PKG, "handoff", "cg_clip_text.npz")
+        class_names, _tf_cached = None, None
+        if os.path.exists(_cache):
+            try:
+                _z = np.load(_cache, allow_pickle=True)
+                class_names = [str(c) for c in _z["class_names"]]
+                _tf_cached = _z["text_ft"]
+                print(f"reusing cached class list + text embeddings "
+                      f"({_tf_cached.shape}) -- conceptgraph and ViT-H-14 "
+                      f"BOTH skipped", flush=True)
+            except Exception as e:
+                print(f"text cache unreadable ({e}) -- recomputing")
+                class_names, _tf_cached = None, None
+
+        if class_names is None:
+            try:
+                from conceptgraph.dataset.replica_constants import (
+                    REPLICA_CLASSES, REPLICA_EXISTING_CLASSES)
+                class_names = [REPLICA_CLASSES[i]
+                               for i in REPLICA_EXISTING_CLASSES]
+            except Exception as e:
+                raise SystemExit(
+                    f"cannot import their class list: {e}. "
+                    f"       No text cache at {_cache} either. Run ONE scene "
+                    f"with conceptgraph importable to build the cache; every "
+                    f"later scene then needs neither.")
         print(f"class-agnostic map detected -> assigning labels from clip_ft "
               f"against {len(class_names)} Replica classes, their method")
-        # ---- text-embedding cache -------------------------------------
-        # The 51 class prompts do not depend on the scene, so ViT-H-14 only
-        # needs to be loaded ONCE across all 8 scenes. On a standard Colab
-        # runtime, loading it per scene alongside their map is what triggers
-        # the OOM kill. Cache lives beside handoff/ so it survives per-scene
-        # processes.
-        _cache = os.path.join(PKG, "handoff", "cg_clip_text.npz")
-        _tf_cached = None
-        if os.path.exists(_cache):
-            _z = np.load(_cache, allow_pickle=True)
-            if list(_z["class_names"]) == list(class_names):
-                _tf_cached = _z["text_ft"]
-                print(f"reusing cached class text embeddings "
-                      f"({_tf_cached.shape}) -- ViT-H-14 NOT loaded",
-                      flush=True)
-            else:
-                print("text cache present but class list differs -- recomputing")
 
         dev = "cuda" if torch.cuda.is_available() else "cpu"
         if _tf_cached is None:
@@ -228,6 +240,7 @@ def main():
                   + ("" if dev == "cuda" else
                      "  <- NO GPU: ViT-H-14 will take ~2.5 GB of SYSTEM RAM"),
                   flush=True)
+            import open_clip
             model, _, _ = open_clip.create_model_and_transforms(
                 "ViT-H-14", "laion2b_s32b_b79k")
             model = model.to(dev).eval()
