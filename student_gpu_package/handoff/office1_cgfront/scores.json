@@ -1,0 +1,47 @@
+{
+  "scene": "office1_cgfront",
+  "scorer": "reimplementation (formulas identical to their eval)",
+  "n_points": 30000,
+  "conceptgraphs": {
+    "their_protocol": {
+      "mAcc": 0.2854,
+      "fmiou": 0.1489,
+      "gt_classes": 17,
+      "excluded": [
+        "other",
+        "floor",
+        "wall",
+        "ceiling",
+        "door",
+        "window"
+      ]
+    },
+    "all_classes": {
+      "mAcc": 0.2426,
+      "fmiou": 0.0435,
+      "gt_classes": 20
+    },
+    "unmatched_frac": 0.0
+  },
+  "vsa": {
+    "their_protocol": {
+      "mAcc": 0.2986,
+      "fmiou": 0.0982,
+      "gt_classes": 17,
+      "excluded": [
+        "other",
+        "floor",
+        "wall",
+        "ceiling",
+        "door",
+        "window"
+      ]
+    },
+    "all_classes": {
+      "mAcc": 0.2538,
+      "fmiou": 0.0391,
+      "gt_classes": 20
+    },
+    "unmatched_frac": 0.0
+  }
+}

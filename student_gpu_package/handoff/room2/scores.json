@@ -1,0 +1,26 @@
+{
+  "scene": "room2",
+  "scorer": "reimplementation (formulas identical to their eval)",
+  "n_points": 30000,
+  "vsa": {
+    "their_protocol": {
+      "mAcc": 0.0742,
+      "fmiou": 0.0979,
+      "gt_classes": 15,
+      "excluded": [
+        "other",
+        "floor",
+        "wall",
+        "ceiling",
+        "door",
+        "window"
+      ]
+    },
+    "all_classes": {
+      "mAcc": 0.0765,
+      "fmiou": 0.037,
+      "gt_classes": 19
+    },
+    "unmatched_frac": 0.0
+  }
+}

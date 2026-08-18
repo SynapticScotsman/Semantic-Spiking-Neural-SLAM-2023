@@ -1,0 +1,26 @@
+{
+  "scene": "office4",
+  "scorer": "reimplementation (formulas identical to their eval)",
+  "n_points": 30000,
+  "vsa": {
+    "their_protocol": {
+      "mAcc": 0.2283,
+      "fmiou": 0.0626,
+      "gt_classes": 10,
+      "excluded": [
+        "other",
+        "floor",
+        "wall",
+        "ceiling",
+        "door",
+        "window"
+      ]
+    },
+    "all_classes": {
+      "mAcc": 0.1528,
+      "fmiou": 0.011,
+      "gt_classes": 15
+    },
+    "unmatched_frac": 0.0
+  }
+}

@@ -1,0 +1,64 @@
+{
+ "per_scene": [
+  {
+   "scene": "room0",
+   "macc": 0.0914,
+   "fmiou": 0.0768,
+   "ncls": 24,
+   "unmatched": 0.0
+  },
+  {
+   "scene": "room1",
+   "macc": 0.1464,
+   "fmiou": 0.1518,
+   "ncls": 20,
+   "unmatched": 0.0
+  },
+  {
+   "scene": "room2",
+   "macc": 0.0742,
+   "fmiou": 0.0979,
+   "ncls": 15,
+   "unmatched": 0.0
+  },
+  {
+   "scene": "office0",
+   "macc": 0.2194,
+   "fmiou": 0.1705,
+   "ncls": 19,
+   "unmatched": 0.0
+  },
+  {
+   "scene": "office1",
+   "macc": 0.1208,
+   "fmiou": 0.0722,
+   "ncls": 17,
+   "unmatched": 0.0
+  },
+  {
+   "scene": "office2",
+   "macc": 0.0656,
+   "fmiou": 0.0917,
+   "ncls": 15,
+   "unmatched": 0.0
+  },
+  {
+   "scene": "office3",
+   "macc": 0.1897,
+   "fmiou": 0.1373,
+   "ncls": 22,
+   "unmatched": 0.0
+  },
+  {
+   "scene": "office4",
+   "macc": 0.2283,
+   "fmiou": 0.0626,
+   "ncls": 10,
+   "unmatched": 0.0
+  }
+ ],
+ "mean_macc": 0.14197500000000002,
+ "mean_fmiou": 0.1076,
+ "cgfront_mean_macc": 0.32350318141891116,
+ "note": "standalone = our YOLO boxes + CLIP relabel; NOT comparable to the 0.402 head-to-head"
+}

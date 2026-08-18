@@ -1,0 +1,47 @@
+{
+  "scene": "room0_cgfront",
+  "scorer": "reimplementation (formulas identical to their eval)",
+  "n_points": 30000,
+  "conceptgraphs": {
+    "their_protocol": {
+      "mAcc": 0.3862,
+      "fmiou": 0.5338,
+      "gt_classes": 24,
+      "excluded": [
+        "other",
+        "floor",
+        "wall",
+        "ceiling",
+        "door",
+        "window"
+      ]
+    },
+    "all_classes": {
+      "mAcc": 0.3196,
+      "fmiou": 0.1948,
+      "gt_classes": 29
+    },
+    "unmatched_frac": 0.003
+  },
+  "vsa": {
+    "their_protocol": {
+      "mAcc": 0.2696,
+      "fmiou": 0.3931,
+      "gt_classes": 24,
+      "excluded": [
+        "other",
+        "floor",
+        "wall",
+        "ceiling",
+        "door",
+        "window"
+      ]
+    },
+    "all_classes": {
+      "mAcc": 0.2231,
+      "fmiou": 0.133,
+      "gt_classes": 29
+    },
+    "unmatched_frac": 0.0
+  }
+}
