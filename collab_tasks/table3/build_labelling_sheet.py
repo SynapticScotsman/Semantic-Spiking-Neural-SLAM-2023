@@ -35,7 +35,8 @@ os.chdir(ROOT)
 W, H = 1200, 680
 FX = FY = 600.0
 CX, CY = 599.5, 339.5
-EX = ("other", "floor", "wall", "ceiling", "door", "window")
+EX = ("other", "floor", "wall", "ceiling", "door", "window",
+      "class_-1")   # class_-1: Replica instances left unclassified
 SCENES = ["room0", "room1", "room2",
           "office0", "office1", "office2", "office3", "office4"]
 POSE_STRIDE = 10          # score every 10th pose when hunting the best frame

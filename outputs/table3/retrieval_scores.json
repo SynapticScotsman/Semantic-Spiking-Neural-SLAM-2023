@@ -1043,7 +1043,7 @@
    "picked": [
     "table",
     "switch",
-    "class_-1"
+    "tv-screen"
    ],
    "in_trace": false,
    "correct_class": false,
@@ -1527,7 +1527,7 @@
    "picked": [
     "table",
     "bottle",
-    "class_-1"
+    "tv-screen"
    ],
    "in_trace": true,
    "correct_class": false,
@@ -2106,8 +2106,8 @@
    "answerable": true,
    "picked": [
     "table",
-    "class_-1",
-    "tv-screen"
+    "tv-screen",
+    "clock"
    ],
    "in_trace": true,
    "correct_class": false,

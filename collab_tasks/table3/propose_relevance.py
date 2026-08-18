@@ -31,7 +31,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 os.chdir(ROOT)
 sys.path.insert(0, ROOT)
 
-from collab_tasks.batch1.common import CG_EXCLUDE_6, SCENES  # noqa: E402
+from collab_tasks.batch1.common import (  # noqa: E402
+    CG_EXCLUDE_6, GT_UNLABELLED, SCENES)
 
 ROOM_Q = {
     "A1": "Somewhere to store decorative cups",
@@ -128,7 +129,9 @@ def main():
         kind = "room" if s.startswith("room") else "office"
         rel = ROOM_REL if kind == "room" else OFFICE_REL
         inst = json.load(open(f"outputs/replica_{s}/gt_instances.json"))["instances"]
-        classes = sorted({g["cls"] for g in inst if g["cls"] not in CG_EXCLUDE_6})
+        classes = sorted({g["cls"] for g in inst
+                         if g["cls"] not in CG_EXCLUDE_6
+                         and g["cls"] not in GT_UNLABELLED})
         per_q, nrel, nlow = {}, 0, 0
         for qid in rel:
             hits = {c: rel[qid][c] for c in classes if c in rel[qid]}

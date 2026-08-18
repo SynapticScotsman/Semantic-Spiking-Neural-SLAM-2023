@@ -235,8 +235,17 @@ def main():
                 ro = o / base_o if base_o else float("nan")
                 print(f"    {lv:>12.2f}{t:>10.3f}{o:>9.3f}{o-t:>+8.3f}"
                       f"{rt:>12.1%}{ro:>10.1%}", flush=True)
+                # Keep the per-seed spread: the paper's claim is that the
+                # crossover is ABSOLUTE, and margins can be as small as
+                # +0.013 (room1/drop) against an across-seed sd of ~0.017.
+                # Without these fields a crossover cannot be told from noise.
                 rows.append(dict(level=lv, theirs=t, ours=o,
-                                 theirs_rel=rt, ours_rel=ro))
+                                 theirs_rel=rt, ours_rel=ro,
+                                 n_seeds=int(args.seeds),
+                                 theirs_sd=float(np.std(tm, ddof=1)) if len(tm) > 1 else 0.0,
+                                 ours_sd=float(np.std(om, ddof=1)) if len(om) > 1 else 0.0,
+                                 theirs_seeds=[float(v) for v in tm],
+                                 ours_seeds=[float(v) for v in om]))
             results[s][kind] = rows
             worst = rows[-1]
             verdict = ("OURS degrades more gracefully"

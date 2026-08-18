@@ -21,10 +21,12 @@ after the 2026-08-17 adversarial audit:
 from __future__ import annotations
 
 import importlib.util
+import inspect
 import json
 import os
 import sys
 import types
+import zlib
 
 import numpy as np
 
@@ -82,6 +84,18 @@ def _load_score_mod():
 
 _SC = _load_score_mod()
 CG_EXCLUDE_6 = _SC.CG_EXCLUDE_6
+
+# Replica ships object instances its own annotators never classified:
+# info_semantic.json lists them as class_name "undefined", class_id -1, and
+# gt_instances.json surfaces them as "class_-1". They ARE real objects (the
+# room0 door, a lamp shade, a thermostat, a pot -- rendered in
+# outputs/crops_minus1/), just unlabelled, and they carry ZERO eval points, so
+# they never touch a score. But anything that builds a class list from
+# gt_instances.json picks them up as a class that can never be observed and
+# therefore scores a guaranteed zero, padding the denominator. Filter them
+# there. NOT added to CG_EXCLUDE_6, which must stay ConceptGraphs' own six
+# names for the protocol to match.
+GT_UNLABELLED = ("class_-1",)
 
 
 def score(gt, pred):
@@ -170,16 +184,44 @@ def class_fields(data, grid=GRID, cap=CAP, lx=LX, ly=LY,
     return F, names, iy * grid + ix
 
 
+def _build_sig():
+    """Short signature of everything that determines a default build.
+
+    The cache used to be keyed on (scene, tuple index) alone. That is fine for
+    parameters -- they live in the tuple -- but blind to a change in the build
+    CODE. When class_phasors moved to name-hashed keys the cache happily served
+    fields built by the old codebook, and the re-run came back bitwise identical
+    to the pre-change numbers: a no-op that looked like evidence the change was
+    free. rebaseline.py guards this by refusing to run against a populated
+    cache, but that is a manual step outside the read path.
+
+    Hashing the source of the build functions closes it automatically: edit the
+    codebook or the bundling rule and the key moves, so a stale entry is missed
+    rather than silently returned. Cheap -- computed once per process.
+    """
+    src = "".join(inspect.getsource(f) for f in (class_phasors, cap_per_class,
+                                                 _bundle, class_fields))
+    params = repr((HD, GRID, CAP, LX, LY))
+    return f"{zlib.crc32((src + params).encode('utf-8')):08x}"
+
+
+_SIG = None
+
+
 def default_fields(data, ti=0):
     """Baseline fields for seed tuple ti, disk-cached (Amendment A7). The
-    cache is keyed by (scene, tuple index) and holds ONLY default-parameter
-    builds -- variant builds are never cached, so no variant can leak into
-    another's baseline."""
+    cache is keyed by (scene, tuple index, build signature) and holds ONLY
+    default-parameter builds -- variant builds are never cached, so no variant
+    can leak into another's baseline, and no change to the build path can be
+    served from a pre-change entry."""
+    global _SIG
     s = data["scene"]
     if s.startswith("_"):        # synthetic scenes are never cached
         return class_fields(data, seeds=SEEDS[ti])
+    if _SIG is None:
+        _SIG = _build_sig()
     os.makedirs(CACHE_DIR, exist_ok=True)
-    p = f"{CACHE_DIR}/{s}_t{ti}.npz"
+    p = f"{CACHE_DIR}/{s}_t{ti}_{_SIG}.npz"
     if os.path.exists(p):
         z = np.load(p, allow_pickle=True)
         return z["F"], [str(x) for x in z["names"]], z["cell"]

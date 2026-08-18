@@ -40,7 +40,8 @@ os.chdir(ROOT)
 sys.path.insert(0, ROOT)
 
 from collab_tasks.batch1.common import (  # noqa: E402
-    CG_EXCLUDE_6, GRID, SCENES, SEEDS, default_fields, load_scene)
+    CG_EXCLUDE_6, GRID, GT_UNLABELLED, SCENES, SEEDS, default_fields,
+    load_scene)
 from vsa_cognitive_mapping.object_grounding import field_peaks  # noqa: E402
 
 RADII = (0.5, 0.75, 1.0)
@@ -91,7 +92,8 @@ def main():
         gx = np.linspace(xyz[:, a].min(), xyz[:, a].max(), GRID)
         gy = np.linspace(xyz[:, b].min(), xyz[:, b].max(), GRID)
         inst = json.load(open(f"outputs/replica_{s}/gt_instances.json"))["instances"]
-        inst = [g for g in inst if g["cls"] not in CG_EXCLUDE_6]
+        inst = [g for g in inst if g["cls"] not in CG_EXCLUDE_6
+                and g["cls"] not in GT_UNLABELLED]
 
         for qid in L["queries"][kind]:
             rel_cls = set(sc["proposed"][qid])

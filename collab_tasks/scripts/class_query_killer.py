@@ -33,6 +33,9 @@ from vsa_cognitive_mapping.object_grounding import field_peaks  # noqa: E402
 
 # ConceptGraphs' n_exclude 6 list -- their protocol, not ours (05_score.py:61)
 CG_EXCLUDE_6 = ("other", "floor", "wall", "ceiling", "door", "window")
+# Replica instances its annotators left unclassified; real objects, but
+# unobservable by construction, so they pad the query denominator.
+GT_UNLABELLED = ("class_-1",)
 RADII = (0.5, 0.75, 1.0)   # repo-local, from instance_recall.py:79; swept
 K = 3
 
@@ -42,7 +45,7 @@ def gt_targets(scene, a, b):
     raw = json.load(open(f"outputs/replica_{scene}/gt_instances.json"))
     out = {}
     for g in raw["instances"]:
-        if g["cls"] in CG_EXCLUDE_6:
+        if g["cls"] in CG_EXCLUDE_6 or g["cls"] in GT_UNLABELLED:
             continue
         p = [g["x"], g["y"], g["z"]]
         out.setdefault(g["cls"], []).append((p[a], p[b]))
