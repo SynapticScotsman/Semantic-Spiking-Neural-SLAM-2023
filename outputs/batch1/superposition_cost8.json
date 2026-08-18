@@ -1,0 +1,55 @@
+{
+ "per_scene": [
+  {
+   "scene": "room0",
+   "n_classes": 16,
+   "superposed": 0.2586383865904069,
+   "per_class": 0.3025076009811101
+  },
+  {
+   "scene": "room1",
+   "n_classes": 10,
+   "superposed": 0.23468279062938743,
+   "per_class": 0.27986261438560717
+  },
+  {
+   "scene": "room2",
+   "n_classes": 10,
+   "superposed": 0.35904489362604547,
+   "per_class": 0.3367567604405636
+  },
+  {
+   "scene": "office0",
+   "n_classes": 12,
+   "superposed": 0.3092156860431173,
+   "per_class": 0.2932733696258591
+  },
+  {
+   "scene": "office1",
+   "n_classes": 8,
+   "superposed": 0.24899960767183926,
+   "per_class": 0.29764509252178495
+  },
+  {
+   "scene": "office2",
+   "n_classes": 11,
+   "superposed": 0.37394514674217505,
+   "per_class": 0.39444277324470395
+  },
+  {
+   "scene": "office3",
+   "n_classes": 11,
+   "superposed": 0.2707229050529145,
+   "per_class": 0.258927595004422
+  },
+  {
+   "scene": "office4",
+   "n_classes": 7,
+   "superposed": 0.502867810893075,
+   "per_class": 0.5547383230905822
+  }
+ ],
+ "mean_superposed": 0.31976465340612015,
+ "mean_per_class": 0.3397692661618291,
+ "cost_of_superposition": 0.020004612755708973
+}
