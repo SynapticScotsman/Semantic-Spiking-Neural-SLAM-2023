@@ -1,13 +1,10 @@
-% =========================================================================
-% Structure and narrative in robotics award papers -- a revision guide.
+﻿% =========================================================================
+% Writing the robotics paper -- a craft guide.
 %
-% General craft advice, distilled from a survey of 47 award papers
-% (ICRA / RSS / CoRL / T-RO, 2022-2025) carried out 2026-08-18. This is the
-% venue-and-craft half of that survey; the instantiation for any particular
-% submission belongs in that paper's own working notes, not here.
-%
-% Companion HTML version (same content, linked references):
-%   docs/sites/award_paper_template.html
+% Section-by-section guidance on what each part of a paper must do and how
+% to write it. Drawn from a survey of 47 ICRA/RSS/CoRL/T-RO award papers
+% (2022-2025); the survey's own provenance, evidence grading and reference
+% table live in the companion HTML, not here.
 %
 % Compile:  pdflatex award_paper_guide.tex   (twice, for the ToC)
 % =========================================================================
@@ -27,426 +24,458 @@
 \usepackage[hidelinks]{hyperref}
 
 \definecolor{crimson}{HTML}{9D2235}
-\definecolor{good}{HTML}{2F6B46}
-\definecolor{warn}{HTML}{8A5A12}
-\hypersetup{colorlinks=true,linkcolor=crimson,urlcolor=crimson,
-            citecolor=crimson}
+\hypersetup{colorlinks=true,linkcolor=crimson,urlcolor=crimson}
 
-\newcommand{\vtag}[1]{{\footnotesize\textcolor{good}{\textsc{#1}}}}
-\newcommand{\atag}[1]{{\footnotesize\textcolor{crimson}{\textsc{#1}}}}
-\newcommand{\jtag}[1]{{\footnotesize\textcolor{warn}{\textsc{#1}}}}
+\newcommand{\lead}[1]{\medskip\noindent\textbf{#1}\quad}
 \newcommand{\ck}{\item[$\square$]}
 \setlist[itemize]{itemsep=3pt,parsep=0pt,topsep=4pt}
 \setlist[enumerate]{itemsep=3pt,parsep=0pt,topsep=4pt}
 
-\title{\vspace{-1.4cm}Structure and Narrative in Robotics Award Papers\\
-  \large A revision guide distilled from 47 award papers, 2022--2025}
+\title{\vspace{-1.4cm}Writing the Robotics Paper\\
+  \large What each section must do, and how to write it}
 \author{}
-\date{18 August 2026}
+\date{}
 
 \begin{document}
 \maketitle
-\vspace{-1.6cm}
+\vspace{-1.8cm}
 
 \begin{abstract}
-\noindent What ICRA, RSS, CoRL and T-RO award winners actually do, as
-opposed to what paper-writing advice usually says they do: section budgets,
-the narrative arc, title and abstract construction, and the style rules that
-separate winners from competent-but-unremarkable submissions. Every claim is
-tagged by how well the evidence supports it, and the closing section lists
-the reasons not to trust it too far. Use it as a revision checklist against
-a draft you have already written, not as a template to write into.
+\noindent Section-by-section craft guidance: what job each part of a paper
+performs, what a good sentence in it looks like, and the specific habits that
+separate a paper reviewers argue for from one they merely fail to reject.
+Written to be used on a draft that already exists.
 \end{abstract}
 
 \tableofcontents
-\vspace{0.6cm}
+\vspace{0.4cm}
 
 % =========================================================================
-\section{How this was built, and how to read it}
+\section{The governing idea}
 
-Eighteen agents ran four parallel sweeps --- ICRA award winners, RSS/CoRL/T-RO
-award winners, the craft of openings, and what award citations and review
-criteria actually reward --- fetching and reading the papers themselves rather
-than their abstracts or secondary summaries. Forty-seven papers were surveyed;
-fourteen were read in full. Load-bearing claims were spot-verified against
-primary sources, and an adversarial critic checked the evidence base for
-attribution errors, sample bias and survivorship bias. The critic's findings
-are in Section~\ref{sec:caveats} and are not decoration: it caught the sweep's
-own fact-checker mis-refuting a correct claim.
+A paper defends \emph{one} claim. Everything else --- the method, the three
+experiments, the ablations --- is a witness to that claim. Before revising
+anything, write the claim as a single sentence that could be false. If you
+cannot, the paper has a structural problem no amount of editing will fix.
 
-Three tags appear throughout, and they mean different strengths of evidence:
+The test for every paragraph thereafter is: \emph{which part of that sentence
+does this support?} Material that supports no part of it is why papers run
+over length.
+
+\lead{Coin the claim, then never paraphrase it.} Pick the words once and use
+exactly those words in the title if possible, the abstract, the section that
+establishes the claim, and the conclusion. Drafts routinely carry three
+near-synonymous phrasings of their own thesis, which gives the reader three
+chances to remember none of them. A reader who can repeat your sentence at a
+poster session is a reader who will cite you.
+
+% =========================================================================
+\section{Title}
+
+Eight words is the working target. Two constructions carry most good titles:
+a short pronounceable system name, a colon, then the mechanism; or a claim
+stated as a sentence with an active verb and no colon at all.
 
 \begin{itemize}
-  \item[] \vtag{verified} --- checked directly against a primary source
-    (a call for papers, an official award page).
-  \item[] \atag{attested} --- observed in named papers that were actually
-    read, and traceable to them.
-  \item[] \jtag{judgment} --- an inference from the pattern rather than a
-    directly evidenced claim. Weigh accordingly.
-\end{itemize}
-
-A fourth category matters just as much: papers recorded as
-\emph{listing-only} were \textbf{not read}. Their rows in the reference table
-establish only that an award exists, and support no structural claim. Any
-frequency statement below (``seven of eight winners\ldots'') counts only the
-papers that were read.
-
-% =========================================================================
-\section{Venue rules that shape everything else}
-
-\vtag{verified against the ICRA 2027 call for papers, 2026-08-18} These are
-venue-specific and dated; re-check them before every submission cycle. They
-are listed first because several otherwise-excellent award-paper habits are
-simply illegal under them.
-
-\begin{itemize}
-  \item \textbf{Eight pages including references}, with no purchasable extra
-    pages. References are not free, so a long bibliography is a real
-    structural cost.
-  \item \textbf{Double-anonymous review.} Author names, affiliations,
-    identifying acknowledgements and grant numbers all come out. This kills
-    one habit common among winners: project and code URLs placed in the
-    Figure~1 caption.
-  \item \textbf{No supplementary PDF.} A video is permitted (20\,MB,
-    180\,s). Nothing load-bearing may live outside the page limit --- so the
-    ``exile the derivation to an appendix'' move, which CoRL papers use
-    freely and which some ICRA winners used in their arXiv versions, is not
-    available.
-  \item \textbf{AI-tool use must be disclosed} in the acknowledgements, and
-    generative tools cannot be listed as authors.
-  \item Papers carrying a DOI (for example an RA-L version) are ineligible;
-    preprints are fine.
-\end{itemize}
-
-\noindent The general lesson survives the specifics: \emph{read the current
-CFP before taking structural advice from any published paper}, because the
-paper you are imitating was written under different rules.
-
-% =========================================================================
-\section{The skeleton}
-
-Budgets below assume eight two-column pages --- sixteen columns --- with
-roughly 1.25 columns of references and 4.5 columns of floats, leaving about
-ten columns of body text. Treat them as proportions rather than targets:
-they were estimated from arXiv HTML, and arXiv versions are routinely longer
-than the camera-ready they came from.
-
-\begin{table}[h]
-\centering
-\small
-\begin{tabularx}{\textwidth}{@{}lcX@{}}
-\toprule
-\textbf{Section} & \textbf{Cols} & \textbf{What winners do here} \\
-\midrule
-Title + abstract & 0.5 &
-  Five to eight sentences. The contribution sentence arrives no later than
-  sentence four. One headline number early; the rest are relocated to the
-  Figure~1 caption. \\
-\addlinespace
-Hero figure & $\sim$1 &
-  A teaser \emph{result} drawn from the system's own state --- not an
-  architecture block diagram. Caption of 40--85 words that pre-empts the
-  most likely objection inline. \\
-\addlinespace
-I. Introduction & 1.25 &
-  Three to six paragraphs closing on at most four refutable contribution
-  bullets with forward section references. The specific gap is reached
-  within three or four sentences. \\
-\addlinespace
-II. Related work & 0.75 &
-  Deliberately thin, and sometimes absent entirely. One contrast per
-  paragraph, each naming the alternative it displaces. \\
-\addlinespace
-III. Method & 2.5 &
-  The largest block, but every subsection must be a stage of \emph{one}
-  mechanism. Background teaches only the tools the method actually uses. \\
-\addlinespace
-IV. Theory / analysis & 1.75 &
-  One formal statement in the main text, placed where the objection lives;
-  derivations deferred. Optional --- but when present, it is what the award
-  citation tends to name. \\
-\addlinespace
-V. Experiments & 3 &
-  A claims ledger: hypotheses or questions declared up front, tagged into
-  subsection titles, and closed explicitly. Setup folds into bold run-in
-  heads rather than occupying its own section. \\
-\addlinespace
-VI. Conclusion \& discussion & 0.5 &
-  Limitations merged in, carrying numbers, phrased as scope with a path
-  forward. \\
-\bottomrule
-\end{tabularx}
-\end{table}
-
-\noindent Two structural findings are worth stating plainly because they
-contradict common advice. \atag{attested} First, \textbf{a standalone
-Limitations section is atypical among winners} --- seven of the eight ICRA
-winners read have none, and the exception merges it into a combined
-``Discussion and Limitations'' heading. Honesty is not the casualty:
-limitations still appear, quantified, inside the discussion. Second,
-\textbf{Related Work is a trim target, not a proving ground}. One paper that
-won both an overall and a category award at ICRA spends under a fifth of its
-body text there, and one overall winner has no Related Work section at all.
-
-% =========================================================================
-\section{The narrative spine}
-
-The arc that recurs across winners, in general form. Each move is one or two
-sentences in the abstract, then expanded in the introduction.
-
-\begin{enumerate}[leftmargin=*,label=\textbf{\arabic*.}]
-  \item \textbf{Name the enemy.} A concrete failure mode of the current
-    approach --- growth, silent degradation, brittleness --- stated as a
-    property, not a statistic. \atag{attested} No sampled winner opens on a
-    statistic.
-  \item \textbf{The turn: why the obvious fix fails.} Credit the obvious
-    alternative, then name the specific mechanism by which it breaks. This
-    is where a citation to a survey or a competing system does the most work.
-  \item \textbf{``We present X'', with the mechanism inside the sentence.}
-    Stated as a contrast --- ``instead of X, we do Y'' --- so the idea
-    survives being read once.
-  \item \textbf{The quotable claim.} One sentence a reader could repeat at a
-    poster session. Papers that coin a handle for their own idea get cited
-    with that handle.
-  \item \textbf{Validation scope, with the steelman visible.} Name the
-    baselines \emph{and} say how you strengthened them: matched operating
-    points, ground-truth parameters handed to the competitor, a published
-    result reproduced before it is beaten.
-  \item \textbf{The payoff, including the honest loss.} Where the method
-    loses, and why that is consistent with the thesis.
-  \item \textbf{Coin the thesis and close.} One phrase, repeated verbatim
-    wherever the thesis appears.
-\end{enumerate}
-
-\subsection*{Coin one phrase, then never paraphrase it}
-
-\atag{attested} Winners hand the community a citable handle and use exactly
-those words every time --- in the title where possible, then the abstract,
-the section that establishes it, and the conclusion. Drafts commonly carry
-three near-synonymous phrasings of their own thesis, which is three chances
-for the reader to fail to remember any of them. Pick the strongest and
-propagate it.
-
-% =========================================================================
-\section{Openings: title, abstract, first figure}
-
-\subsection{Title}
-
-\atag{attested} The median award title in the sample is \textbf{eight
-words}. Two constructions dominate: a pronounceable system name followed by
-a colon and the mechanism; or a territory-grab claim with no colon at all,
-naming a problem or asserting a capability. A third, rarer and effective,
-states the finding itself as a sentence with an active verb.
-
-\noindent Zero sampled winners use ``Towards'', ``A Novel'' or ``A Framework
-for''. None carries a numeral. Titles that enumerate two or three claims are
-a median-submission habit: winners encode one.
-
-\subsection{Abstract}
-
-A seven-sentence skeleton, one role per sentence: \emph{(1)} the enemy;
-\emph{(2)} the gap, ideally in the field's own words via a cited survey;
-\emph{(3)} ``we present'', mechanism included, plus the object's identity
-number if it has one; \emph{(4)} the central claim with its headline number;
-\emph{(5)} validation scope with the steelman clause; \emph{(6)} the result,
-including where it loses; \emph{(7)} the coined thesis.
-
-\atag{attested} \textbf{Numbers policy is where most drafts leak.} Award
-abstracts carry \emph{one} headline number early --- one paper puts its
-single figure in sentence two, before any mechanism detail --- and relocate
-identity and scale numbers to the Figure~1 caption. A draft with five or
-more metrics scattered through the abstract is displaying median-submission
-behaviour. Two winners in the sample carry \emph{no} numbers at all, trading
-them for one crisp capability claim; this works only when the claim is an
-unlock rather than an improvement.
-
-Counts are an underused move: ``in all nine conditions tested'' asserts
-coverage in a way a mean cannot, and is harder to argue with.
-
-\subsection{The first figure}
-
-\atag{attested} The contract, in order of how often it is violated:
-
-\begin{itemize}
-  \item \textbf{It shows a result, not an architecture.} The strongest
-    examples show failure-then-fix, or the system's output drawn from its own
-    state. Only a consortium-scale dataset paper in the sample gets away with
-    a plain block diagram.
-  \item \textbf{The caption is a mini-abstract of 40--85 words}, in the
-    present tense, whose first clause restates the paper's claim rather than
-    describing the panels.
-  \item \textbf{It carries numbers}, normalised into units a reader feels ---
-    a distance as a multiple of the robot's own height, a memory footprint as
-    a ratio against the baseline it replaces.
-  \item \textbf{It pre-empts the top objection in-line.} A single defensive
-    clause in the caption, answering the thing a referee would otherwise
-    write in the margin, is one of the cheapest credibility moves available.
-  \item Under single-blind review, winners also put the project or code URL
-    here. \vtag{not available under double-anonymous review.}
+  \item \textbf{One claim, not three.} Titles that enumerate contributions
+    read as a table of contents. Pick the one that would make a reader stop.
+  \item \textbf{Name the mechanism, not the field.} A title that could sit on
+    twenty other papers is a wasted asset.
+  \item \textbf{Banned openers:} ``Towards'', ``A Novel'', ``A Framework
+    for'', ``On the''. They signal hedging before the reader has read a word.
+  \item \textbf{No numerals}, and no acronym you have not earned the right to
+    coin. If you do coin one, check it does not already mean something else in
+    the field.
 \end{itemize}
 
 % =========================================================================
-\section{Style rules}
+\section{Abstract}
+
+\textbf{Every sentence carries weight.} The abstract is the only part of the
+paper most people read, and it is short enough that a reader notices a wasted
+line. The test: delete any sentence and ask whether information is lost. If
+not, it was scaffolding --- ``In this paper, we\ldots'', ``Extensive
+experiments were conducted\ldots'' --- and it should go.
+
+Seven sentences, one job each:
 
 \begin{enumerate}[leftmargin=*,label=\textbf{S\arabic*.}]
-  \item \textbf{One idea; everything else is a witness of it.}
-    \atag{attested} Winners show one derivation instantiated several ways
-    rather than several loosely-related results. Generality is
-    \emph{demonstrated structurally} --- the same result dropped into three
-    settings --- not asserted in the introduction.
-  \item \textbf{Every claim carries its evidence unit inline.} A number, a
-    named baseline, a named condition, and a section reference. Never a bare
-    percentage; never ``better'' without ``than what''.
-  \item \textbf{Freeze numbers verbatim.} The same figure appears
-    identically in abstract, introduction and tables --- no rounding drift,
-    no ``approximately'' in one place and three significant figures in
-    another.
-  \item \textbf{Denominate claims in the constrained resource.} When a paper
-    is about a budget, every result is priced in that budget's units and
-    compared against a hard limit, and the method's own ceiling is stated as
-    a first-class number rather than hidden.
-  \item \textbf{Report errors against floors and exchange rates.} An error
-    is meaningless without the physical floor it approaches or the cost it
-    was traded for. A worse accuracy at a much lower cost should never appear
-    without the cost in the same sentence.
-  \item \textbf{Steelman the baselines, then say that you did.} Re-tune the
-    competitor's threshold, hand it privileged information, reproduce its
-    published result before comparing. \atag{attested} This is the single
-    clearest cultural marker of award-level work, and it is worth a sentence
-    of its own rather than being buried in setup.
-  \item \textbf{Attribute failures with counts and mechanisms.} ``$k$ of $n$
-    failures were caused by \emph{named mechanism}'' converts a weakness into
-    evidence of understanding.
-  \item \textbf{Hedge mechanism and universality; never hedge measurements.}
-    State what was measured flatly. Mark speculation explicitly. Show
-    distributions, not only means. Frame generality as a falsifiable
-    forecast.
-  \item \textbf{Answer the reviewer in the text.} A bold run-in question
-    (``Has performance saturated?'') costs two lines and defuses an
-    objection that would otherwise cost a score.
-  \item \textbf{Voice: measured, zero superlatives.} \atag{attested} Award
-    citations reward rigour, generality, practicality and convincing results
-    on hard benchmarks. They do not mention novelty or state-of-the-art
-    margins. Write the paper the citation would describe.
+  \item \textbf{The enemy.} A concrete failure of how things are currently
+    done, stated as a property rather than a statistic. Not ``robotics is
+    important'', but the specific thing that breaks.
+  \item \textbf{Why the obvious fix fails.} Credit the alternative a reader is
+    already thinking of, then name the mechanism by which it fails. This
+    sentence is where a citation earns its place.
+  \item \textbf{What you did.} ``We present X'', with the mechanism inside
+    the same sentence, phrased as a contrast: \emph{instead of} A, we do B.
+    A reader should be able to restate your method from this sentence alone.
+  \item \textbf{The central claim, with its number.} One number. The one that
+    would survive if the paper were compressed to a tweet.
+  \item \textbf{What you tested it on, and how you made it hard.} Name the
+    datasets and the baselines --- and say how you strengthened the
+    opposition: reproduced their published result first, matched operating
+    points, handed them privileged information.
+  \item \textbf{The result, including where it loses.} A trade-off stated in
+    one sentence is far stronger than a win stated in two.
+  \item \textbf{The thesis, coined.} The sentence you want quoted.
 \end{enumerate}
+
+\lead{One number, not five.} Scattering metrics through an abstract is the
+single most common tell of an ordinary paper. Keep the headline figure and,
+if the object has an identity number (a size, a rate, a count), keep that.
+Everything else moves to the first figure's caption or the results tables.
+
+\lead{Counts are underused.} ``In all nine conditions tested'' asserts
+coverage in a way a mean cannot, and is much harder to argue with than an
+average. If you have run the sweep, say how many.
+
+\lead{Do not end on effectiveness.} ``Experiments demonstrate the
+effectiveness of the proposed method'' is content-free and it is where a
+reader's attention goes to die. End on the claim.
+
+% =========================================================================
+\section{Introduction}
+
+The introduction expands the abstract's seven moves into three to six
+paragraphs and ends with the contributions. Its job is to make the reader
+believe the problem is real and that you have understood it precisely.
+
+\begin{itemize}
+  \item \textbf{Reach the specific gap within three or four sentences.} A
+    general opening about the importance of the field costs you the reader you
+    most want.
+  \item \textbf{Do not open on a statistic.} Open on the failure.
+  \item \textbf{Credit before you displace.} Describe the standard approach
+    as a competent person would describe it, then show precisely where it
+    breaks. A strawman tells the reviewer --- who may have written the
+    strawman --- that you did not read carefully.
+  \item \textbf{The gap must be falsifiable.} ``Little work has been done''
+    is not a gap; it is an admission you did not search. A gap is a specific
+    capability that existing methods provably lack, or a specific condition
+    under which they measurably fail.
+\end{itemize}
+
+\lead{Contributions: at most four, each refutable.} A contribution is
+something a reviewer could disagree with. ``We propose a novel framework''
+cannot be disagreed with, so it contributes nothing. Prefer artifacts and
+claims: a model, a law, a dataset, a measured result, a proof. Give each a
+forward reference to the section that delivers it --- this is a promise, and
+the reader will check.
+
+\lead{State what you do not claim.} One or two sentences saying explicitly
+what is outside the paper's scope buys enormous credibility and pre-empts the
+review that judges you against a paper you did not write.
+
+% =========================================================================
+\section{Related work}
+
+Shorter than you think --- often three quarters of a column, sometimes folded
+into the introduction and omitted entirely.
+
+\begin{itemize}
+  \item \textbf{One contrast per paragraph.} Each paragraph names a family of
+    prior work and says what it does that you do differently, in one sentence.
+    A list of summaries with no contrast is a literature review, not a related
+    work section.
+  \item \textbf{Do not explain trade-offs the reader has no context for.}
+    Related work placed early can only be understood in terms of your method,
+    which the reader has not read yet. Keep it comparative and brief; put the
+    detailed positioning in the discussion where it will land.
+  \item \textbf{Cite the work you actually build on more prominently than the
+    work you merely list.}
+\end{itemize}
+
+% =========================================================================
+\section{Method}
+
+The largest section, and the one most often written as a sequence of
+implementation details rather than an argument. It should read as one
+mechanism, presented in stages.
+
+\lead{Order: intuition, then formalism, then algorithm, then cost.} Give the
+reader the idea in prose before the notation. A reader who understands the
+idea will forgive dense notation; a reader who meets the notation first will
+not reach the idea.
+
+\lead{Every subsection is a stage of one mechanism.} If a subsection could be
+removed and the method would still work, it belongs in an ablation, not the
+method. If two subsections do unrelated things, the paper has two ideas and
+should probably have one.
+
+\lead{Teach only the background you use.} A background subsection that covers
+the field is padding. Cover exactly the tools the method combines, in the
+notation the method will use, and stop.
+
+\subsection*{Notation}
+
+\begin{itemize}
+  \item Define every symbol once, at first use, and never redefine it.
+  \item Fewer symbols is better. If a quantity appears twice, name it in
+    words instead.
+  \item Keep a consistent convention (vectors, matrices, sets, indices) and
+    state it if it is not obvious.
+  \item Equations are part of the sentence. Punctuate them, and make sure the
+    text around them says what they mean --- an equation that is never
+    referred to in prose is decoration.
+  \item Number only the equations you refer to.
+\end{itemize}
+
+\subsection*{What the method section owes the reader}
+
+\begin{itemize}
+  \item \textbf{Reproducibility.} Enough that a competent reader could
+    reimplement it. Where a value was chosen rather than derived, say so and
+    say how it was chosen.
+  \item \textbf{Cost.} The computational and memory cost of each operation,
+    in the units that matter for the claim. If the paper's point is
+    efficiency, this is not a detail --- it is the result.
+  \item \textbf{Design justification, not just description.} For each
+    non-obvious choice, one clause on why the alternative was rejected. This
+    is where you pre-empt half the review.
+  \item \textbf{Honest assumptions.} State the conditions under which the
+    method is valid, in the method section, before the results depend on them.
+\end{itemize}
+
+\lead{Prefer a worked example to another paragraph of abstraction.} One
+concrete instance --- a single observation entering the system, a single query
+answered --- does more for comprehension than a page of generality.
+
+% =========================================================================
+\section{Results}
+
+The results section is not a report of what you ran. It is a sequence of
+claims, each with evidence attached.
+
+\lead{Declare the questions, then close them.} Open the section with the
+specific questions the experiments answer, and let the subsection titles carry
+them. Close each subsection by saying which question it settled and how. A
+reader should be able to read only the first and last sentence of each
+subsection and get the argument.
+
+\lead{Claim-first paragraphs.} The first sentence of each results paragraph
+states the finding; the rest supports it. Do not narrate the experiment and
+reveal the conclusion at the end --- reviewers skim, and a paragraph whose
+point arrives last reads as having no point.
+
+\subsection*{How to state a number}
+
+Every quantitative claim carries four things: the \textbf{number}, the
+\textbf{named baseline}, the \textbf{named condition}, and a \textbf{pointer}
+to the table or figure. ``Ours is better'' is not a claim. ``0.36\,m median
+error against 0.29\,m for exact nearest neighbour on the same descriptors
+(Table~II)'' is.
+
+\begin{itemize}
+  \item \textbf{Freeze numbers verbatim.} The same figure appears identically
+    in the abstract, the introduction, the table and the conclusion. Rounding
+    drift between sections reads as carelessness and invites the reviewer to
+    check everything else.
+  \item \textbf{Give errors a reference point.} An error means nothing
+    without the floor it approaches or the cost it bought. Report it against
+    the sensor's resolution, the annotation precision, human performance, or
+    the resource it was traded for --- in the same sentence.
+  \item \textbf{Denominate in the constrained resource.} If the paper is
+    about a budget, price every result in that budget's units and against a
+    hard limit. Put the resource in its own table column so it cannot be
+    overlooked.
+  \item \textbf{Report variance, not just means.} A single run is an
+    anecdote. Give the spread, the number of seeds or trials, and enough for
+    the reader to judge whether a difference is real.
+  \item \textbf{Do not report more precision than you measured.} Three
+    decimal places on a five-trial mean is a claim about noise you have not
+    earned.
+\end{itemize}
+
+\subsection*{Baselines}
+
+\begin{itemize}
+  \item \textbf{Compare against the strongest version of the alternative.}
+    Re-tune its hyperparameters, match its operating point, give it the
+    privileged information it would have in its own paper.
+  \item \textbf{Reproduce the published result before beating it.} If your
+    measurement of a competitor differs from their reported number, resolve
+    that first --- and then say you did. It is one of the most persuasive
+    sentences available, because almost nobody does it.
+  \item \textbf{Say what you strengthened, explicitly.} Steelmanning that the
+    reader has to infer is steelmanning you get no credit for.
+  \item \textbf{Match what varies.} If the comparison changes two things at
+    once, it measures nothing. Hold the frontend, the data, and the metric
+    fixed, and say that you did.
+\end{itemize}
+
+\subsection*{Ablations}
+
+Each ablation isolates one variable and answers one question: \emph{is this
+component doing what we claim?} Two useful disciplines:
+
+\begin{itemize}
+  \item \textbf{Include the control that could embarrass you.} If a component
+    might be replaceable by something trivial --- a random choice, a constant,
+    a simpler heuristic --- run that comparison. If the trivial version wins,
+    you have learned something important before a reviewer does.
+  \item \textbf{Run the ablation that makes the method look worst}, and
+    explain the result. Papers that do this are believed about everything
+    else.
+\end{itemize}
+
+\subsection*{Losses and negative results}
+
+Put them in the main table, with a one-sentence mechanistic diagnosis. A loss
+you explain becomes evidence that you understand the system; a loss the
+reviewer finds becomes evidence that you did not. If the loss is consistent
+with your thesis --- you traded accuracy for size, and here is the accuracy ---
+then reporting it \emph{is} the argument, not a concession to it.
+
+Distinguish clearly between three different statements, because they carry
+different weight: \emph{we measured no effect} (with the power to detect one),
+\emph{we could not measure it} (underpowered or confounded), and \emph{we did
+not test it}. Papers lose credibility by collapsing the second and third into
+the first.
+
+% =========================================================================
+\section{Figures and tables}
+
+Figures and tables are read before the text and often instead of it. Treat
+each as a small paper.
+
+\begin{itemize}
+  \item \textbf{One message per figure.} If you cannot say what a figure
+    proves in a sentence, it is two figures or none.
+  \item \textbf{Captions are self-contained and state the takeaway.} Forty to
+    eighty-five words, present tense, opening with the claim rather than a
+    description of the panels. A reader who reads only your figures and
+    captions should get the paper's argument.
+  \item \textbf{Put the numbers in the caption.} Normalised into units a
+    reader feels --- a distance as a fraction of the robot's height, a
+    footprint as a ratio to the baseline it replaces.
+  \item \textbf{The first figure shows a result, not an architecture.} The
+    strongest opening figures show failure-then-fix, or the system's own
+    output. A block diagram tells the reader how you built it, which is not
+    yet a reason to care.
+  \item \textbf{Answer one objection in the caption.} A single clause
+    pre-empting the obvious criticism is among the cheapest credibility moves
+    available.
+  \item \textbf{Axes labelled, with units.} Legends that do not require
+    cross-referencing the text. Consistent colours across figures, and check
+    that they survive greyscale printing.
+\end{itemize}
+
+\lead{Table design.} What you vary goes in rows; what you measure goes in
+columns. Bold the best result per column and say in the caption what bold
+means. Include the resource column (memory, time, parameters) even when it is
+not the headline --- it is what a sceptical reader looks for. Align decimals.
+Do not make the reader compute a ratio you could have given them.
+
+% =========================================================================
+\section{Limitations and conclusion}
+
+Merge limitations into the discussion rather than giving them their own
+heading, and give each one a number and a path forward. ``Our method may not
+generalise'' is worthless; ``performance degrades beyond room scale, where the
+map exceeds $N$ items; extending to building scale requires $X$'' is a
+research direction and reads as command of the problem.
+
+The conclusion restates the claim, states the trade plainly, and stops. It is
+not a summary of the paper --- the reader has just read the paper.
+
+% =========================================================================
+\section{Sentences and paragraphs}
+
+\begin{itemize}
+  \item \textbf{Topic sentence carries the claim.} One idea per paragraph,
+    announced first.
+  \item \textbf{Active voice for what you did.} ``We measured'' rather than
+    ``it was measured''. Passive is for when the actor genuinely does not
+    matter.
+  \item \textbf{Verbs must carry mechanism.} \emph{Provides}, \emph{enables},
+    \emph{allows}, \emph{leverages} and \emph{utilises} say nothing. Say what
+    the thing does.
+  \item \textbf{Cut throat-clearing.} ``It is worth noting that'', ``In order
+    to'', ``It should be mentioned'', ``As can be seen from''. Delete and the
+    sentence improves.
+  \item \textbf{No promotional adjectives.} \emph{Novel}, \emph{powerful},
+    \emph{elegant}, \emph{extensive}. Let the result be impressive; do not
+    assert that it is.
+  \item \textbf{Hedge mechanism and generality; never hedge measurements.}
+    State what you measured flatly. Mark speculation explicitly as
+    speculation. A paper that hedges its data reads as unsure the data is
+    right.
+  \item \textbf{Prefer the specific word.} ``Improves accuracy'' is weaker
+    than ``raises recall at one metre from 0.31 to 0.44''.
+  \item \textbf{Same thing, same name.} Do not elegantly vary your
+    terminology; a reader cannot tell whether a new word means a new concept.
+\end{itemize}
 
 % =========================================================================
 \section{Anti-patterns}
 
 \begin{itemize}
-  \item Title padding: ``Towards'', ``A Novel'', ``A Framework for'', or
-    three claims where one belongs.
+  \item A title with three claims, or an opener from the banned list.
   \item Five or more metrics scattered through the abstract.
-  \item Closing an abstract with ``experiments demonstrate the effectiveness
-    of the proposed method''. No sampled winner does this.
-  \item Terse figure captions (``System overview.'').
-  \item A bare architecture diagram as Figure~1.
-  \item Multiple vague ``first'' claims. Winners make at most one, tightly
-    scoped.
-  \item Mechanism-free verbs in claims: \emph{provides}, \emph{enables},
-    \emph{allows}.
-  \item A long early Related Work section explaining trade-offs the reader
-    has no context for yet.
-  \item Hiding losses. \atag{attested} A best-paper winner in the sample
-    prints a middling success rate and calls its own system impractical for
-    industry --- and won, because the claim it defended was a representational
-    bridge, not deployment readiness. A loss with a one-sentence mechanistic
-    diagnosis becomes a demonstration of the thesis; a hidden loss becomes a
-    rebuttal.
+  \item An abstract ending on the effectiveness of the proposed method.
+  \item ``Little work has been done'' as a gap statement.
+  \item Contributions that cannot be disagreed with.
+  \item A background section covering the field rather than the method.
+  \item Terse captions (``System overview.'').
+  \item A bare architecture diagram as the first figure.
+  \item Results paragraphs that narrate the experiment and conclude at the
+    end.
+  \item Bare percentages with no baseline, condition, or pointer.
+  \item Multiple vague ``first'' claims. Make at most one, tightly scoped.
+  \item Hiding a loss where a reviewer will find it.
   \item Anything load-bearing in supplementary material.
 \end{itemize}
 
 % =========================================================================
 \section{Revision checklist}
 
-Run this against a draft that already exists. Roughly in order of value per
-minute spent.
+Run against a draft that already exists, roughly in order of value per minute.
 
 \begin{itemize}[leftmargin=*]
-  \ck \textbf{Abstract}: seven sentences; contribution by sentence four; one
-    headline number; the central result present (drafts routinely omit their
-    own best evidence while keeping minor numbers); ends on the coined
-    thesis.
-  \ck \textbf{Title}: one claim, under about eleven words, no banned openers,
-    no numerals.
-  \ck \textbf{Thesis phrase}: identical wording at every station where it
-    appears.
-  \ck \textbf{Numbers audit}: every headline figure identical in abstract,
-    introduction, tables and conclusion.
-  \ck \textbf{Claims}: each has a number, a named baseline, a named
-    condition, and a section reference.
-  \ck \textbf{Figure~1}: shows a result; caption 40--85 words; opens with the
-    claim; carries normalised numbers; pre-empts one objection.
-  \ck \textbf{Contributions}: at most four bullets, each refutable, each with
-    a forward reference.
-  \ck \textbf{Limitations}: merged into the discussion, quantified, phrased
-    as scope with a path.
-  \ck \textbf{Related Work}: under about 0.75 columns; one contrast per
-    paragraph.
-  \ck \textbf{Steelmanning}: stated explicitly in its own sentence.
-  \ck \textbf{Losses}: present in the main tables, each with a one-sentence
-    mechanistic diagnosis.
-  \ck \textbf{Compliance}: page limit including references; anonymisation;
-    AI-use disclosure; nothing load-bearing outside the limit.
+  \ck The claim is one falsifiable sentence, and it appears in the same words
+    in title, abstract, body and conclusion.
+  \ck Abstract is seven sentences; every sentence loses information if
+    deleted; one headline number; the central result is present; it does not
+    end on effectiveness.
+  \ck Title: one claim, under about eleven words, no banned openers.
+  \ck Contributions: at most four, each refutable, each with a forward
+    reference that the paper honours.
+  \ck Every headline number identical everywhere it appears.
+  \ck Every quantitative claim has number, baseline, condition, pointer.
+  \ck Errors reported against a floor or an exchange rate.
+  \ck Variance and trial counts reported.
+  \ck Baselines steelmanned, and the steelmanning stated explicitly.
+  \ck Losses in the main tables, each with a mechanistic diagnosis.
+  \ck Method reads as one mechanism in stages; background covers only what is
+    used; costs stated.
+  \ck Every symbol defined once; every numbered equation referenced in prose.
+  \ck First figure shows a result; caption states the claim, carries numbers,
+    pre-empts one objection.
+  \ck Every figure has one message; every caption is self-contained.
+  \ck Tables have a resource column and a stated bolding convention.
+  \ck Limitations merged into discussion, quantified, with a path.
+  \ck No promotional adjectives; no mechanism-free verbs; no throat-clearing.
 \end{itemize}
 
 % =========================================================================
-\section{Caveats}
-\label{sec:caveats}
+\section*{Before submission}
+\addcontentsline{toc}{section}{Before submission}
 
-Reasons not to over-trust the above, in rough order of seriousness.
+Check the current call for papers rather than trusting a previous cycle:
+the page limit and whether references count toward it; whether review is
+anonymous, and what must therefore be stripped from the author block,
+acknowledgements, grant numbers and figure captions; whether supplementary
+material is permitted and reviewed, or whether everything load-bearing must
+sit inside the page limit; any disclosure requirements; and whether a
+preprint or a version carrying a DOI affects eligibility.
 
-\begin{itemize}
-  \item \textbf{Survivorship bias is unaddressed.} Every pattern here is
-    conditioned on winning. Without a matched sample of rejected or
-    median-accepted papers, this cannot distinguish features that
-    \emph{cause} awards from features common to all competent papers --- or
-    from lab-brand confounds, where a paper may win despite its structure
-    rather than because of it.
-  \item \textbf{Awards and acceptance are different games.} Awards are
-    decided by a small committee \emph{after} acceptance; the binding gate
-    for a submission is a handful of anonymous reviewers. Award-optimal
-    boldness and acceptance-optimal defensiveness are correlated but not
-    identical, and only the former is observable here.
-  \item \textbf{The sample skews} toward learning and perception systems
-    papers from a small number of well-known labs. Papers in
-    theory-and-representation genres, and the reviewers those genres draw,
-    are underrepresented.
-  \item \textbf{Roughly half the corpus is RSS, CoRL or T-RO.} Several of
-    their signature moves --- hypothesis ledgers, related work after results,
-    long appendices --- have no verified instance among the ICRA winners
-    read. Treat them as imported, and remember appendices may be unavailable.
-  \item \textbf{Column budgets are estimates} from arXiv HTML, which is
-    frequently an extended version of what was actually submitted.
-  \item \textbf{The survey's own fact-checking layer was fallible.} It
-    ``refuted'' a correct claim about one year's winners by consulting a page
-    that listed only the category awards. Two papers analysed as exemplars
-    are influential but not verified award winners. Verify any award
-    attribution before repeating it.
-\end{itemize}
+\vspace{0.8cm}
+\noindent\hrulefill
 
-% =========================================================================
-\section{Sources}
-
-The full reference table --- every paper, its award, its read depth, a link,
-and which specific claim above it evidences --- is maintained in the
-companion HTML version, which is easier to keep current and to click through:
-
-\begin{itemize}
-  \item \texttt{docs/sites/award\_paper\_template.html} (in-repo copy)
-  \item \url{https://claude.ai/code/artifact/beefd0b4-39c5-4d03-a59e-1694690120ec}
-\end{itemize}
-
-\noindent Venue rules were verified against the
-\href{https://2027.ieee-icra.org/contribute/call-for-icra-2027-papers-now-accepting-submissions/}{ICRA
-2027 call for papers}. Award attributions were checked against the
-\href{https://www.ieee-ras.org/about-ras/latest-news/ras-congratulates-the-honorees-at-the-icra-2024-awards-ceremony}{IEEE
-RAS honoree announcements}, the
-\href{https://roboticsfoundation.org/awards/best-paper-award/}{RSS Foundation
-best-paper list}, and the CoRL programme award pages.
-
-Quotations are deliberately not reproduced here. The companion HTML lists
-the exact location of each quoted phrase --- paper, section, caption --- so
-that it can be retrieved and cited from the source with correct attribution.
+\vspace{0.3cm}
+\noindent\footnotesize Companion reference --- the survey this is drawn from,
+with the full paper list, links, and which specific paper evidences each
+pattern: \texttt{docs/sites/award\_paper\_template.html}.
 
 \end{document}
+
