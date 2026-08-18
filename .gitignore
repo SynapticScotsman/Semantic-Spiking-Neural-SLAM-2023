@@ -176,3 +176,7 @@ student_gpu_package/cg_dataset/
 student_gpu_package/cg_out/
 
 outputs/batch1/cache/
+
+# per-crop CLIP embeddings: 101 MB, regenerate with
+# collab_tasks/scripts/embed_crops_clip.py (~40 min CPU)
+outputs/replica_*/crop_clip_embeddings.npz
