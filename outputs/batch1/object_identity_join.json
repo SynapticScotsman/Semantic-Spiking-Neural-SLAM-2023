@@ -1,44 +1,44 @@
 {
- "total": 8719,
- "n_objects_blamed": 124,
+ "total": 8383,
+ "n_objects_blamed": 128,
  "per_scene": {
   "room0": {
-   "n_shared": 365,
+   "n_shared": 440,
    "n_objects": 76,
-   "n_blamed": 18
+   "n_blamed": 17
   },
   "room1": {
-   "n_shared": 517,
+   "n_shared": 684,
    "n_objects": 66,
-   "n_blamed": 13
+   "n_blamed": 12
   },
   "room2": {
-   "n_shared": 3023,
+   "n_shared": 2472,
    "n_objects": 79,
-   "n_blamed": 25
+   "n_blamed": 22
   },
   "office0": {
-   "n_shared": 2037,
+   "n_shared": 2007,
    "n_objects": 79,
-   "n_blamed": 18
+   "n_blamed": 21
   },
   "office1": {
-   "n_shared": 34,
+   "n_shared": 37,
    "n_objects": 57,
-   "n_blamed": 5
+   "n_blamed": 6
   },
   "office2": {
-   "n_shared": 1036,
+   "n_shared": 1040,
    "n_objects": 80,
-   "n_blamed": 20
+   "n_blamed": 23
   },
   "office3": {
-   "n_shared": 1437,
+   "n_shared": 1444,
    "n_objects": 98,
-   "n_blamed": 15
+   "n_blamed": 17
   },
   "office4": {
-   "n_shared": 270,
+   "n_shared": 259,
    "n_objects": 76,
    "n_blamed": 10
   }
@@ -48,32 +48,27 @@
   {
    "scene": "office0",
    "obj": 9,
-   "cells": 624
+   "cells": 602
   },
   {
    "scene": "room2",
    "obj": 25,
-   "cells": 553
+   "cells": 575
   },
   {
    "scene": "room2",
    "obj": 28,
-   "cells": 508
+   "cells": 533
   },
   {
-   "scene": "room2",
-   "obj": 24,
-   "cells": 496
-  },
-  {
-   "scene": "room2",
-   "obj": 29,
-   "cells": 449
+   "scene": "office0",
+   "obj": 43,
+   "cells": 436
   },
   {
    "scene": "office0",
    "obj": 3,
-   "cells": 439
+   "cells": 406
   },
   {
    "scene": "office0",
@@ -81,19 +76,39 @@
    "cells": 346
   },
   {
-   "scene": "office0",
-   "obj": 43,
-   "cells": 321
-  },
-  {
-   "scene": "office3",
-   "obj": 52,
-   "cells": 301
+   "scene": "room2",
+   "obj": 29,
+   "cells": 294
   },
   {
    "scene": "office3",
    "obj": 56,
-   "cells": 290
+   "cells": 287
+  },
+  {
+   "scene": "room1",
+   "obj": 43,
+   "cells": 281
+  },
+  {
+   "scene": "office3",
+   "obj": 52,
+   "cells": 277
+  },
+  {
+   "scene": "office2",
+   "obj": 37,
+   "cells": 273
+  },
+  {
+   "scene": "room2",
+   "obj": 24,
+   "cells": 266
+  },
+  {
+   "scene": "room0",
+   "obj": 34,
+   "cells": 243
   },
   {
    "scene": "office2",
@@ -103,27 +118,22 @@
   {
    "scene": "office3",
    "obj": 15,
-   "cells": 232
-  },
-  {
-   "scene": "room0",
-   "obj": 34,
-   "cells": 225
+   "cells": 236
   },
   {
    "scene": "office2",
    "obj": 38,
-   "cells": 185
+   "cells": 219
   },
   {
    "scene": "room1",
-   "obj": 43,
-   "cells": 182
+   "obj": 34,
+   "cells": 211
   },
   {
-   "scene": "office2",
-   "obj": 8,
-   "cells": 176
+   "scene": "office3",
+   "obj": 72,
+   "cells": 204
   },
   {
    "scene": "room2",
@@ -131,39 +141,9 @@
    "cells": 170
   },
   {
-   "scene": "office3",
-   "obj": 72,
-   "cells": 170
-  },
-  {
-   "scene": "room1",
-   "obj": 34,
-   "cells": 149
-  },
-  {
-   "scene": "office4",
-   "obj": 15,
-   "cells": 149
-  },
-  {
-   "scene": "room2",
-   "obj": 57,
-   "cells": 141
-  },
-  {
    "scene": "room2",
    "obj": 15,
-   "cells": 139
-  },
-  {
-   "scene": "room2",
-   "obj": 46,
-   "cells": 125
-  },
-  {
-   "scene": "office2",
-   "obj": 3,
-   "cells": 122
+   "cells": 143
   },
   {
    "scene": "office3",
@@ -171,14 +151,19 @@
    "cells": 122
   },
   {
+   "scene": "room2",
+   "obj": 46,
+   "cells": 121
+  },
+  {
    "scene": "office3",
    "obj": 58,
    "cells": 120
   },
   {
-   "scene": "office0",
-   "obj": 38,
-   "cells": 116
+   "scene": "office2",
+   "obj": 3,
+   "cells": 119
   },
   {
    "scene": "office3",
@@ -186,44 +171,14 @@
    "cells": 113
   },
   {
-   "scene": "office2",
-   "obj": 7,
-   "cells": 106
-  },
-  {
-   "scene": "office2",
-   "obj": 11,
-   "cells": 77
+   "scene": "office4",
+   "obj": 2,
+   "cells": 103
   },
   {
    "scene": "room1",
    "obj": 47,
-   "cells": 76
-  },
-  {
-   "scene": "room2",
-   "obj": 4,
    "cells": 69
-  },
-  {
-   "scene": "room2",
-   "obj": 36,
-   "cells": 66
-  },
-  {
-   "scene": "office2",
-   "obj": 21,
-   "cells": 62
-  },
-  {
-   "scene": "room1",
-   "obj": 40,
-   "cells": 61
-  },
-  {
-   "scene": "room2",
-   "obj": 47,
-   "cells": 61
   },
   {
    "scene": "office0",
@@ -232,18 +187,63 @@
   },
   {
    "scene": "room2",
-   "obj": 37,
-   "cells": 51
+   "obj": 57,
+   "cells": 58
+  },
+  {
+   "scene": "room0",
+   "obj": 51,
+   "cells": 56
   },
   {
    "scene": "room2",
    "obj": 17,
-   "cells": 42
+   "cells": 55
+  },
+  {
+   "scene": "office4",
+   "obj": 61,
+   "cells": 55
+  },
+  {
+   "scene": "office2",
+   "obj": 32,
+   "cells": 54
+  },
+  {
+   "scene": "office0",
+   "obj": 26,
+   "cells": 51
+  },
+  {
+   "scene": "room1",
+   "obj": 44,
+   "cells": 44
   },
   {
    "scene": "room2",
-   "obj": 58,
+   "obj": 4,
+   "cells": 44
+  },
+  {
+   "scene": "room2",
+   "obj": 37,
    "cells": 36
+  },
+  {
+   "scene": "office0",
+   "obj": 62,
+   "cells": 35
+  },
+  {
+   "scene": "room2",
+   "obj": 36,
+   "cells": 33
+  },
+  {
+   "scene": "office4",
+   "obj": 40,
+   "cells": 33
   }
  ]
 }
