@@ -33,10 +33,16 @@ PKG = os.path.dirname(os.path.abspath(__file__))
 def _rss(tag):
     """Print resident memory. Colab OOM-kills silently, so the last line
     printed before death is the only diagnostic available."""
+    cur = ""
+    try:
+        with open("/proc/self/statm") as f:
+            cur = f" current {int(f.read().split()[1]) * 4096 / 1048576:.0f} MB"
+    except Exception:
+        pass
     try:
         import resource
         mb = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024
-        print(f"[mem] {tag}: peak RSS {mb:.0f} MB", flush=True)
+        print(f"[mem] {tag}: peak {mb:.0f} MB{cur}", flush=True)
     except Exception:
         pass
 
@@ -220,17 +226,27 @@ def main():
                 class_names, _tf_cached = None, None
 
         if class_names is None:
+            # Prefer THEIR module when importable, so an upstream change to
+            # the class list is picked up. Fall back to the vendored copy --
+            # derived from that same file and byte-identical in content and
+            # ORDER, which is load-bearing because it fixes the argmax index
+            # mapping. Needed because a recycled Colab runtime loses their
+            # repo while ours survives, which stalled all 8 scenes.
             try:
                 from conceptgraph.dataset.replica_constants import (
                     REPLICA_CLASSES, REPLICA_EXISTING_CLASSES)
                 class_names = [REPLICA_CLASSES[i]
                                for i in REPLICA_EXISTING_CLASSES]
+                print("class list: conceptgraph module")
             except Exception as e:
-                raise SystemExit(
-                    f"cannot import their class list: {e}. "
-                    f"       No text cache at {_cache} either. Run ONE scene "
-                    f"with conceptgraph importable to build the cache; every "
-                    f"later scene then needs neither.")
+                _vend = os.path.join(PKG, "replica_class_names.json")
+                if not os.path.exists(_vend):
+                    raise SystemExit(
+                        f"cannot import their class list ({e}) and no vendored "
+                        f"copy at {_vend}")
+                class_names = json.load(open(_vend))["class_names"]
+                print(f"class list: VENDORED copy ({len(class_names)} classes) "
+                      f"-- conceptgraph unavailable ({e})")
         print(f"class-agnostic map detected -> assigning labels from clip_ft "
               f"against {len(class_names)} Replica classes, their method")
 
