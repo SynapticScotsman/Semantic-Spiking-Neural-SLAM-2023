@@ -70,6 +70,38 @@ chances to remember none of them. A reader who can repeat your sentence at a
 poster session is a reader who will cite you.
 
 % =========================================================================
+\section{Before you draft}
+
+The most common failure in a first paper is not a weak abstract; it is
+writing up work that does not yet contain a claim. Apply the test above
+\emph{before} opening the editor: can you complete the sentence ``we show
+that $X$, and the evidence is $Y$'' with $Y$ already on disk? If the
+evidence is not collected, you are still designing experiments, and writing
+prose now will only disguise that.
+
+\lead{Choose the claim your strongest evidence supports.} A body of results
+usually admits several candidate claims. Pick the one your best evidence
+proves, not the most ambitious one you could almost defend --- the ambitious
+version becomes the future-work paragraph or the next paper. The choice is
+consequential: the claim determines which baselines you owe, which
+experiments are load-bearing, and which results are merely interesting.
+
+\lead{Build the figures and tables first.} Before writing prose, assemble
+the tables and figures as they will appear --- real data, final columns,
+captions drafted --- and pin them to a skeleton of section headings. If the
+figures do not carry the argument on their own, more writing will not save
+them, and it is far cheaper to discover a missing experiment at this stage
+than after the text is set around its absence. Then draft the abstract as a
+plan of what the paper will claim, knowing you will rewrite it last.
+
+\lead{Mixed results can still be a paper.} If the method wins somewhere and
+loses somewhere, the paper about the \emph{boundary} --- where it holds,
+where it breaks, and why --- is often stronger than a strained paper about
+the win. Characterisation is a contribution; torturing the framing until the
+loss disappears is how papers get rejected by the one reviewer who reruns
+the numbers.
+
+% =========================================================================
 \section{Title}
 
 Eight words is the working target. Two constructions carry most good titles:
@@ -429,6 +461,71 @@ not a summary of the paper --- the reader has just read the paper.
 \end{itemize}
 
 % =========================================================================
+\section{Citations, code and the red-team pass}
+
+\subsection*{Citation hygiene}
+
+\begin{itemize}
+  \item \textbf{Cite the source, not the survey.} A survey is the right
+    citation for a landscape claim and the wrong one for a specific result.
+    Citing a review for something a particular paper proved is the tell of
+    someone who read neither.
+  \item \textbf{Never cite a paper for something it does not say.} Reviewers
+    are frequently the authors of the work you are citing, and misattribution
+    is one of the few errors that reliably converts a positive review into a
+    hostile one. If you are characterising someone's result, open their paper
+    and check the sentence.
+  \item \textbf{Cite the work you build on prominently, and the work you
+    merely acknowledge briefly.} A flat wall of thirty citations tells the
+    reader nothing about what mattered.
+  \item \textbf{Self-cite in the third person under anonymous review.} Write
+    ``the approach of [12]'' rather than ``our previous work [12]'', and check
+    that the surrounding sentence does not deanonymise you anyway. Do not
+    remove the citations --- omitting relevant prior work is worse than the
+    small risk of being guessed.
+  \item \textbf{Fix the bibliography.} Wrong venues, missing years, arXiv
+    entries for papers that were published properly, inconsistent
+    capitalisation --- individually trivial, collectively an impression of
+    carelessness formed before the reviewer reaches your results.
+\end{itemize}
+
+\subsection*{Code and reproducibility}
+
+Reviewers rarely run code, but its presence and shape change how claims are
+read. An anonymised repository, or a clear statement that code will be
+released, converts ``we implemented a fair version of the baseline'' from an
+assertion into a checkable one.
+
+\begin{itemize}
+  \item Under anonymous review, use an anonymised repository service; a
+    personal or lab account link is a deanonymisation.
+  \item Give the reader what makes the numbers reproducible: seeds, the
+    hyperparameters you actually used, dataset versions and splits, and the
+    hardware the timings were measured on. A hyperparameter table costs a
+    quarter column and removes an entire class of objection.
+  \item If you cannot release code, say why, and compensate with detail ---
+    an algorithm box and complete settings.
+\end{itemize}
+
+\subsection*{The red-team pass}
+
+A week before the deadline, give the draft to someone --- ideally not a
+co-author --- with one instruction: \emph{find the reason to reject this}.
+Not ``what do you think'', which produces politeness, but a mandate to
+attack. Ask them specifically for: the claim they cannot verify from the
+paper alone; the baseline they would have wanted; the sentence they did not
+believe; and the first paragraph where they lost the thread.
+
+Then triage. Objections that can be answered by a sentence, a column, or a
+caption should be answered before submission --- that is the whole point of
+doing it a week early. Objections that need an experiment you cannot run
+become an explicit limitation, which is far better than leaving a reviewer to
+discover them. If you have no willing reader, the substitute is to leave the
+draft for two days and read it once, quickly, in the role of someone who
+wants to reject it; this is much weaker than a real reader, but it is not
+nothing.
+
+% =========================================================================
 \section{Getting accepted in a track}
 
 Everything above helps a paper be admired. Acceptance is a different and
@@ -538,6 +635,51 @@ unexplained loss, a claim without a condition, a limitation the reviewer
 found before you admitted it.
 
 % =========================================================================
+\section{After submission}
+
+\lead{Reading reviews.} Reviews arrive blunt, sometimes wrong, occasionally
+both. Read them once, then leave them for a day before deciding anything ---
+the first reading is about your feelings and the second is about the paper.
+Then sort each point into: correct and fixable; correct and not fixable now;
+a misunderstanding; and plainly wrong.
+
+The most useful reframing is that a misunderstanding is usually a writing
+defect. If a competent reviewer misread your claim, other readers would have
+too, and the sentence that misled them is findable. Reviewers who
+misunderstand are giving you free evidence about where the paper is unclear,
+which is worth more than the score.
+
+\lead{Rebuttals, where they exist.} Some venues invite an author response;
+where they do, it is short and read quickly, so it must be triaged rather
+than complete.
+
+\begin{itemize}
+  \item Lead with the factual corrections that change a score --- a
+    misreading of what you claimed, a baseline the reviewer thought was
+    missing that is in Table~III --- with a pointer to where the answer
+    already is.
+  \item Concede the fair points plainly and say what you will change. A short
+    concession buys credibility for the paragraph where you disagree.
+  \item Answer what can be answered with evidence you already have. Promising
+    experiments you have not run is transparent and weakens everything else.
+  \item Do not argue tone, do not relitigate taste, and do not spend space on
+    the reviewer you will never persuade. Write for the borderline reviewer
+    and the AE reading the thread.
+\end{itemize}
+
+\lead{Rejection.} Most papers are rejected at least once, including good
+ones, and the reviews you get are an asset the next submission does not have
+to earn. Turn them into a checklist, fix what is fixable, and resubmit
+promptly --- the same work is often a strong submission to a sibling venue or
+journal within a couple of months. Two habits make this cheap: keep the
+reviews and your responses in the repository beside the paper, and fix the
+writing defects immediately while you can still remember what you meant.
+
+The failure mode to avoid is treating a rejection as a verdict on the
+research rather than on this presentation of it. It is nearly always the
+second.
+
+% =========================================================================
 \section{Anti-patterns}
 
 \begin{itemize}
@@ -591,6 +733,12 @@ Run against a draft that already exists, roughly in order of value per minute.
 \noindent Before submitting:
 
 \begin{itemize}[leftmargin=*]
+  \ck Someone was asked to reject the draft, and their answerable objections
+    were answered.
+  \ck Citations checked: sources not surveys, nothing cited for a claim it
+    does not make, self-citations in the third person, bibliography clean.
+  \ck Seeds, hyperparameters, splits and timing hardware stated; code link
+    anonymised if review is anonymous.
   \ck Metrics, units and dataset splits match the papers your results sit
     beside --- checked against their tables, not their prose.
   \ck The benchmark is reported whole, not as a convenient subset.
