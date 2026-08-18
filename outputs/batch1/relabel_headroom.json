@@ -1,0 +1,1123 @@
+{
+ "n_objects": 124,
+ "n_cells": 8719,
+ "pct_truth_in_top3": 48.45739190274114,
+ "objects": [
+  {
+   "scene": "room0",
+   "obj": 13,
+   "cells": 26,
+   "assigned": "cushion",
+   "truth": "sofa",
+   "rank": 2,
+   "n_candidates": 23
+  },
+  {
+   "scene": "room0",
+   "obj": 56,
+   "cells": 26,
+   "assigned": "cushion",
+   "truth": "sofa",
+   "rank": 1,
+   "n_candidates": 23
+  },
+  {
+   "scene": "room0",
+   "obj": 51,
+   "cells": 22,
+   "assigned": "indoor-plant",
+   "truth": "sofa",
+   "rank": 3,
+   "n_candidates": 23
+  },
+  {
+   "scene": "room0",
+   "obj": 55,
+   "cells": 4,
+   "assigned": "lamp",
+   "truth": "book",
+   "rank": 13,
+   "n_candidates": 23
+  },
+  {
+   "scene": "room0",
+   "obj": 57,
+   "cells": 13,
+   "assigned": "vase",
+   "truth": "plant-stand",
+   "rank": 4,
+   "n_candidates": 23
+  },
+  {
+   "scene": "room0",
+   "obj": 49,
+   "cells": 6,
+   "assigned": "sofa",
+   "truth": "lamp",
+   "rank": 15,
+   "n_candidates": 23
+  },
+  {
+   "scene": "room0",
+   "obj": 50,
+   "cells": 10,
+   "assigned": "indoor-plant",
+   "truth": "lamp",
+   "rank": 16,
+   "n_candidates": 23
+  },
+  {
+   "scene": "room0",
+   "obj": 53,
+   "cells": 7,
+   "assigned": "cushion",
+   "truth": "sofa",
+   "rank": 1,
+   "n_candidates": 23
+  },
+  {
+   "scene": "room0",
+   "obj": 21,
+   "cells": 6,
+   "assigned": "vent",
+   "truth": "sofa",
+   "rank": 15,
+   "n_candidates": 23
+  },
+  {
+   "scene": "room0",
+   "obj": 36,
+   "cells": 4,
+   "assigned": "cushion",
+   "truth": "sofa",
+   "rank": 1,
+   "n_candidates": 23
+  },
+  {
+   "scene": "room0",
+   "obj": 39,
+   "cells": 1,
+   "assigned": "cushion",
+   "truth": "sofa",
+   "rank": 2,
+   "n_candidates": 23
+  },
+  {
+   "scene": "room0",
+   "obj": 16,
+   "cells": 2,
+   "assigned": "indoor-plant",
+   "truth": "sofa",
+   "rank": 6,
+   "n_candidates": 23
+  },
+  {
+   "scene": "room0",
+   "obj": 38,
+   "cells": 7,
+   "assigned": "cushion",
+   "truth": "sofa",
+   "rank": 3,
+   "n_candidates": 23
+  },
+  {
+   "scene": "room0",
+   "obj": 43,
+   "cells": 1,
+   "assigned": "indoor-plant",
+   "truth": "plant-stand",
+   "rank": 1,
+   "n_candidates": 23
+  },
+  {
+   "scene": "room0",
+   "obj": 3,
+   "cells": 1,
+   "assigned": "picture",
+   "truth": "sofa",
+   "rank": 12,
+   "n_candidates": 23
+  },
+  {
+   "scene": "room0",
+   "obj": 34,
+   "cells": 225,
+   "assigned": "picture",
+   "truth": "blanket",
+   "rank": 5,
+   "n_candidates": 23
+  },
+  {
+   "scene": "room0",
+   "obj": 1,
+   "cells": 1,
+   "assigned": "stool",
+   "truth": "lamp",
+   "rank": 15,
+   "n_candidates": 23
+  },
+  {
+   "scene": "room0",
+   "obj": 2,
+   "cells": 3,
+   "assigned": "lamp",
+   "truth": "sofa",
+   "rank": 13,
+   "n_candidates": 23
+  },
+  {
+   "scene": "room1",
+   "obj": 52,
+   "cells": 15,
+   "assigned": "switch",
+   "truth": "lamp",
+   "rank": 6,
+   "n_candidates": 19
+  },
+  {
+   "scene": "room1",
+   "obj": 43,
+   "cells": 182,
+   "assigned": "comforter",
+   "truth": "pillow",
+   "rank": 1,
+   "n_candidates": 19
+  },
+  {
+   "scene": "room1",
+   "obj": 34,
+   "cells": 149,
+   "assigned": "comforter",
+   "truth": "pillow",
+   "rank": 1,
+   "n_candidates": 19
+  },
+  {
+   "scene": "room1",
+   "obj": 40,
+   "cells": 61,
+   "assigned": "nightstand",
+   "truth": "pillow",
+   "rank": 7,
+   "n_candidates": 19
+  },
+  {
+   "scene": "room1",
+   "obj": 64,
+   "cells": 1,
+   "assigned": "comforter",
+   "truth": "pillow",
+   "rank": 7,
+   "n_candidates": 19
+  },
+  {
+   "scene": "room1",
+   "obj": 44,
+   "cells": 11,
+   "assigned": "comforter",
+   "truth": "pillow",
+   "rank": 1,
+   "n_candidates": 19
+  },
+  {
+   "scene": "room1",
+   "obj": 46,
+   "cells": 7,
+   "assigned": "comforter",
+   "truth": "pillow",
+   "rank": 3,
+   "n_candidates": 19
+  },
+  {
+   "scene": "room1",
+   "obj": 38,
+   "cells": 1,
+   "assigned": "nightstand",
+   "truth": "pillow",
+   "rank": 3,
+   "n_candidates": 19
+  },
+  {
+   "scene": "room1",
+   "obj": 11,
+   "cells": 2,
+   "assigned": "indoor-plant",
+   "truth": "book",
+   "rank": 11,
+   "n_candidates": 19
+  },
+  {
+   "scene": "room1",
+   "obj": 47,
+   "cells": 76,
+   "assigned": "nightstand",
+   "truth": "lamp",
+   "rank": 1,
+   "n_candidates": 19
+  },
+  {
+   "scene": "room1",
+   "obj": 53,
+   "cells": 6,
+   "assigned": "nightstand",
+   "truth": "lamp",
+   "rank": 5,
+   "n_candidates": 19
+  },
+  {
+   "scene": "room1",
+   "obj": 54,
+   "cells": 3,
+   "assigned": "comforter",
+   "truth": "pillow",
+   "rank": 3,
+   "n_candidates": 19
+  },
+  {
+   "scene": "room1",
+   "obj": 55,
+   "cells": 3,
+   "assigned": "comforter",
+   "truth": "pillow",
+   "rank": 3,
+   "n_candidates": 19
+  },
+  {
+   "scene": "room2",
+   "obj": 15,
+   "cells": 139,
+   "assigned": "sculpture",
+   "truth": "vase",
+   "rank": 3,
+   "n_candidates": 14
+  },
+  {
+   "scene": "room2",
+   "obj": 6,
+   "cells": 1,
+   "assigned": "shelf",
+   "truth": "sculpture",
+   "rank": 11,
+   "n_candidates": 14
+  },
+  {
+   "scene": "room2",
+   "obj": 17,
+   "cells": 42,
+   "assigned": "vase",
+   "truth": "shelf",
+   "rank": 2,
+   "n_candidates": 14
+  },
+  {
+   "scene": "room2",
+   "obj": 3,
+   "cells": 24,
+   "assigned": "vase",
+   "truth": "shelf",
+   "rank": 7,
+   "n_candidates": 14
+  },
+  {
+   "scene": "room2",
+   "obj": 35,
+   "cells": 18,
+   "assigned": "blinds",
+   "truth": "shelf",
+   "rank": 2,
+   "n_candidates": 14
+  },
+  {
+   "scene": "room2",
+   "obj": 46,
+   "cells": 125,
+   "assigned": "indoor-plant",
+   "truth": "table",
+   "rank": 6,
+   "n_candidates": 14
+  },
+  {
+   "scene": "room2",
+   "obj": 29,
+   "cells": 449,
+   "assigned": "indoor-plant",
+   "truth": "table",
+   "rank": 3,
+   "n_candidates": 14
+  },
+  {
+   "scene": "room2",
+   "obj": 25,
+   "cells": 553,
+   "assigned": "indoor-plant",
+   "truth": "chair",
+   "rank": 1,
+   "n_candidates": 14
+  },
+  {
+   "scene": "room2",
+   "obj": 49,
+   "cells": 170,
+   "assigned": "indoor-plant",
+   "truth": "chair",
+   "rank": 1,
+   "n_candidates": 14
+  },
+  {
+   "scene": "room2",
+   "obj": 24,
+   "cells": 496,
+   "assigned": "indoor-plant",
+   "truth": "table",
+   "rank": 1,
+   "n_candidates": 14
+  },
+  {
+   "scene": "room2",
+   "obj": 37,
+   "cells": 51,
+   "assigned": "chair",
+   "truth": "table",
+   "rank": 5,
+   "n_candidates": 14
+  },
+  {
+   "scene": "room2",
+   "obj": 58,
+   "cells": 36,
+   "assigned": "switch",
+   "truth": "table",
+   "rank": 2,
+   "n_candidates": 14
+  },
+  {
+   "scene": "room2",
+   "obj": 28,
+   "cells": 508,
+   "assigned": "chair",
+   "truth": "table",
+   "rank": 4,
+   "n_candidates": 14
+  },
+  {
+   "scene": "room2",
+   "obj": 61,
+   "cells": 11,
+   "assigned": "switch",
+   "truth": "table",
+   "rank": 4,
+   "n_candidates": 14
+  },
+  {
+   "scene": "room2",
+   "obj": 36,
+   "cells": 66,
+   "assigned": "chair",
+   "truth": "table",
+   "rank": 4,
+   "n_candidates": 14
+  },
+  {
+   "scene": "room2",
+   "obj": 43,
+   "cells": 25,
+   "assigned": "chair",
+   "truth": "table",
+   "rank": 4,
+   "n_candidates": 14
+  },
+  {
+   "scene": "room2",
+   "obj": 75,
+   "cells": 4,
+   "assigned": "blinds",
+   "truth": "table",
+   "rank": 4,
+   "n_candidates": 14
+  },
+  {
+   "scene": "room2",
+   "obj": 47,
+   "cells": 61,
+   "assigned": "blinds",
+   "truth": "table",
+   "rank": 5,
+   "n_candidates": 14
+  },
+  {
+   "scene": "room2",
+   "obj": 59,
+   "cells": 21,
+   "assigned": "chair",
+   "truth": "table",
+   "rank": 4,
+   "n_candidates": 14
+  },
+  {
+   "scene": "room2",
+   "obj": 69,
+   "cells": 5,
+   "assigned": "blinds",
+   "truth": "table",
+   "rank": 6,
+   "n_candidates": 14
+  },
+  {
+   "scene": "room2",
+   "obj": 52,
+   "cells": 2,
+   "assigned": "table",
+   "truth": "chair",
+   "rank": 4,
+   "n_candidates": 14
+  },
+  {
+   "scene": "room2",
+   "obj": 57,
+   "cells": 141,
+   "assigned": "switch",
+   "truth": "table",
+   "rank": 4,
+   "n_candidates": 14
+  },
+  {
+   "scene": "room2",
+   "obj": 4,
+   "cells": 69,
+   "assigned": "chair",
+   "truth": "table",
+   "rank": 3,
+   "n_candidates": 14
+  },
+  {
+   "scene": "room2",
+   "obj": 48,
+   "cells": 1,
+   "assigned": "table",
+   "truth": "chair",
+   "rank": 5,
+   "n_candidates": 14
+  },
+  {
+   "scene": "room2",
+   "obj": 8,
+   "cells": 5,
+   "assigned": "shelf",
+   "truth": "switch",
+   "rank": 3,
+   "n_candidates": 14
+  },
+  {
+   "scene": "office0",
+   "obj": 3,
+   "cells": 439,
+   "assigned": "bin",
+   "truth": "chair",
+   "rank": 1,
+   "n_candidates": 18
+  },
+  {
+   "scene": "office0",
+   "obj": 9,
+   "cells": 624,
+   "assigned": "switch",
+   "truth": "chair",
+   "rank": 3,
+   "n_candidates": 18
+  },
+  {
+   "scene": "office0",
+   "obj": 10,
+   "cells": 346,
+   "assigned": "camera",
+   "truth": "blinds",
+   "rank": 1,
+   "n_candidates": 18
+  },
+  {
+   "scene": "office0",
+   "obj": 17,
+   "cells": 11,
+   "assigned": "pillar",
+   "truth": "sofa",
+   "rank": 15,
+   "n_candidates": 18
+  },
+  {
+   "scene": "office0",
+   "obj": 53,
+   "cells": 60,
+   "assigned": "desk-organizer",
+   "truth": "chair",
+   "rank": 15,
+   "n_candidates": 18
+  },
+  {
+   "scene": "office0",
+   "obj": 14,
+   "cells": 1,
+   "assigned": "pillar",
+   "truth": "sofa",
+   "rank": 8,
+   "n_candidates": 18
+  },
+  {
+   "scene": "office0",
+   "obj": 62,
+   "cells": 28,
+   "assigned": "desk-organizer",
+   "truth": "chair",
+   "rank": 15,
+   "n_candidates": 18
+  },
+  {
+   "scene": "office0",
+   "obj": 0,
+   "cells": 11,
+   "assigned": "tissue-paper",
+   "truth": "tv-screen",
+   "rank": 12,
+   "n_candidates": 18
+  },
+  {
+   "scene": "office0",
+   "obj": 18,
+   "cells": 11,
+   "assigned": "clock",
+   "truth": "tv-screen",
+   "rank": 5,
+   "n_candidates": 18
+  },
+  {
+   "scene": "office0",
+   "obj": 28,
+   "cells": 3,
+   "assigned": "camera",
+   "truth": "switch",
+   "rank": 4,
+   "n_candidates": 18
+  },
+  {
+   "scene": "office0",
+   "obj": 48,
+   "cells": 5,
+   "assigned": "pillar",
+   "truth": "sofa",
+   "rank": 13,
+   "n_candidates": 18
+  },
+  {
+   "scene": "office0",
+   "obj": 43,
+   "cells": 321,
+   "assigned": "camera",
+   "truth": "blinds",
+   "rank": 10,
+   "n_candidates": 18
+  },
+  {
+   "scene": "office0",
+   "obj": 38,
+   "cells": 116,
+   "assigned": "pillar",
+   "truth": "blinds",
+   "rank": 5,
+   "n_candidates": 18
+  },
+  {
+   "scene": "office0",
+   "obj": 47,
+   "cells": 29,
+   "assigned": "pillar",
+   "truth": "blinds",
+   "rank": 8,
+   "n_candidates": 18
+  },
+  {
+   "scene": "office0",
+   "obj": 26,
+   "cells": 21,
+   "assigned": "clock",
+   "truth": "blinds",
+   "rank": 12,
+   "n_candidates": 18
+  },
+  {
+   "scene": "office0",
+   "obj": 40,
+   "cells": 4,
+   "assigned": "switch",
+   "truth": "indoor-plant",
+   "rank": 1,
+   "n_candidates": 18
+  },
+  {
+   "scene": "office0",
+   "obj": 39,
+   "cells": 6,
+   "assigned": "switch",
+   "truth": "indoor-plant",
+   "rank": 1,
+   "n_candidates": 18
+  },
+  {
+   "scene": "office0",
+   "obj": 61,
+   "cells": 1,
+   "assigned": "pillar",
+   "truth": "sofa",
+   "rank": 14,
+   "n_candidates": 18
+  },
+  {
+   "scene": "office1",
+   "obj": 3,
+   "cells": 3,
+   "assigned": "cloth",
+   "truth": "bin",
+   "rank": 8,
+   "n_candidates": 16
+  },
+  {
+   "scene": "office1",
+   "obj": 18,
+   "cells": 15,
+   "assigned": "monitor",
+   "truth": "pillow",
+   "rank": 6,
+   "n_candidates": 16
+  },
+  {
+   "scene": "office1",
+   "obj": 27,
+   "cells": 10,
+   "assigned": "monitor",
+   "truth": "pillow",
+   "rank": 5,
+   "n_candidates": 16
+  },
+  {
+   "scene": "office1",
+   "obj": 25,
+   "cells": 3,
+   "assigned": "monitor",
+   "truth": "pillow",
+   "rank": 6,
+   "n_candidates": 16
+  },
+  {
+   "scene": "office1",
+   "obj": 33,
+   "cells": 3,
+   "assigned": "pillar",
+   "truth": "pillow",
+   "rank": 10,
+   "n_candidates": 16
+  },
+  {
+   "scene": "office2",
+   "obj": 8,
+   "cells": 176,
+   "assigned": "vent",
+   "truth": "chair",
+   "rank": 3,
+   "n_candidates": 14
+  },
+  {
+   "scene": "office2",
+   "obj": 3,
+   "cells": 122,
+   "assigned": "chair",
+   "truth": "table",
+   "rank": 4,
+   "n_candidates": 14
+  },
+  {
+   "scene": "office2",
+   "obj": 21,
+   "cells": 62,
+   "assigned": "vent",
+   "truth": "chair",
+   "rank": 7,
+   "n_candidates": 14
+  },
+  {
+   "scene": "office2",
+   "obj": 6,
+   "cells": 242,
+   "assigned": "vent",
+   "truth": "chair",
+   "rank": 1,
+   "n_candidates": 14
+  },
+  {
+   "scene": "office2",
+   "obj": 38,
+   "cells": 185,
+   "assigned": "vent",
+   "truth": "chair",
+   "rank": 2,
+   "n_candidates": 14
+  },
+  {
+   "scene": "office2",
+   "obj": 7,
+   "cells": 106,
+   "assigned": "vent",
+   "truth": "chair",
+   "rank": 5,
+   "n_candidates": 14
+  },
+  {
+   "scene": "office2",
+   "obj": 11,
+   "cells": 77,
+   "assigned": "vent",
+   "truth": "chair",
+   "rank": 7,
+   "n_candidates": 14
+  },
+  {
+   "scene": "office2",
+   "obj": 32,
+   "cells": 2,
+   "assigned": "table",
+   "truth": "chair",
+   "rank": 3,
+   "n_candidates": 14
+  },
+  {
+   "scene": "office2",
+   "obj": 48,
+   "cells": 8,
+   "assigned": "cushion",
+   "truth": "sofa",
+   "rank": 1,
+   "n_candidates": 14
+  },
+  {
+   "scene": "office2",
+   "obj": 44,
+   "cells": 7,
+   "assigned": "cushion",
+   "truth": "sofa",
+   "rank": 1,
+   "n_candidates": 14
+  },
+  {
+   "scene": "office2",
+   "obj": 59,
+   "cells": 3,
+   "assigned": "sofa",
+   "truth": "cushion",
+   "rank": 1,
+   "n_candidates": 14
+  },
+  {
+   "scene": "office2",
+   "obj": 58,
+   "cells": 3,
+   "assigned": "cushion",
+   "truth": "sofa",
+   "rank": 1,
+   "n_candidates": 14
+  },
+  {
+   "scene": "office2",
+   "obj": 22,
+   "cells": 9,
+   "assigned": "cushion",
+   "truth": "sofa",
+   "rank": 1,
+   "n_candidates": 14
+  },
+  {
+   "scene": "office2",
+   "obj": 77,
+   "cells": 3,
+   "assigned": "sofa",
+   "truth": "cushion",
+   "rank": 1,
+   "n_candidates": 14
+  },
+  {
+   "scene": "office2",
+   "obj": 43,
+   "cells": 4,
+   "assigned": "cushion",
+   "truth": "sofa",
+   "rank": 1,
+   "n_candidates": 14
+  },
+  {
+   "scene": "office2",
+   "obj": 31,
+   "cells": 7,
+   "assigned": "vent",
+   "truth": "chair",
+   "rank": 6,
+   "n_candidates": 14
+  },
+  {
+   "scene": "office2",
+   "obj": 15,
+   "cells": 6,
+   "assigned": "bin",
+   "truth": "table",
+   "rank": 1,
+   "n_candidates": 14
+  },
+  {
+   "scene": "office2",
+   "obj": 61,
+   "cells": 9,
+   "assigned": "tv-screen",
+   "truth": "stool",
+   "rank": 8,
+   "n_candidates": 14
+  },
+  {
+   "scene": "office2",
+   "obj": 33,
+   "cells": 4,
+   "assigned": "tv-screen",
+   "truth": "stool",
+   "rank": 8,
+   "n_candidates": 14
+  },
+  {
+   "scene": "office2",
+   "obj": 56,
+   "cells": 1,
+   "assigned": "cushion",
+   "truth": "stool",
+   "rank": 1,
+   "n_candidates": 14
+  },
+  {
+   "scene": "office3",
+   "obj": 15,
+   "cells": 232,
+   "assigned": "cushion",
+   "truth": "sofa",
+   "rank": 1,
+   "n_candidates": 21
+  },
+  {
+   "scene": "office3",
+   "obj": 21,
+   "cells": 8,
+   "assigned": "cushion",
+   "truth": "sofa",
+   "rank": 1,
+   "n_candidates": 21
+  },
+  {
+   "scene": "office3",
+   "obj": 52,
+   "cells": 301,
+   "assigned": "desk-organizer",
+   "truth": "chair",
+   "rank": 2,
+   "n_candidates": 21
+  },
+  {
+   "scene": "office3",
+   "obj": 56,
+   "cells": 290,
+   "assigned": "desk-organizer",
+   "truth": "chair",
+   "rank": 2,
+   "n_candidates": 21
+  },
+  {
+   "scene": "office3",
+   "obj": 69,
+   "cells": 122,
+   "assigned": "desk-organizer",
+   "truth": "chair",
+   "rank": 4,
+   "n_candidates": 21
+  },
+  {
+   "scene": "office3",
+   "obj": 58,
+   "cells": 120,
+   "assigned": "desk-organizer",
+   "truth": "chair",
+   "rank": 1,
+   "n_candidates": 21
+  },
+  {
+   "scene": "office3",
+   "obj": 53,
+   "cells": 36,
+   "assigned": "desk-organizer",
+   "truth": "chair",
+   "rank": 11,
+   "n_candidates": 21
+  },
+  {
+   "scene": "office3",
+   "obj": 59,
+   "cells": 11,
+   "assigned": "desk-organizer",
+   "truth": "chair",
+   "rank": 2,
+   "n_candidates": 21
+  },
+  {
+   "scene": "office3",
+   "obj": 73,
+   "cells": 113,
+   "assigned": "desk-organizer",
+   "truth": "chair",
+   "rank": 5,
+   "n_candidates": 21
+  },
+  {
+   "scene": "office3",
+   "obj": 72,
+   "cells": 170,
+   "assigned": "desk-organizer",
+   "truth": "chair",
+   "rank": 1,
+   "n_candidates": 21
+  },
+  {
+   "scene": "office3",
+   "obj": 68,
+   "cells": 7,
+   "assigned": "chair",
+   "truth": "desk-organizer",
+   "rank": 1,
+   "n_candidates": 21
+  },
+  {
+   "scene": "office3",
+   "obj": 45,
+   "cells": 13,
+   "assigned": "bin",
+   "truth": "chair",
+   "rank": 2,
+   "n_candidates": 21
+  },
+  {
+   "scene": "office3",
+   "obj": 43,
+   "cells": 2,
+   "assigned": "vent",
+   "truth": "chair",
+   "rank": 9,
+   "n_candidates": 21
+  },
+  {
+   "scene": "office3",
+   "obj": 40,
+   "cells": 11,
+   "assigned": "sofa",
+   "truth": "chair",
+   "rank": 6,
+   "n_candidates": 21
+  },
+  {
+   "scene": "office3",
+   "obj": 80,
+   "cells": 1,
+   "assigned": "switch",
+   "truth": "chair",
+   "rank": 16,
+   "n_candidates": 21
+  },
+  {
+   "scene": "office4",
+   "obj": 15,
+   "cells": 149,
+   "assigned": "bin",
+   "truth": "chair",
+   "rank": 3,
+   "n_candidates": 9
+  },
+  {
+   "scene": "office4",
+   "obj": 60,
+   "cells": 7,
+   "assigned": "bin",
+   "truth": "chair",
+   "rank": 6,
+   "n_candidates": 9
+  },
+  {
+   "scene": "office4",
+   "obj": 51,
+   "cells": 22,
+   "assigned": "vent",
+   "truth": "chair",
+   "rank": 4,
+   "n_candidates": 9
+  },
+  {
+   "scene": "office4",
+   "obj": 52,
+   "cells": 14,
+   "assigned": "bin",
+   "truth": "chair",
+   "rank": 3,
+   "n_candidates": 9
+  },
+  {
+   "scene": "office4",
+   "obj": 40,
+   "cells": 30,
+   "assigned": "tv-screen",
+   "truth": "chair",
+   "rank": 8,
+   "n_candidates": 9
+  },
+  {
+   "scene": "office4",
+   "obj": 53,
+   "cells": 9,
+   "assigned": "vent",
+   "truth": "chair",
+   "rank": 1,
+   "n_candidates": 9
+  },
+  {
+   "scene": "office4",
+   "obj": 37,
+   "cells": 28,
+   "assigned": "vent",
+   "truth": "chair",
+   "rank": 7,
+   "n_candidates": 9
+  },
+  {
+   "scene": "office4",
+   "obj": 11,
+   "cells": 5,
+   "assigned": "vent",
+   "truth": "chair",
+   "rank": 6,
+   "n_candidates": 9
+  },
+  {
+   "scene": "office4",
+   "obj": 48,
+   "cells": 5,
+   "assigned": "vent",
+   "truth": "chair",
+   "rank": 3,
+   "n_candidates": 9
+  },
+  {
+   "scene": "office4",
+   "obj": 64,
+   "cells": 1,
+   "assigned": "vent",
+   "truth": "chair",
+   "rank": 8,
+   "n_candidates": 9
+  }
+ ]
+}
