@@ -15,6 +15,7 @@ send that log to Paul rather than guessing.
 from __future__ import annotations
 
 import argparse
+import gc
 import glob
 import gzip
 import json
@@ -27,6 +28,17 @@ import numpy as np
 # same regardless of the caller's working directory (notebook runs from the
 # repo root, the README runs from student_gpu_package/)
 PKG = os.path.dirname(os.path.abspath(__file__))
+
+
+def _rss(tag):
+    """Print resident memory. Colab OOM-kills silently, so the last line
+    printed before death is the only diagnostic available."""
+    try:
+        import resource
+        mb = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024
+        print(f"[mem] {tag}: peak RSS {mb:.0f} MB", flush=True)
+    except Exception:
+        pass
 
 
 def load_their_result(out_dir, prefer_post=True):
@@ -162,8 +174,8 @@ def main():
             for fr in frs:
                 obs_rows.append(dict(frame=int(fr), obj=oid, cls=str(cname),
                                      x=float(c[0]), y=float(c[1]), z=float(c[2])))
-        pts_all.append(pts)
-        lab_all.append(np.full(len(pts), oid))
+        pts_all.append(pts.astype(np.float32, copy=False))
+        lab_all.append(np.full(len(pts), oid, dtype=np.int32))
 
     # A class-agnostic map (class_set none / class_agnostic=True) carries no
     # semantics — every object's class_name is literally "item", so reading it
@@ -173,6 +185,15 @@ def main():
     # embeddings of the class list. Reproduced here verbatim — same model
     # (ViT-H-14 / laion2b_s32b_b79k), same prompt, same L2 normalisation, same
     # -1e10 suppression of the excluded classes, same argmax. Nothing invented.
+    _rss("after object loop")
+    # Everything needed downstream is already extracted into obj_rows /
+    # obs_rows / feats / pts_all. Their map object holds per-detection masks
+    # and crops; freeing it here is what makes the CLIP relabel survive on a
+    # standard Colab runtime.
+    del res, objects
+    gc.collect()
+    _rss("after freeing their map")
+
     if len({r["cls"] for r in obj_rows}) <= 1 and feats and feats[0] is not None:
         import torch, open_clip
         try:
@@ -183,11 +204,35 @@ def main():
             raise SystemExit(f"cannot import their class list: {e}")
         print(f"class-agnostic map detected -> assigning labels from clip_ft "
               f"against {len(class_names)} Replica classes, their method")
+        # ---- text-embedding cache -------------------------------------
+        # The 51 class prompts do not depend on the scene, so ViT-H-14 only
+        # needs to be loaded ONCE across all 8 scenes. On a standard Colab
+        # runtime, loading it per scene alongside their map is what triggers
+        # the OOM kill. Cache lives beside handoff/ so it survives per-scene
+        # processes.
+        _cache = os.path.join(PKG, "handoff", "cg_clip_text.npz")
+        _tf_cached = None
+        if os.path.exists(_cache):
+            _z = np.load(_cache, allow_pickle=True)
+            if list(_z["class_names"]) == list(class_names):
+                _tf_cached = _z["text_ft"]
+                print(f"reusing cached class text embeddings "
+                      f"({_tf_cached.shape}) -- ViT-H-14 NOT loaded",
+                      flush=True)
+            else:
+                print("text cache present but class list differs -- recomputing")
+
         dev = "cuda" if torch.cuda.is_available() else "cpu"
-        model, _, _ = open_clip.create_model_and_transforms(
-            "ViT-H-14", "laion2b_s32b_b79k")
-        model = model.to(dev).eval()
-        tok = open_clip.get_tokenizer("ViT-H-14")
+        if _tf_cached is None:
+            print(f"CLIP device: {dev}"
+                  + ("" if dev == "cuda" else
+                     "  <- NO GPU: ViT-H-14 will take ~2.5 GB of SYSTEM RAM"),
+                  flush=True)
+            model, _, _ = open_clip.create_model_and_transforms(
+                "ViT-H-14", "laion2b_s32b_b79k")
+            model = model.to(dev).eval()
+            tok = open_clip.get_tokenizer("ViT-H-14")
+            _rss("after loading ViT-H-14")
         # their n_exclude=6 list; suppressed BEFORE argmax exactly as they do
         EXCLUDE = ["other", "floor", "wall", "ceiling", "door", "window"]
 
@@ -227,9 +272,21 @@ def main():
                       "is not what their eval does")
 
         with torch.no_grad():
-            tf = model.encode_text(
-                tok([f"an image of {c}" for c in class_names]).to(dev))
-            tf = tf / tf.norm(dim=-1, keepdim=True)
+            if _tf_cached is None:
+                tf = model.encode_text(
+                    tok([f"an image of {c}" for c in class_names]).to(dev))
+                tf = tf / tf.norm(dim=-1, keepdim=True)
+                np.savez_compressed(
+                    _cache, class_names=np.array(class_names),
+                    text_ft=tf.cpu().numpy().astype(np.float32))
+                print(f"wrote {_cache} -- later scenes will skip the model")
+                del model, tok
+                gc.collect()
+                if dev == "cuda":
+                    torch.cuda.empty_cache()
+                _rss("after freeing ViT-H-14")
+            else:
+                tf = torch.from_numpy(_tf_cached).to(dev).float()
             of = torch.from_numpy(
                 np.stack([np.asarray(f) for f in feats])).to(dev).float()
             of = of / of.norm(dim=-1, keepdim=True)
