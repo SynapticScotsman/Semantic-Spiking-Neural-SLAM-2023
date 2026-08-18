@@ -112,6 +112,14 @@ code{font-family:var(--mono);font-size:.86em;background:var(--surface-panel);
 .rank li::before{content:counter(r);font-family:var(--mono);
   font-size:.74rem;color:var(--text-muted)}
 .rank li:last-child{border-bottom:none}
+table.refs{font-size:.85rem;min-width:720px}
+table.refs td:first-child{min-width:210px}
+table.refs a{word-break:break-word}
+.dep{font-family:var(--mono);font-size:.6rem;letter-spacing:.08em;
+  text-transform:uppercase;padding:1px 6px;border-radius:99px;
+  border:1px solid var(--border);color:var(--text-muted);white-space:nowrap}
+.dep.f{border-color:var(--good);color:var(--good)}
+.dep.p{border-color:var(--brand);color:var(--brand)}
 footer{border-top:1px solid var(--border);padding-top:20px;
   color:var(--text-muted);font-size:.82rem;display:flex;
   flex-direction:column;gap:8px}
@@ -120,7 +128,7 @@ a{color:var(--brand)}
 
 <div class="wrap">
 <header>
-  <p class="eyebrow">Writing reference &middot; 18 August 2026 &middot; 47 award papers surveyed</p>
+  <p class="eyebrow">Writing reference &middot; 18 August 2026 &middot; 47 award papers surveyed &middot; all links below</p>
   <h1>The award-paper template</h1>
   <div class="rule"></div>
   <p class="standfirst">What ICRA, RSS, CoRL and T-RO award winners from
@@ -457,6 +465,162 @@ a{color:var(--brand)}
     acknowledgements and grant numbers; add the AI-use disclosure.</span>
     <span class="tag v">required</span></li>
   </ol>
+</section>
+
+<section>
+  <h2>References &mdash; every paper, with what it evidences</h2>
+  <p class="prose">Read-depth tags are the agents' own, and they constrain what
+  each row can support: <span class="dep f">full</span> the whole paper was
+  extracted; <span class="dep p">first pp</span> title/abstract/Fig.&nbsp;1 and
+  structure only; <span class="dep">listing</span> the paper was
+  <em>not</em> read &mdash; the row records only that the award exists, and
+  cannot support any structural claim.</p>
+
+  <h3>ICRA winners &mdash; the venue we are submitting to</h3>
+  <div class="scroll"><table class="refs">
+    <thead><tr><th>Paper</th><th>Award</th><th>Depth</th><th>Evidences</th></tr></thead>
+    <tbody>
+      <tr><td><a href="https://arxiv.org/html/2409.09479v2">MAC-VO: Metrics-aware Covariance for Learning-based Stereo Visual Odometry</a></td>
+        <td>ICRA 2025 Best Conference Paper <em>and</em> Best Paper on Robot Perception</td>
+        <td><span class="dep f">full</span></td>
+        <td>The thin-Related-Work budget; 3 refutable contribution bullets; claim-with-evidence-unit inline; the honest second place on KITTI with its cause diagnosed; merged Conclusion &amp; Discussion. Its award citation is the source of the &ldquo;convincing results on challenging benchmarks&rdquo; register.</td></tr>
+      <tr><td><a href="https://arxiv.org/html/2409.09871">Marginalizing and Conditioning Gaussians onto Linear Approximations of Smooth Functions</a></td>
+        <td>ICRA 2025 Best Conference Paper (co-winner)</td>
+        <td><span class="dep f">full</span></td>
+        <td>One-derivation-three-instantiations &mdash; generality demonstrated structurally rather than asserted. A pure-theory ICRA winner with zero real robots, which is the precedent that matters for a capacity-law paper.</td></tr>
+      <tr><td><a href="https://ar5iv.labs.arxiv.org/html/2310.16985">TinyMPC: Model-Predictive Control on Resource-Constrained Microcontrollers</a></td>
+        <td>ICRA 2024 Best Paper in Automation</td>
+        <td><span class="dep f">full</span></td>
+        <td><strong>The closest structural analogue to our paper.</strong> Every result denominated in the constrained resource (kB, ms, Hz) against hard limits, and its own capacity ceiling stated as a first-class number. Also the leanest winner &mdash; its Background teaches only the tools its solver uses, a good trimming model.</td></tr>
+      <tr><td><a href="https://arxiv.org/html/2310.11843">Do We Run Large-scale Multi-Robot Systems on the Edge?</a></td>
+        <td>ICRA 2024 Best Paper on Multi-Robot Systems</td>
+        <td><span class="dep f">full</span></td>
+        <td>An empirical-law paper that won: how to assert measurements flatly while hedging mechanism and universality, and how to frame a scaling signature as falsifiable.</td></tr>
+      <tr><td><a href="https://arxiv.org/abs/2110.00966">Translating Images into Maps</a></td>
+        <td>ICRA 2022 Outstanding Paper (overall)</td>
+        <td><span class="dep f">full</span></td>
+        <td>The credit-then-name-the-failure-mode turn, and a coined frame (&ldquo;the translation problem&rdquo;) repeated verbatim.</td></tr>
+      <tr><td><a href="https://me.vt.edu/news/briefs/hamed-fawcett-best-paper-ieee-icra-2023.html">Distributed Data-Driven Predictive Control for Multi-Agent Collaborative Legged Locomotion</a></td>
+        <td>ICRA 2023 Outstanding Paper (overall)</td>
+        <td><span class="dep f">full</span></td>
+        <td>The winner with <em>no</em> Related Work section &mdash; the existence proof that the section is optional at ICRA.</td></tr>
+      <tr><td><a href="https://ar5iv.labs.arxiv.org/html/2310.07896">NoMaD: Goal Masked Diffusion Policies for Navigation and Exploration</a></td>
+        <td>ICRA 2024 Best Conference Paper (co-winner)</td>
+        <td><span class="dep p">first pp</span></td>
+        <td>The &ldquo;one X where there were N&rdquo; arc &mdash; structurally identical to &ldquo;one vector is the whole map&rdquo;; two-paragraph intro; parameter counts printed beside success rates.</td></tr>
+      <tr><td><a href="https://ar5iv.labs.arxiv.org/html/2310.08864">Open X-Embodiment: Robotic Learning Datasets and RT-X Models</a></td>
+        <td>ICRA 2024 Best Conference Paper (co-winner)</td>
+        <td><span class="dep p">first pp</span></td>
+        <td>Counts-as-authority; the one-sentence opening paragraph. The consortium-scale outlier &mdash; the only sampled winner whose Fig.&nbsp;1 is a plain diagram.</td></tr>
+      <tr><td><a href="https://arxiv.org/abs/2209.07753">Code as Policies: Language Model Programs for Embodied Control</a></td>
+        <td>ICRA 2023 Outstanding Robot Learning Paper</td>
+        <td><span class="dep p">first pp</span></td>
+        <td>The merged &ldquo;Discussion and Limitations&rdquo; heading &mdash; the precedent for folding our Limitations section.</td></tr>
+      <tr><td><a href="https://arxiv.org/abs/2311.09525">NGEL-SLAM</a> &middot; <a href="https://arxiv.org/abs/2312.03275">VLFM</a></td>
+        <td>ICRA 2024 Best Paper, Robot Vision / Cognitive Robotics</td>
+        <td><span class="dep p">first pp</span></td>
+        <td>Nearest-genre SLAM/mapping winners; table conventions and results framing.</td></tr>
+      <tr><td>Robo-DM &middot; Occlusion Reasoning for Tree Canopies &middot; CT-ICP</td>
+        <td>ICRA 2025 Robot Learning / 2023 Sensors &amp; Perception / 2022 finalist</td>
+        <td><span class="dep">listing</span></td>
+        <td>Award existence only, via <a href="https://aihub.org/2025/05/27/congratulations-to-the-icra2025-best-paper-award-winners/">AIhub</a> and <a href="https://www.ieee-ras.org/about-ras/latest-news/ras-congratulates-the-honorees-at-the-icra-2023-awards-ceremony">IEEE RAS</a>. Not read; supports nothing structural.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>RSS, CoRL and T-RO &mdash; imported patterns, weigh accordingly</h3>
+  <div class="scroll"><table class="refs">
+    <thead><tr><th>Paper</th><th>Award</th><th>Depth</th><th>Evidences</th></tr></thead>
+    <tbody>
+      <tr><td><a href="https://ar5iv.labs.arxiv.org/html/2308.07931">Distilled Feature Fields Enable Few-Shot Language-Guided Manipulation (F3RM)</a></td>
+        <td>CoRL 2023 Best Paper</td>
+        <td><span class="dep f">full</span></td>
+        <td><strong>The honest-loss precedent.</strong> Reports a 62% success rate and calls itself impractical for industry &mdash; and won, because the claim it defends is the representation bridge, not deployment. Also: the 5-sentence numbers-free abstract, the claim-as-title, and the Fig.&nbsp;1 caption whose first clause restates the title.</td></tr>
+      <tr><td><a href="https://arxiv.org/abs/2307.01928">Robots That Ask For Help: Uncertainty Alignment for LLM Planners (KnowNo)</a></td>
+        <td>CoRL 2023 Best Student Paper</td>
+        <td><span class="dep f">full</span></td>
+        <td>Coining a citable handle (&ldquo;uncertainty alignment&rdquo;); re-tuning the baseline's operating point before comparing; a headline figure that <em>is</em> the predicted-vs-measured deviation plot &mdash; the model for our 1.4% panel.</td></tr>
+      <tr><td><a href="https://arxiv.org/abs/2406.20083">PoliFormer</a></td>
+        <td>CoRL 2024 Outstanding Paper</td>
+        <td><span class="dep f">full</span></td>
+        <td>Numbers frozen verbatim across abstract, intro and tables; bold run-in reviewer questions in the results.</td></tr>
+      <tr><td><a href="https://arxiv.org/abs/2305.11643">Time Optimal Ergodic Search</a></td>
+        <td>RSS 2023 Outstanding Paper</td>
+        <td><span class="dep f">full</span></td>
+        <td>Pre-registered questions Q1&ndash;Q6 closed one by one; one theorem in main text placed exactly where the objection lives.</td></tr>
+      <tr><td><a href="https://arxiv.org/html/2407.08735">Real-Time Anomaly Detection and Reactive Planning with LLMs (AESOP)</a></td>
+        <td>RSS 2024 Outstanding Paper</td>
+        <td><span class="dep f">full</span></td>
+        <td>The H1&ndash;H5 claims ledger tagged into section titles; running the ablation that makes the method look bad and explaining why.</td></tr>
+      <tr><td><a href="https://ar5iv.labs.arxiv.org/html/2203.00663">Iterative Residual Policy (IRP)</a></td>
+        <td>RSS 2022 Best Paper</td>
+        <td><span class="dep f">full</span></td>
+        <td>&ldquo;Instead of X, we do Y&rdquo; as the abstract's central sentence; errors reported against a physical floor; steelmanning by handing the baseline ground-truth parameters; bold run-in heads replacing a setup section.</td></tr>
+      <tr><td><a href="https://ar5iv.labs.arxiv.org/html/2106.14386">Kimera-Multi</a></td>
+        <td>T-RO King-Sun Fu Best Paper 2023</td>
+        <td><span class="dep p">first pp</span></td>
+        <td><strong>The nearest-venue SLAM exemplar.</strong> Fig.&nbsp;1 shows failure-then-fix rather than architecture, with the quantity annotated in the caption &mdash; the pattern our hero caption should copy.</td></tr>
+      <tr><td><a href="https://ar5iv.labs.arxiv.org/html/2209.08533">RACER</a></td>
+        <td>T-RO King-Sun Fu Best Paper 2024</td>
+        <td><span class="dep p">first pp</span></td>
+        <td>Exactly one tightly-scoped &ldquo;first&rdquo; claim; the caption that answers the referee's objection in advance.</td></tr>
+      <tr><td><a href="https://ar5iv.labs.arxiv.org/html/2309.05665">Robot Parkour Learning</a></td>
+        <td>CoRL 2023 Best Systems Paper <em>finalist</em> (winner: RoboCook)</td>
+        <td><span class="dep p">first pp</span></td>
+        <td>Territory-grab title; numbers relocated to the Fig.&nbsp;1 caption and normalised by robot dimensions. Note: finalist, not winner &mdash; cited as a craft exemplar.</td></tr>
+      <tr><td><a href="https://ar5iv.labs.arxiv.org/html/2303.04137">Diffusion Policy</a> &middot; <a href="https://arxiv.org/html/2402.10329">UMI</a></td>
+        <td><strong>Award status unverified</strong> &mdash; influence exemplars, not winners</td>
+        <td><span class="dep p">first pp</span></td>
+        <td>The headline number in abstract sentence 2; Fig.&nbsp;1 as taxonomy positioning a new representation against prior families. <em>Do not cite these as award papers.</em></td></tr>
+      <tr><td><a href="https://arxiv.org/abs/2211.07638">Legged Locomotion, Egocentric Vision</a> &middot; <a href="https://arxiv.org/abs/2211.08416">Sirius</a> &middot; <a href="https://arxiv.org/abs/2506.14968">FEAST</a> &middot; <a href="https://arxiv.org/abs/2501.09747">FAST</a></td>
+        <td>CoRL 2022 Best Systems / RSS 2023 finalist / RSS 2025 Outstanding / RSS 2025 finalist</td>
+        <td><span class="dep p">first pp</span></td>
+        <td>Supporting instances for opening moves and results framing.</td></tr>
+      <tr><td>OpenVLA &middot; One Model to Drift Them All &middot; UniFP &middot; VideoMimic &middot; Training Robots to Evaluate Robots</td>
+        <td>CoRL 2022&ndash;2025 awards</td>
+        <td><span class="dep">listing</span></td>
+        <td>Award existence only, via <a href="https://2024.corl.org/program/awards">CoRL 2024</a> and <a href="https://2025.corl.org/program/awards">CoRL 2025</a> award pages. Not read.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Rules, criteria and award citations</h3>
+  <ul class="plain">
+    <li><a href="https://2027.ieee-icra.org/contribute/call-for-icra-2027-papers-now-accepting-submissions/">ICRA 2027 call for papers</a> &mdash; <span class="tag v">verified</span> the source for all four compliance facts: the 8-page limit including references, double-anonymous review, the AI-disclosure requirement, and the 15 September 2026 deadline. Fetched directly rather than taken from the sweep.</li>
+    <li><a href="https://www.ieee-ras.org/about-ras/latest-news/ras-congratulates-the-honorees-at-the-icra-2024-awards-ceremony">IEEE RAS ICRA 2024 honorees</a> &mdash; the authoritative winner list, and the page that settles the sweep's own mis-refutation about the 2024 co-winners.</li>
+    <li><a href="https://roboticsfoundation.org/awards/best-paper-award/">RSS Foundation best-paper list</a> &mdash; RSS winners and the award-name history (the award was renamed later, which is why one agent labelled IRP inconsistently).</li>
+    <li><a href="https://aihub.org/2025/05/27/congratulations-to-the-icra2025-best-paper-award-winners/">AIhub ICRA 2025 winners</a> &mdash; where the two ICRA 2025 award citations quoted in the style rules come from.</li>
+  </ul>
+
+  <div class="note">
+    <h3>Where the quoted phrases live &mdash; retrieve them from the source</h3>
+    <p>Rather than reproduce the passages here, these are the exact locations,
+    so you can pull and cite them yourself with correct page/section
+    attribution:</p>
+    <ul class="plain">
+      <li><strong>&ldquo;degrades silently&hellip;&rdquo;</strong> (the gap
+      sentence, already cited in our draft) &mdash; Pangaliman et&nbsp;al.
+      spatial-memory survey, <a href="https://arxiv.org/abs/2604.16482">arXiv:2604.16482</a>,
+      Sec.&nbsp;3.3, in the hash-based-maps discussion. Also the source of the
+      52-systems figure and the 215&times; peak-to-map ratio for NICE-SLAM
+      &mdash; both verified against the fetched HTML during the paper audit.</li>
+      <li><strong>MAC-VO's award citation</strong> (the &ldquo;rigour and
+      convincing results&rdquo; register) &mdash; the AIhub ICRA 2025 page
+      above; one sentence, quoted in full there.</li>
+      <li><strong>RACER's objection-answering caption clause</strong> &mdash;
+      RACER Fig.&nbsp;1 caption, final clause.</li>
+      <li><strong>Kimera-Multi's annotated teaser quantity</strong> &mdash;
+      Kimera-Multi Fig.&nbsp;1 caption.</li>
+      <li><strong>Parkour's dimension-normalised numbers</strong> &mdash;
+      Robot Parkour Learning Fig.&nbsp;1 caption.</li>
+      <li><strong>F3RM's self-assessment of impracticality</strong> &mdash;
+      F3RM's results discussion, alongside its headline success-rate table.</li>
+      <li><strong>MAC-VO's inline evidence units</strong> &mdash; MAC-VO
+      abstract and experiments, where each improvement is stated against a
+      named baseline and metric.</li>
+      <li><strong>TinyMPC's budget-denominated results and capacity
+      ceiling</strong> &mdash; TinyMPC experiments section and its stated
+      decision-variable limit.</li>
+    </ul>
+  </div>
 </section>
 
 <section>
