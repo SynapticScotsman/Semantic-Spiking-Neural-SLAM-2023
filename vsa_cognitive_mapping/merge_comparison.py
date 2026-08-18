@@ -107,7 +107,9 @@ def main():
 
     raw = json.load(open(args.gt_json))
     gt_by = {}
-    for g in (raw["instances"] if isinstance(raw, dict) else raw):
+    # Replica ships unlabelled geometry as class_id -1 (class_name 'undefined'): real objects with no semantic class. They must never enter a class list.
+    _src = raw["instances"] if isinstance(raw, dict) else raw
+    for g in (g for g in _src if g.get("cls") != "class_-1"):
         name = REPLICA2COCO.get(g.get("cls") or g.get("class"))
         if name:
             gt_by.setdefault(name, []).append((float(g["x"]), float(g["y"])))

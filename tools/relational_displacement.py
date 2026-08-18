@@ -213,7 +213,9 @@ def between_demo(S):
                            "smallest decoded-peak separation (product "
                            "composition requires kernel overlap; length "
                            f"scale {LS} m)")
+    # Replica ships unlabelled geometry as class_id -1 (class_name 'undefined'): real objects with no semantic class. They must never enter a class list.
     chosen["gt_instances"] = {c: [[g["x"], g["y"]] for g in S["inst"]
+                                  if g.get("cls") != "class_-1"
                                   if g["cls"] == c]
                               for c in (chosen["class_a"], chosen["class_b"])}
     return chosen, rows, P, A, B, pk
