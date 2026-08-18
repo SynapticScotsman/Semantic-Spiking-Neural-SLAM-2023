@@ -52,11 +52,19 @@ SCENES = ["room0", "room1", "room2", "office0", "office1", "office2",
 # the one every stored baseline artifact was produced at.
 SEEDS = [(0, 7, 11), (1, 8, 12), (2, 9, 13), (3, 10, 14), (4, 15, 16)]
 CACHE_DIR = "outputs/batch1/cache"
-# measured 2026-08-16 (rescore_post_inscene.json, vsa rows); reference-tuple
+# RE-BASELINED 2026-08-18 after class_phasors moved to name-hashed keys
+# (see wiki 2026-08-17-gap-closing-batch-results.md). Regenerate with
+# collab_tasks/batch1/rebaseline.py; headline moved 0.3237 -> 0.3197,
+# inside the 0.017 noise band. Reference-tuple
 # sanity values -- the real gate at the reference tuple is LABEL identity
-BASELINE_MACC = {"room0": 0.270, "room1": 0.245, "room2": 0.337,
-                 "office0": 0.324, "office1": 0.299, "office2": 0.371,
-                 "office3": 0.278, "office4": 0.466}
+BASELINE_MACC = {"room0": 0.2586,
+                 "room1": 0.2347,
+                 "room2": 0.3590,
+                 "office0": 0.3092,
+                 "office1": 0.2490,
+                 "office2": 0.3739,
+                 "office3": 0.2707,
+                 "office4": 0.5029}
 
 
 def _load_score_mod():
