@@ -171,6 +171,10 @@ deleted and the number re-derived independently by `shared_ceiling.py`, which
 reproduces it exactly. The same agent's headroom figure (+0.081) could not be
 reproduced and is not carried forward.
 
+### The field-native answer (2026-08-18) — MECHANISM RETRACTED 2026-08-18 evening, see below
+
+> **Read the retraction first.** The kernel measurements in this section are correct and stand. The causal claim built on them — *"proximity is what our kernel discards, and that is the gap"* — was refuted by direct measurement the same day (`proximity_ceiling.py`). Keep the numbers; discard the mechanism.
+
 ### The field-native answer (2026-08-18): the losses are NOT near-ties
 
 Paul's objection, and it was right: every account above reports the gap as
@@ -305,3 +309,88 @@ are the REAL Lab scan, n=10.
 - `UNDECIDABLE` is a verdict: an effect inside the noise band is unmeasured,
   not absent. h3 and h4 are open questions at higher power, not negatives.
 - Everything ran CPU-local off a warm cache: Stage 1 ~38 min, Stage 2 ~4 min.
+
+
+## RETRACTION + RE-BASELINE (2026-08-18, evening)
+
+Two independent things landed together. Both change what can be quoted.
+
+### 1. The proximity mechanism is refuted
+
+`collab_tasks/batch1/proximity_ceiling.py`, 8 scenes, tuple 0, all at EQUAL
+quantisation (the first version of this measurement compared a grid-scored
+field against a kNN scored at exact positions — not like-for-like, and the
+confound was the finding):
+
+| decoder | mAcc |
+|---|---|
+| our field, on grid | 0.3235 |
+| perfect proximity (NN k=1), on grid | 0.3288 |
+| NN k=1, exact positions | 0.3676 |
+| kNN-5, exact positions | **0.3844** |
+| ConceptGraphs | 0.4020 |
+
+- **Proximity alone is worth +0.0053** — a third of the 0.017 seed-noise
+  floor. A *perfect* proximity decoder over our own stream barely beats our
+  field. The published claim that "the kernel discards proximity and that is
+  the gap" is **RETRACTED**. The kernel facts (k(4cm)=0.9872, k(15cm)=0.8295,
+  half-height 27.6 cm) are unaffected and still stand.
+- **Our own 96x96 grid costs +0.0388** — larger than proximity, larger than
+  superposition's total cost (+0.0098), and larger than any of the seven
+  screened mechanisms. We imposed that 0.08 m quantisation; their labels never
+  had it.
+- **The real lever is bandwidth ADAPTIVITY.** kNN-5's only structural
+  difference from our field is an adaptive bandwidth, and it reaches 0.3844.
+
+### 2. The stream ceiling supersedes the +0.113 headroom
+
+Measured on the same run: only **21.3%** of eval points have any observation
+of their own GT class within one lambda, and **74.1%** have their GT class
+absent from the stream entirely. So the best decoder over OUR stream tops out
+at **0.3844**, not 0.402. The `shared_ceiling.py` figure of +0.113 conflates
+cells CG wins because our decode is worse (addressable) with cells CG wins
+because their map carries geometry our stream never had (not addressable from
+the memory at all). **Roughly +0.018 of the gap is unreachable by any memory
+change.**
+
+### 3. The class codebook changed — every stored baseline was invalidated
+
+`class_phasors` (vsa_cognitive_mapping/object_grounding.py) now derives each
+class key from a **hash of the class NAME** rather than a sequential RNG draw.
+This is a correctness fix and it stands (confirmed by Paul 2026-08-18): under
+the old scheme a class got whatever vector its list position landed on, so
+`chair` in a 3-class scene was bit-identical to `book` in a 4-class scene.
+That made the class list part of the transmitted payload — the "32 KB trace"
+was 32 KB *plus an exactly-ordered vocabulary* — and made traces from scenes
+with different vocabularies unmergeable, which the merge line depends on.
+
+Consequences, all measured:
+
+- **All 8 stored `vsa_labels.npz` baselines failed label parity** (0.44–0.78
+  agreement). The guard's A3 gate caught it and hard-stopped the h7 run.
+- **The guard earned its keep.** `run_screen` reads baselines from the disk
+  cache but builds variants fresh, so it was about to compare an old-codebook
+  baseline against new-codebook variants — an artifact that would have looked
+  like a large, broad, entirely fake effect. The 40 mixed cache files were
+  quarantined to `outputs/batch1/cache_stale_mixed_codebook/`.
+- **The headline is unchanged**: 0.3237 -> 0.3197 mean mAcc, delta −0.0040,
+  inside the ±0.017 noise band. Per-scene shifts reach 0.050, as expected —
+  hashing is effectively a different draw of class keys.
+
+**Canonical re-baseline command** (reproduces `class_fields` bit-for-bit —
+verified agreement 1.000000 on room0, which preserves the two-implementation
+cross-check between `04_vsa_labels.py` and `collab_tasks/batch1/common.py`):
+
+```
+python student_gpu_package/04_vsa_labels.py --scene <scene>_cgfront     --labels-from-points --max-per-class 400 --length-scale 0.45,0.27 --grid 96
+```
+
+Note the non-default args: `--max-per-class 400` (04's default is 60) and
+`--length-scale 0.45,0.27` (04's default is 0.6 isotropic). Running 04 with
+its own defaults does NOT reproduce the batch-1 baseline.
+
+**Everything measured against the old baselines must be re-read as
+provisional** until re-run: batch-1's seven verdicts, h3b, gap_anatomy,
+shared_ceiling, field_why, and the proximity decomposition above. Paired
+deltas at matched seeds should survive, but that is a hypothesis until
+measured.
