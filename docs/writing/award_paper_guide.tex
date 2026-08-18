@@ -1,0 +1,452 @@
+% =========================================================================
+% Structure and narrative in robotics award papers -- a revision guide.
+%
+% General craft advice, distilled from a survey of 47 award papers
+% (ICRA / RSS / CoRL / T-RO, 2022-2025) carried out 2026-08-18. This is the
+% venue-and-craft half of that survey; the instantiation for any particular
+% submission belongs in that paper's own working notes, not here.
+%
+% Companion HTML version (same content, linked references):
+%   docs/sites/award_paper_template.html
+%
+% Compile:  pdflatex award_paper_guide.tex   (twice, for the ToC)
+% =========================================================================
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=2.4cm]{geometry}
+% lmodern BEFORE fontenc: T1 with plain Computer Modern sends MiKTeX to
+% METAFONT to render bitmap EC fonts, which takes minutes. Latin Modern
+% ships scalable Type-1 faces for T1 and compiles instantly.
+\usepackage{lmodern}
+\usepackage[T1]{fontenc}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+
+\definecolor{crimson}{HTML}{9D2235}
+\definecolor{good}{HTML}{2F6B46}
+\definecolor{warn}{HTML}{8A5A12}
+\hypersetup{colorlinks=true,linkcolor=crimson,urlcolor=crimson,
+            citecolor=crimson}
+
+\newcommand{\vtag}[1]{{\footnotesize\textcolor{good}{\textsc{#1}}}}
+\newcommand{\atag}[1]{{\footnotesize\textcolor{crimson}{\textsc{#1}}}}
+\newcommand{\jtag}[1]{{\footnotesize\textcolor{warn}{\textsc{#1}}}}
+\newcommand{\ck}{\item[$\square$]}
+\setlist[itemize]{itemsep=3pt,parsep=0pt,topsep=4pt}
+\setlist[enumerate]{itemsep=3pt,parsep=0pt,topsep=4pt}
+
+\title{\vspace{-1.4cm}Structure and Narrative in Robotics Award Papers\\
+  \large A revision guide distilled from 47 award papers, 2022--2025}
+\author{}
+\date{18 August 2026}
+
+\begin{document}
+\maketitle
+\vspace{-1.6cm}
+
+\begin{abstract}
+\noindent What ICRA, RSS, CoRL and T-RO award winners actually do, as
+opposed to what paper-writing advice usually says they do: section budgets,
+the narrative arc, title and abstract construction, and the style rules that
+separate winners from competent-but-unremarkable submissions. Every claim is
+tagged by how well the evidence supports it, and the closing section lists
+the reasons not to trust it too far. Use it as a revision checklist against
+a draft you have already written, not as a template to write into.
+\end{abstract}
+
+\tableofcontents
+\vspace{0.6cm}
+
+% =========================================================================
+\section{How this was built, and how to read it}
+
+Eighteen agents ran four parallel sweeps --- ICRA award winners, RSS/CoRL/T-RO
+award winners, the craft of openings, and what award citations and review
+criteria actually reward --- fetching and reading the papers themselves rather
+than their abstracts or secondary summaries. Forty-seven papers were surveyed;
+fourteen were read in full. Load-bearing claims were spot-verified against
+primary sources, and an adversarial critic checked the evidence base for
+attribution errors, sample bias and survivorship bias. The critic's findings
+are in Section~\ref{sec:caveats} and are not decoration: it caught the sweep's
+own fact-checker mis-refuting a correct claim.
+
+Three tags appear throughout, and they mean different strengths of evidence:
+
+\begin{itemize}
+  \item[] \vtag{verified} --- checked directly against a primary source
+    (a call for papers, an official award page).
+  \item[] \atag{attested} --- observed in named papers that were actually
+    read, and traceable to them.
+  \item[] \jtag{judgment} --- an inference from the pattern rather than a
+    directly evidenced claim. Weigh accordingly.
+\end{itemize}
+
+A fourth category matters just as much: papers recorded as
+\emph{listing-only} were \textbf{not read}. Their rows in the reference table
+establish only that an award exists, and support no structural claim. Any
+frequency statement below (``seven of eight winners\ldots'') counts only the
+papers that were read.
+
+% =========================================================================
+\section{Venue rules that shape everything else}
+
+\vtag{verified against the ICRA 2027 call for papers, 2026-08-18} These are
+venue-specific and dated; re-check them before every submission cycle. They
+are listed first because several otherwise-excellent award-paper habits are
+simply illegal under them.
+
+\begin{itemize}
+  \item \textbf{Eight pages including references}, with no purchasable extra
+    pages. References are not free, so a long bibliography is a real
+    structural cost.
+  \item \textbf{Double-anonymous review.} Author names, affiliations,
+    identifying acknowledgements and grant numbers all come out. This kills
+    one habit common among winners: project and code URLs placed in the
+    Figure~1 caption.
+  \item \textbf{No supplementary PDF.} A video is permitted (20\,MB,
+    180\,s). Nothing load-bearing may live outside the page limit --- so the
+    ``exile the derivation to an appendix'' move, which CoRL papers use
+    freely and which some ICRA winners used in their arXiv versions, is not
+    available.
+  \item \textbf{AI-tool use must be disclosed} in the acknowledgements, and
+    generative tools cannot be listed as authors.
+  \item Papers carrying a DOI (for example an RA-L version) are ineligible;
+    preprints are fine.
+\end{itemize}
+
+\noindent The general lesson survives the specifics: \emph{read the current
+CFP before taking structural advice from any published paper}, because the
+paper you are imitating was written under different rules.
+
+% =========================================================================
+\section{The skeleton}
+
+Budgets below assume eight two-column pages --- sixteen columns --- with
+roughly 1.25 columns of references and 4.5 columns of floats, leaving about
+ten columns of body text. Treat them as proportions rather than targets:
+they were estimated from arXiv HTML, and arXiv versions are routinely longer
+than the camera-ready they came from.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabularx}{\textwidth}{@{}lcX@{}}
+\toprule
+\textbf{Section} & \textbf{Cols} & \textbf{What winners do here} \\
+\midrule
+Title + abstract & 0.5 &
+  Five to eight sentences. The contribution sentence arrives no later than
+  sentence four. One headline number early; the rest are relocated to the
+  Figure~1 caption. \\
+\addlinespace
+Hero figure & $\sim$1 &
+  A teaser \emph{result} drawn from the system's own state --- not an
+  architecture block diagram. Caption of 40--85 words that pre-empts the
+  most likely objection inline. \\
+\addlinespace
+I. Introduction & 1.25 &
+  Three to six paragraphs closing on at most four refutable contribution
+  bullets with forward section references. The specific gap is reached
+  within three or four sentences. \\
+\addlinespace
+II. Related work & 0.75 &
+  Deliberately thin, and sometimes absent entirely. One contrast per
+  paragraph, each naming the alternative it displaces. \\
+\addlinespace
+III. Method & 2.5 &
+  The largest block, but every subsection must be a stage of \emph{one}
+  mechanism. Background teaches only the tools the method actually uses. \\
+\addlinespace
+IV. Theory / analysis & 1.75 &
+  One formal statement in the main text, placed where the objection lives;
+  derivations deferred. Optional --- but when present, it is what the award
+  citation tends to name. \\
+\addlinespace
+V. Experiments & 3 &
+  A claims ledger: hypotheses or questions declared up front, tagged into
+  subsection titles, and closed explicitly. Setup folds into bold run-in
+  heads rather than occupying its own section. \\
+\addlinespace
+VI. Conclusion \& discussion & 0.5 &
+  Limitations merged in, carrying numbers, phrased as scope with a path
+  forward. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\noindent Two structural findings are worth stating plainly because they
+contradict common advice. \atag{attested} First, \textbf{a standalone
+Limitations section is atypical among winners} --- seven of the eight ICRA
+winners read have none, and the exception merges it into a combined
+``Discussion and Limitations'' heading. Honesty is not the casualty:
+limitations still appear, quantified, inside the discussion. Second,
+\textbf{Related Work is a trim target, not a proving ground}. One paper that
+won both an overall and a category award at ICRA spends under a fifth of its
+body text there, and one overall winner has no Related Work section at all.
+
+% =========================================================================
+\section{The narrative spine}
+
+The arc that recurs across winners, in general form. Each move is one or two
+sentences in the abstract, then expanded in the introduction.
+
+\begin{enumerate}[leftmargin=*,label=\textbf{\arabic*.}]
+  \item \textbf{Name the enemy.} A concrete failure mode of the current
+    approach --- growth, silent degradation, brittleness --- stated as a
+    property, not a statistic. \atag{attested} No sampled winner opens on a
+    statistic.
+  \item \textbf{The turn: why the obvious fix fails.} Credit the obvious
+    alternative, then name the specific mechanism by which it breaks. This
+    is where a citation to a survey or a competing system does the most work.
+  \item \textbf{``We present X'', with the mechanism inside the sentence.}
+    Stated as a contrast --- ``instead of X, we do Y'' --- so the idea
+    survives being read once.
+  \item \textbf{The quotable claim.} One sentence a reader could repeat at a
+    poster session. Papers that coin a handle for their own idea get cited
+    with that handle.
+  \item \textbf{Validation scope, with the steelman visible.} Name the
+    baselines \emph{and} say how you strengthened them: matched operating
+    points, ground-truth parameters handed to the competitor, a published
+    result reproduced before it is beaten.
+  \item \textbf{The payoff, including the honest loss.} Where the method
+    loses, and why that is consistent with the thesis.
+  \item \textbf{Coin the thesis and close.} One phrase, repeated verbatim
+    wherever the thesis appears.
+\end{enumerate}
+
+\subsection*{Coin one phrase, then never paraphrase it}
+
+\atag{attested} Winners hand the community a citable handle and use exactly
+those words every time --- in the title where possible, then the abstract,
+the section that establishes it, and the conclusion. Drafts commonly carry
+three near-synonymous phrasings of their own thesis, which is three chances
+for the reader to fail to remember any of them. Pick the strongest and
+propagate it.
+
+% =========================================================================
+\section{Openings: title, abstract, first figure}
+
+\subsection{Title}
+
+\atag{attested} The median award title in the sample is \textbf{eight
+words}. Two constructions dominate: a pronounceable system name followed by
+a colon and the mechanism; or a territory-grab claim with no colon at all,
+naming a problem or asserting a capability. A third, rarer and effective,
+states the finding itself as a sentence with an active verb.
+
+\noindent Zero sampled winners use ``Towards'', ``A Novel'' or ``A Framework
+for''. None carries a numeral. Titles that enumerate two or three claims are
+a median-submission habit: winners encode one.
+
+\subsection{Abstract}
+
+A seven-sentence skeleton, one role per sentence: \emph{(1)} the enemy;
+\emph{(2)} the gap, ideally in the field's own words via a cited survey;
+\emph{(3)} ``we present'', mechanism included, plus the object's identity
+number if it has one; \emph{(4)} the central claim with its headline number;
+\emph{(5)} validation scope with the steelman clause; \emph{(6)} the result,
+including where it loses; \emph{(7)} the coined thesis.
+
+\atag{attested} \textbf{Numbers policy is where most drafts leak.} Award
+abstracts carry \emph{one} headline number early --- one paper puts its
+single figure in sentence two, before any mechanism detail --- and relocate
+identity and scale numbers to the Figure~1 caption. A draft with five or
+more metrics scattered through the abstract is displaying median-submission
+behaviour. Two winners in the sample carry \emph{no} numbers at all, trading
+them for one crisp capability claim; this works only when the claim is an
+unlock rather than an improvement.
+
+Counts are an underused move: ``in all nine conditions tested'' asserts
+coverage in a way a mean cannot, and is harder to argue with.
+
+\subsection{The first figure}
+
+\atag{attested} The contract, in order of how often it is violated:
+
+\begin{itemize}
+  \item \textbf{It shows a result, not an architecture.} The strongest
+    examples show failure-then-fix, or the system's output drawn from its own
+    state. Only a consortium-scale dataset paper in the sample gets away with
+    a plain block diagram.
+  \item \textbf{The caption is a mini-abstract of 40--85 words}, in the
+    present tense, whose first clause restates the paper's claim rather than
+    describing the panels.
+  \item \textbf{It carries numbers}, normalised into units a reader feels ---
+    a distance as a multiple of the robot's own height, a memory footprint as
+    a ratio against the baseline it replaces.
+  \item \textbf{It pre-empts the top objection in-line.} A single defensive
+    clause in the caption, answering the thing a referee would otherwise
+    write in the margin, is one of the cheapest credibility moves available.
+  \item Under single-blind review, winners also put the project or code URL
+    here. \vtag{not available under double-anonymous review.}
+\end{itemize}
+
+% =========================================================================
+\section{Style rules}
+
+\begin{enumerate}[leftmargin=*,label=\textbf{S\arabic*.}]
+  \item \textbf{One idea; everything else is a witness of it.}
+    \atag{attested} Winners show one derivation instantiated several ways
+    rather than several loosely-related results. Generality is
+    \emph{demonstrated structurally} --- the same result dropped into three
+    settings --- not asserted in the introduction.
+  \item \textbf{Every claim carries its evidence unit inline.} A number, a
+    named baseline, a named condition, and a section reference. Never a bare
+    percentage; never ``better'' without ``than what''.
+  \item \textbf{Freeze numbers verbatim.} The same figure appears
+    identically in abstract, introduction and tables --- no rounding drift,
+    no ``approximately'' in one place and three significant figures in
+    another.
+  \item \textbf{Denominate claims in the constrained resource.} When a paper
+    is about a budget, every result is priced in that budget's units and
+    compared against a hard limit, and the method's own ceiling is stated as
+    a first-class number rather than hidden.
+  \item \textbf{Report errors against floors and exchange rates.} An error
+    is meaningless without the physical floor it approaches or the cost it
+    was traded for. A worse accuracy at a much lower cost should never appear
+    without the cost in the same sentence.
+  \item \textbf{Steelman the baselines, then say that you did.} Re-tune the
+    competitor's threshold, hand it privileged information, reproduce its
+    published result before comparing. \atag{attested} This is the single
+    clearest cultural marker of award-level work, and it is worth a sentence
+    of its own rather than being buried in setup.
+  \item \textbf{Attribute failures with counts and mechanisms.} ``$k$ of $n$
+    failures were caused by \emph{named mechanism}'' converts a weakness into
+    evidence of understanding.
+  \item \textbf{Hedge mechanism and universality; never hedge measurements.}
+    State what was measured flatly. Mark speculation explicitly. Show
+    distributions, not only means. Frame generality as a falsifiable
+    forecast.
+  \item \textbf{Answer the reviewer in the text.} A bold run-in question
+    (``Has performance saturated?'') costs two lines and defuses an
+    objection that would otherwise cost a score.
+  \item \textbf{Voice: measured, zero superlatives.} \atag{attested} Award
+    citations reward rigour, generality, practicality and convincing results
+    on hard benchmarks. They do not mention novelty or state-of-the-art
+    margins. Write the paper the citation would describe.
+\end{enumerate}
+
+% =========================================================================
+\section{Anti-patterns}
+
+\begin{itemize}
+  \item Title padding: ``Towards'', ``A Novel'', ``A Framework for'', or
+    three claims where one belongs.
+  \item Five or more metrics scattered through the abstract.
+  \item Closing an abstract with ``experiments demonstrate the effectiveness
+    of the proposed method''. No sampled winner does this.
+  \item Terse figure captions (``System overview.'').
+  \item A bare architecture diagram as Figure~1.
+  \item Multiple vague ``first'' claims. Winners make at most one, tightly
+    scoped.
+  \item Mechanism-free verbs in claims: \emph{provides}, \emph{enables},
+    \emph{allows}.
+  \item A long early Related Work section explaining trade-offs the reader
+    has no context for yet.
+  \item Hiding losses. \atag{attested} A best-paper winner in the sample
+    prints a middling success rate and calls its own system impractical for
+    industry --- and won, because the claim it defended was a representational
+    bridge, not deployment readiness. A loss with a one-sentence mechanistic
+    diagnosis becomes a demonstration of the thesis; a hidden loss becomes a
+    rebuttal.
+  \item Anything load-bearing in supplementary material.
+\end{itemize}
+
+% =========================================================================
+\section{Revision checklist}
+
+Run this against a draft that already exists. Roughly in order of value per
+minute spent.
+
+\begin{itemize}[leftmargin=*]
+  \ck \textbf{Abstract}: seven sentences; contribution by sentence four; one
+    headline number; the central result present (drafts routinely omit their
+    own best evidence while keeping minor numbers); ends on the coined
+    thesis.
+  \ck \textbf{Title}: one claim, under about eleven words, no banned openers,
+    no numerals.
+  \ck \textbf{Thesis phrase}: identical wording at every station where it
+    appears.
+  \ck \textbf{Numbers audit}: every headline figure identical in abstract,
+    introduction, tables and conclusion.
+  \ck \textbf{Claims}: each has a number, a named baseline, a named
+    condition, and a section reference.
+  \ck \textbf{Figure~1}: shows a result; caption 40--85 words; opens with the
+    claim; carries normalised numbers; pre-empts one objection.
+  \ck \textbf{Contributions}: at most four bullets, each refutable, each with
+    a forward reference.
+  \ck \textbf{Limitations}: merged into the discussion, quantified, phrased
+    as scope with a path.
+  \ck \textbf{Related Work}: under about 0.75 columns; one contrast per
+    paragraph.
+  \ck \textbf{Steelmanning}: stated explicitly in its own sentence.
+  \ck \textbf{Losses}: present in the main tables, each with a one-sentence
+    mechanistic diagnosis.
+  \ck \textbf{Compliance}: page limit including references; anonymisation;
+    AI-use disclosure; nothing load-bearing outside the limit.
+\end{itemize}
+
+% =========================================================================
+\section{Caveats}
+\label{sec:caveats}
+
+Reasons not to over-trust the above, in rough order of seriousness.
+
+\begin{itemize}
+  \item \textbf{Survivorship bias is unaddressed.} Every pattern here is
+    conditioned on winning. Without a matched sample of rejected or
+    median-accepted papers, this cannot distinguish features that
+    \emph{cause} awards from features common to all competent papers --- or
+    from lab-brand confounds, where a paper may win despite its structure
+    rather than because of it.
+  \item \textbf{Awards and acceptance are different games.} Awards are
+    decided by a small committee \emph{after} acceptance; the binding gate
+    for a submission is a handful of anonymous reviewers. Award-optimal
+    boldness and acceptance-optimal defensiveness are correlated but not
+    identical, and only the former is observable here.
+  \item \textbf{The sample skews} toward learning and perception systems
+    papers from a small number of well-known labs. Papers in
+    theory-and-representation genres, and the reviewers those genres draw,
+    are underrepresented.
+  \item \textbf{Roughly half the corpus is RSS, CoRL or T-RO.} Several of
+    their signature moves --- hypothesis ledgers, related work after results,
+    long appendices --- have no verified instance among the ICRA winners
+    read. Treat them as imported, and remember appendices may be unavailable.
+  \item \textbf{Column budgets are estimates} from arXiv HTML, which is
+    frequently an extended version of what was actually submitted.
+  \item \textbf{The survey's own fact-checking layer was fallible.} It
+    ``refuted'' a correct claim about one year's winners by consulting a page
+    that listed only the category awards. Two papers analysed as exemplars
+    are influential but not verified award winners. Verify any award
+    attribution before repeating it.
+\end{itemize}
+
+% =========================================================================
+\section{Sources}
+
+The full reference table --- every paper, its award, its read depth, a link,
+and which specific claim above it evidences --- is maintained in the
+companion HTML version, which is easier to keep current and to click through:
+
+\begin{itemize}
+  \item \texttt{docs/sites/award\_paper\_template.html} (in-repo copy)
+  \item \url{https://claude.ai/code/artifact/beefd0b4-39c5-4d03-a59e-1694690120ec}
+\end{itemize}
+
+\noindent Venue rules were verified against the
+\href{https://2027.ieee-icra.org/contribute/call-for-icra-2027-papers-now-accepting-submissions/}{ICRA
+2027 call for papers}. Award attributions were checked against the
+\href{https://www.ieee-ras.org/about-ras/latest-news/ras-congratulates-the-honorees-at-the-icra-2024-awards-ceremony}{IEEE
+RAS honoree announcements}, the
+\href{https://roboticsfoundation.org/awards/best-paper-award/}{RSS Foundation
+best-paper list}, and the CoRL programme award pages.
+
+Quotations are deliberately not reproduced here. The companion HTML lists
+the exact location of each quoted phrase --- paper, section, caption --- so
+that it can be retrieved and cited from the source with correct attribution.
+
+\end{document}
