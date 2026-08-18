@@ -134,6 +134,69 @@ decode locality" to **"resolve below lambda without giving up the kernel"**
 the natural candidate, now with a mechanism-level reason to retest it
 targeted at interleaved compact classes). Stated as hypothesis, not result.
 
+### 2026-08-18 (late): their clip_ft recovered, and the ceiling reframed TWICE
+
+Their per-object CLIP features are finally in hand — all 8 scenes, 611
+objects, every row count exact against the published trace, so the
+`det -> obj` positional join is valid. Export vendored at
+`student_gpu_package/handoff_clipft/`. Three measurements, in order, and the
+third retracts the implication of the second.
+
+**1. The shared branch is CONCENTRATED** (`object_identity_join.py`).
+The 8,719 cells neither system labels correctly trace to just **124 of 611
+objects**, and **11 objects — 1.8% of theirs — carry 50%** of them. 80% comes
+from 26 objects, 90% from 38.
+
+**2. And it is RECOVERABLE in feature space** (`relabel_headroom.py`).
+For each blamed object, where does the true class sit in *their own* clip_ft
+ranking under *their own* in-scene restriction?
+
+| truth at | objects | cells | share |
+|---|---|---|---|
+| rank 1 | 0 | 0 | 0.0% |
+| rank 2 | 31 | 3,302 | 37.9% |
+| rank 3–5 | 39 | 3,658 | 42.0% |
+| rank 6–10 | 34 | 1,227 | 14.1% |
+| rank 11+ | 20 | 532 | 6.1% |
+
+48.5% inside their own top-3; only 6.1% beyond rank 10. **Nothing at rank 1**,
+so this is never our decode losing a correct label. The failure has a shape:
+**60.6% of cells are a SMALL class name on a BIG object** (switch, camera,
+desk-organizer, indoor-plant on chair/table/sofa/blinds) against **0.1%** the
+other way — a ~500:1 asymmetry. Most-missed truths: chair (38 objects),
+sofa (22), table (17). Worst single object: office0 #9, 1,105 points
+labelled `switch`, actually a **chair**, 624 cells.
+
+**3. RETRACTED — it does NOT convert into mAcc** (`rank2_experiment.py`).
+
+| rule | THEIRS* | OURS |
+|---|---|---|
+| their labels as shipped | 0.363 | 0.320 |
+| **ORACLE: GT label per object** | **0.291** | **0.298** |
+| size prior λ=0.05 (LOSO) | 0.314 | 0.292 |
+| size prior λ=0.40 (LOSO) | 0.159 | 0.151 |
+
+Giving every object its **ground-truth** label makes the score go **down**,
+in both columns. Mechanism, measured: mAcc is *unweighted per-class recall*,
+and correct labels collapse label diversity — distinct non-excluded classes
+predicted falls **85 → 68** across the 8 scenes. Every class that stops being
+predicted scores recall 0, and averaging over classes makes that cost more
+than getting the common classes right. The GT-free size prior, motivated by
+the 500:1 asymmetry, is monotonically harmful and is **killed**.
+
+This independently confirms the diagnostic anomaly recorded 2026-08-16: 10%
+label corruption *improved* office4 (0.466 → 0.527) and room2 (105%). Same
+cause, opposite direction — corruption ADDS diversity. **Two unrelated routes
+now agree that Replica mAcc partly measures class coverage rather than
+per-object correctness.** That is a statement about the benchmark, and it is
+the most transferable thing found today.
+
+*Validity caveat: the THEIRS column uses a nearest-object-centroid proxy, not
+their point-transfer, and reads 0.363 where the published pipeline gives
+0.402 — treat it as within-experiment only. The OURS column rebuilds our real
+trace and lands at 0.320 against the published 0.324, and both oracle and
+baseline arms share the same harness, so the comparison is sound.
+
 ### CORRECTED AGAIN 2026-08-18: 62% of our "local losses" were never gap
 
 A category error that sat in every writeup above, including the forensics
