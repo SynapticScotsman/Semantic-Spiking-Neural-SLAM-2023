@@ -134,6 +134,37 @@ decode locality" to **"resolve below lambda without giving up the kernel"**
 the natural candidate, now with a mechanism-level reason to retest it
 targeted at interleaved compact classes). Stated as hypothesis, not result.
 
+### RE-MEASURED under the hashed codebook (2026-08-18, after 3161182)
+
+The clip_ft analyses below were first computed under the SEQUENTIAL class
+codebook. Name-hashing redraws ~38% of labels, so they were re-run against a
+cache verified label-identical to a fresh build on all 8 scenes (parity
+1.000000 each, BASELINE_MACC matched). **Every structural finding holds.**
+
+| quantity | sequential | name-hashed | delta |
+|---|---|---|---|
+| shared-failure cells | 8,719 | 8,383 | −336 |
+| our wrong cells (local_loss) | 14,134 | 13,873 | −261 |
+| % of wrong cells that are real GAP | 38.3 | 39.6 | +1.3 |
+| % SHARED in winner-nearer branch | 87.6 | 87.0 | −0.6 |
+| baseline mAcc | 0.3235 | 0.3198 | −0.0037 |
+| reachable ceiling mAcc | 0.4366 | 0.4371 | +0.0006 |
+| objects blamed | 124 | 128 | +4 |
+| **objects carrying 50% of cells** | **11** | **11** | **0** |
+| % truth in their own top-3 | 48.5 | 51.0 | +2.6 |
+| % truth within their top-10 | 93.9 | 91.1 | −2.8 |
+
+The worst single object is unchanged in identity and share: office0 obj 9,
+1,105 points labelled `switch`, actually a **chair**, 7.2% of all
+shared-failure cells. Old-codebook results preserved at
+`outputs/batch1/pre_hash/` so the before/after is auditable.
+
+Not re-run, deliberately: `field_why.py` and `local_loss_forensics.py`. Their
+mechanism claim was already retracted by `proximity_ceiling.py`, so
+re-measuring a retracted mechanism would be wasted compute. `rank2_experiment`
+already ran post-rebaseline (0.320 baseline vs the re-baselined 0.3198), so
+the oracle retraction stands as published.
+
 ### 2026-08-18 (late): their clip_ft recovered, and the ceiling reframed TWICE
 
 Their per-object CLIP features are finally in hand — all 8 scenes, 611
