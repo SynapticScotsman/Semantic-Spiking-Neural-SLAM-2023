@@ -1,0 +1,70 @@
+{
+ "per_scene": [
+  {
+   "scene": "room0",
+   "n_scored": 15960,
+   "med": 0.021604454356870667,
+   "within_5cm": 0.7841478696741855,
+   "within_lambda": 1.0,
+   "beyond_2lambda": 0.0
+  },
+  {
+   "scene": "room1",
+   "n_scored": 11425,
+   "med": 0.01839299249592374,
+   "within_5cm": 0.7584245076586433,
+   "within_lambda": 1.0,
+   "beyond_2lambda": 0.0
+  },
+  {
+   "scene": "room2",
+   "n_scored": 10728,
+   "med": 0.025928237137363724,
+   "within_5cm": 0.7571774794929157,
+   "within_lambda": 1.0,
+   "beyond_2lambda": 0.0
+  },
+  {
+   "scene": "office0",
+   "n_scored": 16750,
+   "med": 0.020151206455429685,
+   "within_5cm": 0.7705074626865671,
+   "within_lambda": 1.0,
+   "beyond_2lambda": 0.0
+  },
+  {
+   "scene": "office1",
+   "n_scored": 18060,
+   "med": 0.022053848983142964,
+   "within_5cm": 0.7875415282392026,
+   "within_lambda": 1.0,
+   "beyond_2lambda": 0.0
+  },
+  {
+   "scene": "office2",
+   "n_scored": 10146,
+   "med": 0.0309228696601576,
+   "within_5cm": 0.7171299034102109,
+   "within_lambda": 1.0,
+   "beyond_2lambda": 0.0
+  },
+  {
+   "scene": "office3",
+   "n_scored": 10205,
+   "med": 0.027841606629067876,
+   "within_5cm": 0.7388535031847133,
+   "within_lambda": 0.9997060264576189,
+   "beyond_2lambda": 0.0
+  },
+  {
+   "scene": "office4",
+   "n_scored": 6892,
+   "med": 0.0817488722519231,
+   "within_5cm": 0.3837782936738247,
+   "within_lambda": 0.9998549042367962,
+   "beyond_2lambda": 0.0
+  }
+ ],
+ "mean_median_dist": 0.03108051099623492,
+ "mean_within_lambda": 0.9999451163368018
+}
