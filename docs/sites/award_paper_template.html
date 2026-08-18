@@ -1,0 +1,516 @@
+<title>The Award-Paper Template</title>
+<style>
+:root{
+  --paper:#FAF9F6; --ink:#22252A; --panel:#F1EFE9; --line:#DCDAD3;
+  --crimson:#9D2235; --crimson-bright:#C33A50; --rose:#E0687C;
+  --bg:var(--paper); --text-body:var(--ink); --text-muted:#6E7278;
+  --brand:var(--crimson); --accent:var(--crimson);
+  --surface-card:#FFFFFF; --surface-panel:var(--panel); --border:var(--line);
+  --good:#2F6B46; --bad:#8A2430; --warn:#8A5A12;
+  --card-shadow:0 1px 1px rgba(34,37,42,.04),0 2px 6px rgba(34,37,42,.05);
+  --display:"Archivo","Helvetica Neue",Inter,system-ui,sans-serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --prose:"Source Serif 4","Iowan Old Style",Georgia,serif;
+  --mono:ui-monospace,"Cascadia Mono","SF Mono",Consolas,monospace;
+  --plate-deep:#05070A;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]):not([data-colourway="paper"]){
+  --bg:#16181B; --text-body:#E6E4DF; --text-muted:#9A9EA6;
+  --brand:var(--crimson-bright); --accent:var(--rose);
+  --surface-card:#1E2125; --surface-panel:#1E2125; --border:#33373C;
+  --good:#6FAE7F; --bad:#E0687C; --warn:#C99A50; --card-shadow:none;
+}}
+:root[data-theme="dark"],:root[data-colourway="plate"]{
+  --bg:#16181B; --text-body:#E6E4DF; --text-muted:#9A9EA6;
+  --brand:var(--crimson-bright); --accent:var(--rose);
+  --surface-card:#1E2125; --surface-panel:#1E2125; --border:#33373C;
+  --good:#6FAE7F; --bad:#E0687C; --warn:#C99A50; --card-shadow:none;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text-body);
+  font-family:var(--sans);font-size:16px;line-height:1.55;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:900px;margin:0 auto;padding:56px 24px 96px;
+  display:flex;flex-direction:column;gap:50px}
+.eyebrow{font-family:var(--mono);font-size:.71rem;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--text-muted);margin:0}
+header{display:flex;flex-direction:column;gap:12px}
+h1{font-family:var(--display);font-weight:700;letter-spacing:-.017em;
+  font-size:clamp(1.9rem,5vw,2.9rem);line-height:1.1;margin:0;
+  text-wrap:balance}
+.standfirst{font-family:var(--prose);font-size:1.04rem;line-height:1.6;
+  color:var(--text-muted);max-width:70ch;margin:0}
+.rule{height:2px;background:var(--brand);width:64px;border-radius:1px}
+section{display:flex;flex-direction:column;gap:16px}
+h2{font-family:var(--display);font-weight:650;letter-spacing:-.012em;
+  font-size:1.5rem;margin:0;text-wrap:balance}
+h3{font-family:var(--mono);font-size:.71rem;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--text-muted);margin:0;font-weight:500}
+h4{font-family:var(--display);font-size:1.02rem;font-weight:650;margin:0}
+p{margin:0;max-width:72ch}
+.prose{font-family:var(--prose);font-size:1.02rem;line-height:1.62}
+.scroll{overflow-x:auto;border:1px solid var(--border);border-radius:6px;
+  background:var(--surface-card);box-shadow:var(--card-shadow)}
+table{border-collapse:collapse;width:100%;font-size:.9rem;min-width:600px}
+th,td{padding:9px 13px;text-align:left;border-bottom:1px solid var(--border);
+  vertical-align:top}
+thead th{font-family:var(--mono);font-size:.68rem;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--text-muted);font-weight:500;
+  white-space:nowrap}
+tbody tr:last-child td{border-bottom:none}
+td.num{font-family:var(--mono);font-weight:600;
+  font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.note{border-left:3px solid var(--brand);background:var(--surface-panel);
+  padding:16px 20px;display:flex;flex-direction:column;gap:9px;
+  border-radius:0 6px 6px 0}
+.note.warn{border-left-color:var(--warn)}
+.note.good{border-left-color:var(--good)}
+ul.plain,ol.plain{margin:0;padding-left:20px;display:flex;
+  flex-direction:column;gap:9px;max-width:74ch}
+code{font-family:var(--mono);font-size:.86em;background:var(--surface-panel);
+  padding:1px 5px;border-radius:3px}
+.tag{font-family:var(--mono);font-size:.64rem;letter-spacing:.1em;
+  text-transform:uppercase;padding:2px 8px;border-radius:99px;
+  white-space:nowrap;border:1px solid var(--border);color:var(--text-muted);
+  display:inline-block}
+.tag.v{border-color:var(--good);color:var(--good)}
+.tag.a{border-color:var(--brand);color:var(--brand)}
+.tag.j{border-color:var(--warn);color:var(--warn)}
+.spine{list-style:none;margin:0;padding:0;display:flex;
+  flex-direction:column;gap:0;counter-reset:s}
+.spine li{counter-increment:s;display:grid;
+  grid-template-columns:26px 1fr;gap:16px;padding:15px 2px;
+  border-bottom:1px solid var(--border)}
+.spine li:last-child{border-bottom:none}
+.spine li::before{content:counter(s);font-family:var(--mono);
+  font-size:.72rem;color:var(--brand);font-weight:600;padding-top:3px}
+.spine .role{font-family:var(--mono);font-size:.65rem;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--text-muted);display:block;
+  margin-bottom:5px}
+.spine .say{font-family:var(--prose);font-size:.99rem;line-height:1.55}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+  gap:14px}
+.card{background:var(--surface-card);border:1px solid var(--border);
+  border-radius:6px;padding:15px 17px;display:flex;flex-direction:column;
+  gap:7px;box-shadow:var(--card-shadow)}
+.card .k{font-family:var(--mono);font-weight:600;font-size:1.3rem;
+  font-variant-numeric:tabular-nums;color:var(--brand)}
+.card .l{font-size:.83rem;color:var(--text-muted);line-height:1.45}
+.titles{display:flex;flex-direction:column;gap:12px}
+.titlecard{border:1px solid var(--border);border-radius:6px;
+  padding:14px 17px;background:var(--surface-card);
+  box-shadow:var(--card-shadow)}
+.titlecard .t{font-family:var(--display);font-size:1.08rem;font-weight:650;
+  margin-bottom:5px}
+.titlecard .w{font-family:var(--mono);font-size:.68rem;
+  color:var(--text-muted);letter-spacing:.08em}
+.rank{list-style:none;margin:0;padding:0;counter-reset:r;
+  display:flex;flex-direction:column}
+.rank li{counter-increment:r;display:grid;
+  grid-template-columns:28px 1fr auto;gap:15px;align-items:baseline;
+  padding:14px 2px;border-bottom:1px solid var(--border)}
+.rank li::before{content:counter(r);font-family:var(--mono);
+  font-size:.74rem;color:var(--text-muted)}
+.rank li:last-child{border-bottom:none}
+footer{border-top:1px solid var(--border);padding-top:20px;
+  color:var(--text-muted);font-size:.82rem;display:flex;
+  flex-direction:column;gap:8px}
+a{color:var(--brand)}
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">Writing reference &middot; 18 August 2026 &middot; 47 award papers surveyed</p>
+  <h1>The award-paper template</h1>
+  <div class="rule"></div>
+  <p class="standfirst">What ICRA, RSS, CoRL and T-RO award winners from
+  2022&ndash;2025 actually do &mdash; section budgets, narrative spine, title
+  and abstract construction &mdash; distilled into a revision guide for the
+  32&nbsp;KB map paper. Eighteen agents read the papers themselves rather than
+  their abstracts; every pattern below is tagged by how well the evidence
+  supports it.</p>
+</header>
+
+<section>
+  <div class="note warn">
+    <h3>First: three ICRA 2027 rules, verified against the CFP &mdash; one corrects earlier advice</h3>
+    <p><strong>The page limit is 8 pages <em>including references</em>, and
+    extra pages cannot be bought.</strong> Our <code>icra6.pdf</code> compiles
+    to exactly 8 pages with the bibliography in. <strong>It is already
+    compliant.</strong> I previously said it needed roughly two pages of trims
+    &mdash; that was wrong, and it was my error rather than the draft's. The
+    work below is therefore <em>reallocation</em> inside 8 pages, not
+    amputation.</p>
+    <p><strong>Review is double-anonymous.</strong> The draft currently carries
+    a full five-author block with affiliations, a Telluride acknowledgement and
+    named grant numbers &mdash; all of which must be stripped for submission.
+    This also kills one piece of award-paper advice outright: winners put
+    project URLs and code links in the Fig.&nbsp;1 caption, and
+    <em>you cannot</em>.</p>
+    <p><strong>AI-tool use must be disclosed in the acknowledgements</strong>,
+    and no supplementary PDF is permitted &mdash; a video (&le;20&nbsp;MB,
+    &le;180&nbsp;s) is the only attachment. Nothing load-bearing may live
+    outside the 8 pages, so the &ldquo;exile the derivation to an appendix&rdquo;
+    move that MAC-VO used at ICRA and CoRL papers use freely is <em>not</em>
+    available to us. Deadline: 15 September 2026.</p>
+  </div>
+  <div class="cards">
+    <div class="card"><span class="k">8 pp</span>
+      <span class="l">limit including references &mdash; and our draft is
+      already there. The trim pressure I described earlier does not
+      exist</span></div>
+    <div class="card"><span class="k">47</span>
+      <span class="l">award papers surveyed; 14 read in full, the rest
+      first-pages or listing-only, tagged honestly</span></div>
+    <div class="card"><span class="k">4 wks</span>
+      <span class="l">to the 15 September deadline</span></div>
+  </div>
+  <p class="prose">Evidence tags used throughout:
+  <span class="tag v">verified</span> I fetched the primary source myself;
+  <span class="tag a">attested</span> observed in named deep-read award papers;
+  <span class="tag j">judgment</span> my inference from the pattern, not
+  directly evidenced.</p>
+</section>
+
+<section>
+  <h2>The skeleton</h2>
+  <p class="prose">Eight IEEEtran pages is sixteen columns. References take
+  ~1.25, floats (hero, law figure, head-to-head figure, four tables) take
+  ~4.5, leaving <strong>~10 columns of body text</strong>. Budgets below are
+  scaled to that; the &ldquo;what winners do&rdquo; column is where the value
+  is.</p>
+  <div class="scroll"><table>
+    <thead><tr><th>Section</th><th>Budget</th><th>What award papers do here</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Title + abstract</strong></td><td class="num">0.5</td>
+        <td>5&ndash;8 sentences (F3RM won CoRL best paper with five). The
+        contribution sentence lands no later than sentence 4. One headline
+        number early &mdash; Diffusion Policy puts 46.9% in sentence 2 &mdash;
+        and every other number is relocated to the Fig.&nbsp;1 caption.</td></tr>
+      <tr><td><strong>Hero figure</strong></td><td class="num">~1</td>
+        <td>A teaser <em>result</em> drawn from the system's own state, not an
+        architecture block. MAC-VO shows the map built by its own optimiser;
+        Kimera-Multi puts &ldquo;2188&nbsp;m&rdquo; in the caption. Captions run
+        40&ndash;85 words and pre-empt the top objection inline (RACER:
+        &ldquo;no external computer is used&rdquo;).</td></tr>
+      <tr><td><strong>I. Introduction</strong></td><td class="num">1.25</td>
+        <td>Three to six paragraphs closing on &le;4 refutable contribution
+        bullets with forward section refs (MAC-VO uses three). NoMaD proves two
+        paragraphs suffice when the teaser is strong. Reach the specific gap
+        within three or four sentences.</td></tr>
+      <tr><td><strong>II. Related Work</strong></td><td class="num">0.75</td>
+        <td>Deliberately thin. MAC-VO spends ~19% of its body text here and won
+        both the overall and perception awards; the ICRA 2023 overall winner has
+        <em>no</em> Related Work section at all. One contrast per paragraph,
+        F3RM-style: &ldquo;Unlike the multi-scale features used in LERF,
+        we&hellip;&rdquo;</td></tr>
+      <tr><td><strong>III. Method</strong></td><td class="num">2.5</td>
+        <td>The largest block, but every subsection must be a stage of
+        <em>one</em> mechanism. MAC-VO's four subsections all serve its
+        uncertainty model; TinyMPC's background teaches exactly the three tools
+        its solver combines and nothing else.</td></tr>
+      <tr><td><strong>IV. Capacity law</strong></td><td class="num">1.75</td>
+        <td>One formal statement in a display box, placed where the objection
+        lives. Every theory-carrying winner does this &mdash; ergodic search
+        Theorem 1, KnowNo Propositions 1&ndash;2. Assert measurements flatly;
+        hedge <em>mechanism</em> and <em>universality</em> explicitly.</td></tr>
+      <tr><td><strong>V. Experiments</strong></td><td class="num">3</td>
+        <td>A claims ledger: AESOP declares H1&ndash;H5, tags section titles,
+        and closes each with &ldquo;this validates H<em>n</em>&rdquo;; ergodic
+        search pre-registers Q1&ndash;Q6. Setup folds into bold run-in heads
+        (<em>Metrics.</em> <em>Baselines.</em>) rather than its own
+        section.</td></tr>
+      <tr><td><strong>VI. Conclusion &amp; Discussion</strong></td><td class="num">0.5</td>
+        <td>A standalone Limitations heading is atypical: seven of eight ICRA
+        winners read have none, and the exception merges it (Code as Policies:
+        &ldquo;Discussion and Limitations&rdquo;). Limitations carry numbers and
+        are phrased as scope-with-a-path.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note">
+    <h3>The one structural change worth making</h3>
+    <p>Our draft has a standalone Limitations section and a separate
+    Experimental Setup. Folding Limitations into
+    &ldquo;Conclusion&nbsp;&amp;&nbsp;Discussion&rdquo; and dissolving Setup
+    into run-in heads matches the winners <em>and</em> frees roughly a column
+    &mdash; which, now that we are not fighting a page limit, buys space for
+    the predicted-vs-measured figure rather than being cut.</p>
+  </div>
+</section>
+
+<section>
+  <h2>The narrative spine, written for this paper</h2>
+  <p class="prose">The arc award papers follow, instantiated with our own
+  measured results. These are candidate sentences to adapt, not filler &mdash;
+  and once a number appears here it should appear <em>verbatim</em> everywhere
+  else in the paper.</p>
+  <ol class="spine">
+    <li><div><span class="role">Name the enemy &mdash; never open on a statistic</span>
+      <span class="say">A robot's semantic map is usually a structure that
+      grows: a node per object, a row per landmark, a descriptor per keyframe.
+      Growth obligates machinery &mdash; association to update it,
+      correspondence to merge it, traversal code to query it.</span></div></li>
+    <li><div><span class="role">The turn &mdash; why the obvious fix fails</span>
+      <span class="say">Capping the structure is not by itself an answer: the
+      field's own survey indicts bounded maps because quality
+      &ldquo;degrades silently when scene complexity approaches table
+      capacity.&rdquo;</span></div></li>
+    <li><div><span class="role">&ldquo;We present&rdquo; &mdash; mechanism inside the sentence, as contrast</span>
+      <span class="say">Instead of a growing structure, the map is one fixed
+      32&nbsp;KB vector: insertion is a multiply-add, a query is one unbind,
+      and merging two robots' maps is elementwise addition &mdash; exact, with
+      zero association decisions.</span></div></li>
+    <li><div><span class="role">The quotable law &mdash; the paper's ping</span>
+      <span class="say">Superposition interference, the price of writing
+      everything into one vector, follows an empirical capacity law that
+      predicted a held-out condition to 1.4% and diagnosed a deployed failure
+      before we found its fix.</span></div></li>
+    <li><div><span class="role">Witnesses, with the steelman visible</span>
+      <span class="say">We test the law on three public witnesses, each after
+      strengthening the opposition: relocalisation on 7-Scenes against exact
+      nearest neighbour over the same descriptors at ~1000&times; the bytes;
+      grounding on all eight Replica scenes against an explicit-instance
+      ceiling; and a head-to-head under ConceptGraphs' own scorer, its
+      published result reproduced to 99% first.</span></div></li>
+    <li><div><span class="role">The payoff &mdash; including the honest loss</span>
+      <span class="say">The fixed budget loses on clean input (0.80&times;) and
+      overtakes the unbounded map in all nine degraded-input conditions tested:
+      it degrades on the schedule the law sets rather than
+      silently.</span></div></li>
+    <li><div><span class="role">Coin the thesis, then close</span>
+      <span class="say">Predicted degradation is what a fixed budget buys:
+      bytes fixed before deployment, update cost independent of map age, merge
+      cost independent of map content, and failure modes given by an equation
+      rather than discovered in the field.</span></div></li>
+  </ol>
+  <div class="note">
+    <h3>Coin one phrase and repeat it verbatim</h3>
+    <p>Winners give the community a citable handle and never paraphrase it:
+    <em>uncertainty alignment</em> (KnowNo), <em>metrics-aware vs
+    scale-agnostic</em> (MAC-VO), <em>the translation problem</em> (Translating
+    Images). Our draft currently uses three different phrasings of its own
+    thesis. Pick one &mdash; <strong>&ldquo;predicted degradation is what a
+    fixed budget buys&rdquo;</strong> is the strongest &mdash; and use exactly
+    those words at all four stations: abstract, close of the law section,
+    head-to-head, conclusion.</p>
+  </div>
+</section>
+
+<section>
+  <h2>The opening kit</h2>
+  <h3>Title</h3>
+  <p class="prose">Median award title: <strong>8 words</strong>. Zero winners
+  sampled use &ldquo;Towards&rdquo;, &ldquo;A Novel&rdquo; or &ldquo;A
+  Framework for&rdquo;; none carries a numeral. Two winning constructions: a
+  pronounceable name with a colon (Diffusion Policy, MAC-VO, Kimera-Multi,
+  NoMaD), or a territory-grab claim with no colon at all (Robot Parkour
+  Learning, Time Optimal Ergodic Search). Our current title is 16 words and
+  enumerates three claims where winners encode one.</p>
+  <div class="titles">
+    <div class="titlecard"><div class="t">The Map Is One Vector</div>
+      <div class="w">5 words &middot; territory-grab species (Parkour, Ergodic
+      Search) &middot; boldest</div></div>
+    <div class="titlecard"><div class="t">A Capacity Law Makes Fixed-Size Maps Predictable</div>
+      <div class="w">8 words &middot; exactly the F3RM construction:
+      mechanism-subject, active verb, capability-object &middot; leads with the
+      contribution</div></div>
+    <div class="titlecard"><div class="t">Algebraic Spatio-Temporal Memory: One Fixed-Size Vector as the Whole Map</div>
+      <div class="w">11 words &middot; conservative cut of the current title,
+      one claim instead of three &middot; note &ldquo;ASTM&rdquo; collides with
+      the standards body</div></div>
+  </div>
+  <h3 style="margin-top:8px">Abstract, seven sentences with fixed roles</h3>
+  <p class="prose">S1 enemy (growth) &middot; S2 gap as the survey's own quote
+  &middot; S3 &ldquo;we present&rdquo; + mechanism + <strong>32&nbsp;KB</strong>
+  &middot; S4 the law + <strong>1.4%</strong> &middot; S5 witnesses with the
+  steelman clause &middot; S6 the crossover, 0.80&times; clean and
+  <strong>all nine</strong> degraded conditions &middot; S7 the coined thesis.</p>
+  <div class="note warn">
+    <h3>The single highest-value edit in this document</h3>
+    <p>Our abstract carries roughly <strong>twelve numerals</strong>
+    (D=8192, 64&nbsp;KB, 0.36, 0.29, 32.8&nbsp;MB, 10<sup>&minus;15</sup>, 622,
+    84/89%, 1.4%, 44&rarr;62). The openings sweep found award abstracts in this
+    genre carry <em>one</em> headline number early, with identity numbers
+    pushed to the hero caption. Keep <strong>32&nbsp;KB</strong> (identity),
+    <strong>1.4%</strong> (result) and <strong>&ldquo;all nine&rdquo;</strong>
+    (a count &mdash; the counts-as-authority move); move the rest out. And add
+    the crossover sentence: the thesis's own proof is currently
+    <em>missing</em> from the abstract while merge micro-numbers are
+    present.</p>
+  </div>
+  <h3>Hero-figure contract</h3>
+  <p class="prose">Our hero is already the right species &mdash; a teaser
+  result drawn from the map's own state, with an objection pre-empted in the
+  caption (&ldquo;no data association whatsoever&rdquo;). Three fixes: compress
+  the caption from ~200 words toward the 40&ndash;85 winners use; open it with
+  the falsifiable claim rather than a description; and normalise the numbers
+  the way Parkour does (&ldquo;0.40&nbsp;m = 1.53&times; robot height&rdquo;).
+  <span class="tag j">judgment</span> Consider making one panel the
+  predicted-vs-measured interference curve with the held-out point marked
+  1.4% &mdash; the law is the contribution but no panel currently shows it, and
+  KnowNo's headline figure <em>is</em> its deviation plot.</p>
+</section>
+
+<section>
+  <h2>Style rules that separate winners from the median</h2>
+  <ul class="plain">
+    <li><strong>One ping, three witnesses.</strong> <span class="tag a">attested</span>
+    Winners show one derivation instantiated three ways (F3RM's
+    grasp/place/language). Write relocalisation, grounding and the head-to-head
+    as three tests of the law's prediction, not three independent
+    results.</li>
+    <li><strong>Claim = number + named baseline + named condition + section
+    ref.</strong> <span class="tag a">attested</span> MAC-VO: &ldquo;61.9% over
+    DROID-SLAM in t<sub>rel</sub>&rdquo;. Never a bare percentage.</li>
+    <li><strong>Freeze numbers verbatim across abstract, intro and
+    results.</strong> <span class="tag a">attested</span> PoliFormer's +28.5 is
+    identical in all three. Audit ours: 1.4%, 0.36/0.29&nbsp;m, ~1000&times;,
+    32&nbsp;KB, 0.80&times;, 9/9, 99%.</li>
+    <li><strong>Denominate claims in the constrained resource.</strong>
+    <span class="tag a">attested</span> TinyMPC prices everything in kB and ms
+    against hard limits and states its own capacity ceiling as a first-class
+    number. Bytes belong in <em>every</em> results table, including the
+    ConceptGraphs one.</li>
+    <li><strong>Report errors against floors and exchange rates.</strong>
+    <span class="tag a">attested</span> IRP puts 2.6&nbsp;cm real error next to
+    2.3&nbsp;cm pixel size. &ldquo;0.36 vs 0.29&nbsp;m&rdquo; should never
+    appear without &ldquo;at ~1000&times; fewer bytes&rdquo; in the same
+    sentence.</li>
+    <li><strong>Steelman the baseline, then say you did.</strong>
+    <span class="tag a">attested</span> KnowNo re-tunes the baseline's threshold
+    before comparing; IRP hands its rival ground-truth parameters. Our 99%
+    reproduction <em>is</em> this culture &mdash; state it as a methodological
+    contribution in its own sentence, not as setup.</li>
+    <li><strong>Attribute failures with counts and mechanisms.</strong>
+    <span class="tag a">attested</span> F3RM prints 13/19 language failures and
+    names CLIP's bag-of-words behaviour as the cause. Our miss taxonomy and the
+    62/38 forensics already speak this language.</li>
+    <li><strong>Hedge mechanism and universality, never measurements.</strong>
+    <span class="tag a">attested</span> The empirical-law papers assert what
+    they measured flatly, then mark speculation explicitly and show
+    distributions rather than means.</li>
+    <li><strong>Anticipate the reviewer in-text.</strong>
+    <span class="tag a">attested</span> PoliFormer uses a bold run-in question
+    (&ldquo;Has PoliFormer performance saturated?&rdquo;). Budget three or four
+    sentences for &ldquo;is 32&nbsp;KB special or arbitrary?&rdquo; and
+    &ldquo;does the law survive distribution shift?&rdquo;</li>
+    <li><strong>Voice: measured, zero superlatives.</strong>
+    <span class="tag a">attested</span> Award citations reward
+    &ldquo;rigor&hellip; convincing results on challenging benchmarks&rdquo;
+    &mdash; never novelty or SOTA margins. MAC-VO's citation is one sentence
+    about an uncertainty model and convincing results.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>What not to do</h2>
+  <ul class="plain">
+    <li>Title padding (&ldquo;Towards&rdquo;, &ldquo;A Novel&rdquo;,
+    &ldquo;A Framework for&rdquo;), or enumerating three claims in a title.</li>
+    <li>Scattering five or more metrics through the abstract &mdash; the sweep
+    calls this median-submission behaviour explicitly, and our draft does
+    it.</li>
+    <li>Closing an abstract with &ldquo;experiments demonstrate the
+    effectiveness of the proposed method&rdquo;. No winner sampled does.</li>
+    <li>Terse figure captions. Every winner's caption is a 40&ndash;85-word
+    mini-abstract.</li>
+    <li>A bare architecture block diagram as Fig.&nbsp;1.</li>
+    <li>Multiple vague &ldquo;first&rdquo; claims &mdash; winners make at most
+    one, tightly scoped.</li>
+    <li>Mechanism-free verbs in claims: <em>provides</em>, <em>enables</em>,
+    <em>allows</em>.</li>
+    <li>Hiding losses. F3RM prints 31/50 and &ldquo;far from practical for
+    industrial use&rdquo; in its camera-ready headline table &mdash; and won.
+    A loss with a one-sentence mechanistic diagnosis becomes a demonstration
+    of the thesis.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Where our draft already matches, and what to change</h2>
+  <div class="note good">
+    <h3>On-template already &mdash; do not restructure these</h3>
+    <p>The hero figure's species and objection pre-empt; the
+    growth-as-enemy opening with the survey's &ldquo;degrades silently&rdquo;
+    quote; the &ldquo;what is not claimed&rdquo; paragraph (the F3RM honesty
+    move); four refutable contribution bullets with section refs; Method as
+    five stages of one mechanism; the law section's
+    metric&rarr;law&rarr;deployed-predictions shape; the 99% reproduction
+    before comparison; the miss taxonomy; quantified limitations. This draft is
+    closer to award shape than most submissions start.</p>
+  </div>
+  <ol class="rank">
+    <li><span><strong>Abstract surgery.</strong> Twelve numerals to three;
+    seven sentences with the roles above; add the missing crossover sentence;
+    end on the coined phrase.</span><span class="tag a">~30 min</span></li>
+    <li><span><strong>Cut the title</strong> from 16 words to one claim
+    &mdash; three candidates above.</span><span class="tag a">~10 min</span></li>
+    <li><span><strong>Unify the thesis coin</strong> to one phrasing at its
+    four stations.</span><span class="tag a">~15 min</span></li>
+    <li><span><strong>Fold Limitations into Conclusion&nbsp;&amp;&nbsp;Discussion</strong>
+    and dissolve Experimental Setup into run-in heads &mdash; matches winners
+    and frees a column for the figure below.</span><span class="tag a">~1 h</span></li>
+    <li><span><strong>Make predicted-vs-measured the visual headline:</strong>
+    a deviation plot with the held-out point labelled 1.4%, and a bytes column
+    in every results table.</span><span class="tag j">judgment</span></li>
+    <li><span><strong>Compliance pass:</strong> anonymise the author block,
+    acknowledgements and grant numbers; add the AI-use disclosure.</span>
+    <span class="tag v">required</span></li>
+  </ol>
+</section>
+
+<section>
+  <h2>Caveats &mdash; read before trusting any of this</h2>
+  <ul class="plain">
+    <li><strong>Survivorship bias is unaddressed.</strong> Every pattern here is
+    conditioned on winning. Without a matched sample of rejected papers we
+    cannot separate what <em>causes</em> awards from what every competent paper
+    does (teaser figures, three contribution bullets) or from lab-brand
+    confounds.</li>
+    <li><strong>Awards and acceptance are different games.</strong> Awards come
+    from a small committee <em>after</em> acceptance; our binding gate is three
+    anonymous reviewers. Award-optimal boldness and acceptance-optimal
+    defensiveness are correlated, not identical &mdash; and only the former is
+    in this corpus.</li>
+    <li><strong>The sample skews to learning and perception systems papers from
+    US labs.</strong> Our true genre peers &mdash; compact map representations,
+    VSA/HDC, memory-bounded SLAM &mdash; are absent, and the SLAM/mapping
+    reviewers we will actually draw expect ATE/RPE tables and ORB-SLAM3-family
+    baselines that award-committee rhetoric says nothing about.</li>
+    <li><strong>Roughly half the corpus is RSS/CoRL/T-RO.</strong> Several of
+    their signature moves (hypothesis ledgers, related-work-after-results,
+    long appendices) have <em>zero</em> verified ICRA-winner instances. Treat
+    the ledger idea as imported, and remember appendices are unavailable to
+    us.</li>
+    <li><strong>Column budgets are estimates from arXiv HTML</strong>, and
+    arXiv versions are routinely longer than camera-ready. Use them as
+    proportions, not targets.</li>
+    <li><strong>The fact-check layer inside the sweep was itself fallible</strong>
+    &mdash; it &ldquo;refuted&rdquo; a correct claim about the ICRA 2024
+    winners by consulting a page that listed only category awards. Two papers
+    analysed as exemplars (Diffusion Policy, UMI) are influential but
+    <em>not</em> verified award winners. Do not quote award names from this
+    page without checking them.</li>
+    <li><strong>Our riskiest move has thin support.</strong> Leading with an
+    honest loss (0.36 vs 0.29&nbsp;m; 0.80&times; clean) is backed by two
+    papers, both from strong labs whose authorship may carry the risk in a way
+    ours would not.</li>
+  </ul>
+</section>
+
+<footer>
+  <div>Method &middot; 18 agents across four sweeps (ICRA awards, RSS/CoRL
+  awards, the craft of openings, and what committees reward), each fetching
+  and reading the papers rather than summaries; load-bearing claims
+  spot-verified against primary sources; an adversarial critic checked the
+  evidence base for attribution errors, sample bias and survivorship bias.
+  47 papers, 14 read in full.</div>
+  <div>ICRA 2027 rules verified directly against the
+  <a href="https://2027.ieee-icra.org/contribute/call-for-icra-2027-papers-now-accepting-submissions/">call
+  for papers</a>: 8 pages including references, double-anonymous, AI-use
+  disclosure required, no supplementary PDF, deadline 15 September 2026.</div>
+  <div>Draft state at the time of writing: <code>paper/icra6.tex</code>,
+  8 pages compiled locally (MiKTeX), all citations resolved, commit
+  <code>d9fdec9</code>.</div>
+</footer>
+</div>
