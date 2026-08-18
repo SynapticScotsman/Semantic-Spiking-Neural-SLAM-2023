@@ -1,0 +1,266 @@
+[
+    {
+        "id": 0,
+        "caption": "This is a lamp and it is above the end table."
+    },
+    {
+        "id": 1,
+        "caption": "This is a stool and it is next to another stool."
+    },
+    {
+        "id": 2,
+        "caption": "This is a cabinet and it is in front of a wall and below a piece of art."
+    },
+    {
+        "id": 3,
+        "caption": "This is a throw pillow on the couch."
+    },
+    {
+        "id": 4,
+        "caption": "This is a couch and it is next to the end table."
+    },
+    {
+        "id": 5,
+        "caption": "invalid"
+    },
+    {
+        "id": 6,
+        "caption": "This is a stool and it is on top of a rug."
+    },
+    {
+        "id": 7,
+        "caption": "These are books and they are on the table."
+    },
+    {
+        "id": 8,
+        "caption": "This is a table and it is above another table."
+    },
+    {
+        "id": 9,
+        "caption": "This is a vase and it is on top of a table."
+    },
+    {
+        "id": 10,
+        "caption": "The candle is on top of the table."
+    },
+    {
+        "id": 11,
+        "caption": "This is a hurrican candle and it is on top of a cabinet."
+    },
+    {
+        "id": 12,
+        "caption": "This is a lower shelf on a table under a lamp."
+    },
+    {
+        "id": 13,
+        "caption": "this is an area rug and its on top of a gray carpet that covers the room."
+    },
+    {
+        "id": 14,
+        "caption": "This is a fish and it is on top of a cabinet."
+    },
+    {
+        "id": 15,
+        "caption": "This is a pillow and this is on top of a couch."
+    },
+    {
+        "id": 16,
+        "caption": "This is a reflection and it is on the wall."
+    },
+    {
+        "id": 17,
+        "caption": "This is a piece of art and it is on the wall."
+    },
+    {
+        "id": 18,
+        "caption": "White horizontal blinds in a well lit room."
+    },
+    {
+        "id": 19,
+        "caption": "This is a couch and it is under a window."
+    },
+    {
+        "id": 20,
+        "caption": "This is a throw pillow on the couch."
+    },
+    {
+        "id": 21,
+        "caption": "This is a blanket and it is on the couch."
+    },
+    {
+        "id": 22,
+        "caption": "It is a door and it is on the right side of the lamp."
+    },
+    {
+        "id": 23,
+        "caption": "invalid"
+    },
+    {
+        "id": 24,
+        "caption": "This is a vent in the ceiling."
+    },
+    {
+        "id": 25,
+        "caption": "This is a window and it is next to a door."
+    },
+    {
+        "id": 26,
+        "caption": "This is a couch and it is in front of the wall."
+    },
+    {
+        "id": 27,
+        "caption": "This is a pillow on top of the couch."
+    },
+    {
+        "id": 28,
+        "caption": "These are end tables and they are below the lamp and next to the couch."
+    },
+    {
+        "id": 29,
+        "caption": "This is a boat and it is in a picture that is on the wall."
+    },
+    {
+        "id": 30,
+        "caption": "This is a pillow and it is on top of a couch."
+    },
+    {
+        "id": 31,
+        "caption": "This is a striped throw pillow on the loveseat."
+    },
+    {
+        "id": 32,
+        "caption": "It is a coffee table and it is in the center of the room surrounded by sofas."
+    },
+    {
+        "id": 33,
+        "caption": "It is a front left leg of a sofa and the sofa is under a canvas on the wall."
+    },
+    {
+        "id": 34,
+        "caption": "This is a window and it is above a chair."
+    },
+    {
+        "id": 35,
+        "caption": "This is a chair and it is in front of a window."
+    },
+    {
+        "id": 36,
+        "caption": "This is a vase on the coffee table."
+    },
+    {
+        "id": 37,
+        "caption": "A beige armchair with a blue pillow."
+    },
+    {
+        "id": 38,
+        "caption": "This is a wall and it is next to a chair."
+    },
+    {
+        "id": 39,
+        "caption": "a blue cushion on a tan love seat."
+    },
+    {
+        "id": 40,
+        "caption": "This is an air vent on the ceiling."
+    },
+    {
+        "id": 41,
+        "caption": "A beige recliner chair with a small blue pillow on it right next to another one that is exaclty the same."
+    },
+    {
+        "id": 42,
+        "caption": "The pillow is on top of the chair."
+    },
+    {
+        "id": 43,
+        "caption": "two cream colored cushioned chairs with blue pillows adjacent to each other."
+    },
+    {
+        "id": 44,
+        "caption": "This is a window behind a chair."
+    },
+    {
+        "id": 45,
+        "caption": "This is a book and it is on top of a side table."
+    },
+    {
+        "id": 46,
+        "caption": "This is a pillow and it is on the couch."
+    },
+    {
+        "id": 47,
+        "caption": "This is a pillow and it is on the couch."
+    },
+    {
+        "id": 48,
+        "caption": "This is a white-shaded lamp next to a window"
+    },
+    {
+        "id": 49,
+        "caption": "a long white sofa with a gray cushion as well as a brown cushion."
+    },
+    {
+        "id": 50,
+        "caption": "This is a ceiling light over the coffee table."
+    },
+    {
+        "id": 51,
+        "caption": "A pillow on top of a white couch"
+    },
+    {
+        "id": 52,
+        "caption": "This is a window and it is above the couch."
+    },
+    {
+        "id": 53,
+        "caption": "This is a right front leg of a sofa that is closer to the lamp."
+    },
+    {
+        "id": 54,
+        "caption": "I'm sorry, I don't know what this is."
+    },
+    {
+        "id": 55,
+        "caption": "This is a bucket and it is next to a couch."
+    },
+    {
+        "id": 56,
+        "caption": "This is a side table under a lamp."
+    },
+    {
+        "id": 57,
+        "caption": "This is an end table and it is below a lamp."
+    },
+    {
+        "id": 58,
+        "caption": "This is an end table and it is next to a couch."
+    },
+    {
+        "id": 59,
+        "caption": "This is a shelf of the table under the lamp."
+    },
+    {
+        "id": 60,
+        "caption": "These are chairs and they are under the window."
+    },
+    {
+        "id": 61,
+        "caption": "invalid"
+    },
+    {
+        "id": 62,
+        "caption": "These are chairs and they are under the window."
+    },
+    {
+        "id": 63,
+        "caption": "This is a vase and it is on top of the table."
+    },
+    {
+        "id": 64,
+        "caption": "invalid"
+    },
+    {
+        "id": 65,
+        "caption": "This is a ceiling light next to the window."
+    }
+]

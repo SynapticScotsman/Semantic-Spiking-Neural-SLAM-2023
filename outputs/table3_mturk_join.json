@@ -1,0 +1,79 @@
+[
+ {
+  "scene": "room0",
+  "captions": 66,
+  "valid": 62,
+  "max_id": 65,
+  "our_objs": 76,
+  "in_range": 62,
+  "checked": 45,
+  "agree": 4,
+  "frac": 0.08888888888888889
+ },
+ {
+  "scene": "room1",
+  "captions": 50,
+  "valid": 43,
+  "max_id": 49,
+  "our_objs": 66,
+  "in_range": 43,
+  "checked": 34,
+  "agree": 0,
+  "frac": 0.0
+ },
+ {
+  "scene": "room2",
+  "captions": 54,
+  "valid": 47,
+  "max_id": 53,
+  "our_objs": 79,
+  "in_range": 47,
+  "checked": 29,
+  "agree": 0,
+  "frac": 0.0
+ },
+ {
+  "scene": "office0",
+  "captions": 45,
+  "valid": 34,
+  "max_id": 44,
+  "our_objs": 79,
+  "in_range": 34,
+  "checked": 24,
+  "agree": 1,
+  "frac": 0.041666666666666664
+ },
+ {
+  "scene": "office1",
+  "captions": 32,
+  "valid": 23,
+  "max_id": 31,
+  "our_objs": 57,
+  "in_range": 23,
+  "checked": 19,
+  "agree": 2,
+  "frac": 0.10526315789473684
+ },
+ {
+  "scene": "office2",
+  "captions": 53,
+  "valid": 47,
+  "max_id": 52,
+  "our_objs": 80,
+  "in_range": 47,
+  "checked": 41,
+  "agree": 2,
+  "frac": 0.04878048780487805
+ },
+ {
+  "scene": "office3",
+  "captions": 69,
+  "valid": 60,
+  "max_id": 68,
+  "our_objs": 98,
+  "in_range": 60,
+  "checked": 46,
+  "agree": 3,
+  "frac": 0.06521739130434782
+ }
+]

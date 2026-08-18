@@ -1,0 +1,278 @@
+[
+    {
+        "id": 0,
+        "caption": "This is a large cell phone or a tablet on a white table."
+    },
+    {
+        "id": 1,
+        "caption": "This is a yellow throw pillow and it is place din the the corner of the couch."
+    },
+    {
+        "id": 2,
+        "caption": "This is a screen and it is against the wall."
+    },
+    {
+        "id": 3,
+        "caption": "This is a pillow and it is on the couch."
+    },
+    {
+        "id": 4,
+        "caption": "It is a display screen and it is by the wall in front of a table and sofas."
+    },
+    {
+        "id": 5,
+        "caption": "This is a pillow and it is on top of a couch."
+    },
+    {
+        "id": 6,
+        "caption": "invalid"
+    },
+    {
+        "id": 7,
+        "caption": "This is a sofa and it's up against a blank red wall and by a square table."
+    },
+    {
+        "id": 8,
+        "caption": "This is a large screen in front of windows."
+    },
+    {
+        "id": 9,
+        "caption": "This is a box on top of the table."
+    },
+    {
+        "id": 10,
+        "caption": "This is a clock between two windows."
+    },
+    {
+        "id": 11,
+        "caption": "This is a couch near an orange wall."
+    },
+    {
+        "id": 12,
+        "caption": "This is a blue bench along the wall."
+    },
+    {
+        "id": 13,
+        "caption": "This is a windowshade next to a clock."
+    },
+    {
+        "id": 14,
+        "caption": "This is a shade and it is on the top of a window."
+    },
+    {
+        "id": 15,
+        "caption": "This is a shade and it's mounted on the wall."
+    },
+    {
+        "id": 16,
+        "caption": "invalid"
+    },
+    {
+        "id": 17,
+        "caption": "This is a rectangle shaped glass window on the far wall in a room and it is reflecting light from the room."
+    },
+    {
+        "id": 18,
+        "caption": "This is a tall, narrow window."
+    },
+    {
+        "id": 19,
+        "caption": "This is a mirror and it is behind the screen."
+    },
+    {
+        "id": 20,
+        "caption": "This is a window in the wall."
+    },
+    {
+        "id": 21,
+        "caption": "A gray cushioned chair in a living room."
+    },
+    {
+        "id": 22,
+        "caption": "This is a back cushion on the end of the couch near the blue chair."
+    },
+    {
+        "id": 23,
+        "caption": "This is a wall and it is behind the bench."
+    },
+    {
+        "id": 24,
+        "caption": "invalid"
+    },
+    {
+        "id": 25,
+        "caption": "This is a chair and it is behind a couch."
+    },
+    {
+        "id": 26,
+        "caption": "This is the corner of a chair at a conference table."
+    },
+    {
+        "id": 27,
+        "caption": "A office chair in a meeting room."
+    },
+    {
+        "id": 28,
+        "caption": "invalid"
+    },
+    {
+        "id": 29,
+        "caption": "This is a cord and it is on the floor."
+    },
+    {
+        "id": 30,
+        "caption": "This is a thermostat and it is on the wall."
+    },
+    {
+        "id": 31,
+        "caption": "invalid"
+    },
+    {
+        "id": 32,
+        "caption": "This is a chair located next to a wooden table."
+    },
+    {
+        "id": 33,
+        "caption": "This object is a door lock or handle located near the door."
+    },
+    {
+        "id": 34,
+        "caption": "a large brown rectangular table."
+    },
+    {
+        "id": 35,
+        "caption": "This is a chair on wheels at a conference table."
+    },
+    {
+        "id": 36,
+        "caption": "This is a sliding door and this is on the right side of the room."
+    },
+    {
+        "id": 37,
+        "caption": "This is a window and it is next to a door."
+    },
+    {
+        "id": 38,
+        "caption": "This is a chair at the corner of the table."
+    },
+    {
+        "id": 39,
+        "caption": "This is a door and it is above the floor."
+    },
+    {
+        "id": 40,
+        "caption": "These are three chairs at a wooden table in a conference room"
+    },
+    {
+        "id": 41,
+        "caption": "These are chairs and they are tucked under a table."
+    },
+    {
+        "id": 42,
+        "caption": "invalid"
+    },
+    {
+        "id": 43,
+        "caption": "This is a thermostat and it is mounted on the wall."
+    },
+    {
+        "id": 44,
+        "caption": "This is an outlet on the wall."
+    },
+    {
+        "id": 45,
+        "caption": "invalid"
+    },
+    {
+        "id": 46,
+        "caption": "This is a table and it is on the floor."
+    },
+    {
+        "id": 47,
+        "caption": "This is a chair pushed up to a table."
+    },
+    {
+        "id": 48,
+        "caption": "This is an outlet on the wall."
+    },
+    {
+        "id": 49,
+        "caption": "This is a chair and it's next to the table."
+    },
+    {
+        "id": 50,
+        "caption": "A voice assitant is on top of a table in a meeting room."
+    },
+    {
+        "id": 51,
+        "caption": "This is a table and it is between chairs."
+    },
+    {
+        "id": 52,
+        "caption": "One of eight gray office chairs in a conference room next to a large table."
+    },
+    {
+        "id": 53,
+        "caption": "A empty box of kleenex on a large table."
+    },
+    {
+        "id": 54,
+        "caption": "This is a chair and it is underneath the table."
+    },
+    {
+        "id": 55,
+        "caption": "This is lotion and it is on top of the table."
+    },
+    {
+        "id": 56,
+        "caption": "Two office chair in a meeting room of eight chairs in total."
+    },
+    {
+        "id": 57,
+        "caption": "This is a chair and it is tucked in under the table."
+    },
+    {
+        "id": 58,
+        "caption": "This is a larger trash can in blue color and this is right next to another smaller trash can on the floor."
+    },
+    {
+        "id": 59,
+        "caption": "This is a wall and it is above the floor."
+    },
+    {
+        "id": 60,
+        "caption": "This is a chair at the closest end of the table."
+    },
+    {
+        "id": 61,
+        "caption": "invalid"
+    },
+    {
+        "id": 62,
+        "caption": "This is a wooden table with a lot of chairs around it."
+    },
+    {
+        "id": 63,
+        "caption": "This is a conference table surrounded by 8 chairs."
+    },
+    {
+        "id": 64,
+        "caption": "This is a wall that has been painted white that is in a room with a conference table and six chairs."
+    },
+    {
+        "id": 65,
+        "caption": "These are chairs and they are tucked under the table."
+    },
+    {
+        "id": 66,
+        "caption": "invalid"
+    },
+    {
+        "id": 67,
+        "caption": "A round small gray trash can right next to a blue waste paper basket."
+    },
+    {
+        "id": 68,
+        "caption": "These are chairs and they are next to a table."
+    }
+]

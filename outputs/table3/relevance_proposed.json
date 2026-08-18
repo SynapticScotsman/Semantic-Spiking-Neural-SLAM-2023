@@ -1,0 +1,597 @@
+{
+ "note": "MACHINE-PROPOSED relevance, not ground truth. ConceptGraphs' own relevance judgements were never published; verified across all 7 repo branches, the paper appendix and the mturk caption files.",
+ "queries": {
+  "room": {
+   "A1": "Somewhere to store decorative cups",
+   "A2": "Something to add light into the room",
+   "A3": "Somewhere to set food for dinner",
+   "A4": "Something I can open with my keys",
+   "A5": "Something to sit upright for a work call",
+   "N1": "Something small, unlike a cabinet",
+   "N2": "Something light, unlike a table",
+   "N3": "Something soft, unlike a table",
+   "N4": "Something not transparent, unlike a window",
+   "N5": "Something rigid, unlike a rug"
+  },
+  "office": {
+   "A1": "Something to watch the news on",
+   "A2": "Something to tell the time",
+   "A3": "Something comfortable to sit on",
+   "A4": "Something to dispose of wastepaper in",
+   "A5": "Something to add light into the room",
+   "N1": "Something to sit on other than a chair",
+   "N2": "Something very heavy, unlike a clock",
+   "N3": "Something rigid, unlike a cushion",
+   "N4": "Something small, unlike a couch",
+   "N5": "Something light, unlike a table"
+  }
+ },
+ "scenes": {
+  "room0": {
+   "kind": "room",
+   "classes": [
+    "basket",
+    "blanket",
+    "blinds",
+    "book",
+    "cabinet",
+    "candle",
+    "chair",
+    "class_-1",
+    "cushion",
+    "indoor-plant",
+    "lamp",
+    "picture",
+    "pillar",
+    "plant-stand",
+    "plate",
+    "pot",
+    "rug",
+    "sofa",
+    "stool",
+    "switch",
+    "table",
+    "vase",
+    "vent",
+    "wall-plug"
+   ],
+   "proposed": {
+    "A1": {
+     "cabinet": "high"
+    },
+    "A2": {
+     "candle": "low",
+     "lamp": "high"
+    },
+    "A3": {
+     "table": "high"
+    },
+    "A4": {
+     "cabinet": "low"
+    },
+    "A5": {
+     "chair": "high",
+     "sofa": "low",
+     "stool": "high"
+    },
+    "N1": {
+     "basket": "low",
+     "book": "high",
+     "candle": "high",
+     "cushion": "high",
+     "lamp": "low",
+     "plate": "high",
+     "pot": "high",
+     "stool": "low",
+     "switch": "high",
+     "vase": "high",
+     "wall-plug": "high"
+    },
+    "N2": {
+     "blanket": "high",
+     "book": "high",
+     "candle": "high",
+     "cushion": "high",
+     "plate": "low",
+     "vase": "low"
+    },
+    "N3": {
+     "blanket": "high",
+     "cushion": "high",
+     "rug": "high",
+     "sofa": "high"
+    },
+    "N4": {
+     "cabinet": "high",
+     "chair": "high",
+     "rug": "high",
+     "sofa": "high",
+     "table": "high"
+    },
+    "N5": {
+     "cabinet": "high",
+     "chair": "high",
+     "pillar": "high",
+     "stool": "high",
+     "table": "high"
+    }
+   }
+  },
+  "room1": {
+   "kind": "room",
+   "classes": [
+    "basket",
+    "bed",
+    "blanket",
+    "blinds",
+    "book",
+    "cabinet",
+    "class_-1",
+    "comforter",
+    "indoor-plant",
+    "lamp",
+    "nightstand",
+    "panel",
+    "picture",
+    "pillow",
+    "plate",
+    "rug",
+    "switch",
+    "vase",
+    "vent",
+    "wall-plug"
+   ],
+   "proposed": {
+    "A1": {
+     "cabinet": "high"
+    },
+    "A2": {
+     "lamp": "high"
+    },
+    "A3": {},
+    "A4": {
+     "cabinet": "low"
+    },
+    "A5": {},
+    "N1": {
+     "basket": "low",
+     "book": "high",
+     "lamp": "low",
+     "plate": "high",
+     "switch": "high",
+     "vase": "high",
+     "wall-plug": "high"
+    },
+    "N2": {
+     "blanket": "high",
+     "book": "high",
+     "pillow": "high",
+     "plate": "low",
+     "vase": "low"
+    },
+    "N3": {
+     "bed": "high",
+     "blanket": "high",
+     "comforter": "high",
+     "pillow": "high",
+     "rug": "high"
+    },
+    "N4": {
+     "cabinet": "high",
+     "rug": "high"
+    },
+    "N5": {
+     "cabinet": "high"
+    }
+   }
+  },
+  "room2": {
+   "kind": "room",
+   "classes": [
+    "blinds",
+    "bottle",
+    "bowl",
+    "box",
+    "chair",
+    "class_-1",
+    "indoor-plant",
+    "lamp",
+    "plate",
+    "rug",
+    "sculpture",
+    "shelf",
+    "switch",
+    "table",
+    "vase",
+    "vent",
+    "wall-plug"
+   ],
+   "proposed": {
+    "A1": {
+     "shelf": "high"
+    },
+    "A2": {
+     "lamp": "high"
+    },
+    "A3": {
+     "table": "high"
+    },
+    "A4": {},
+    "A5": {
+     "chair": "high"
+    },
+    "N1": {
+     "bottle": "high",
+     "lamp": "low",
+     "plate": "high",
+     "switch": "high",
+     "vase": "high",
+     "wall-plug": "high"
+    },
+    "N2": {
+     "plate": "low",
+     "vase": "low"
+    },
+    "N3": {
+     "rug": "high"
+    },
+    "N4": {
+     "chair": "high",
+     "rug": "high",
+     "shelf": "high",
+     "table": "high"
+    },
+    "N5": {
+     "chair": "high",
+     "shelf": "high",
+     "table": "high"
+    }
+   }
+  },
+  "office0": {
+   "kind": "office",
+   "classes": [
+    "bin",
+    "blinds",
+    "camera",
+    "chair",
+    "class_-1",
+    "clock",
+    "desk-organizer",
+    "indoor-plant",
+    "panel",
+    "pillar",
+    "plant-stand",
+    "rug",
+    "sofa",
+    "switch",
+    "table",
+    "tablet",
+    "tissue-paper",
+    "tv-screen",
+    "vent",
+    "wall-plug"
+   ],
+   "proposed": {
+    "A1": {
+     "tv-screen": "high"
+    },
+    "A2": {
+     "clock": "high"
+    },
+    "A3": {
+     "chair": "high",
+     "sofa": "high"
+    },
+    "A4": {
+     "bin": "high"
+    },
+    "A5": {},
+    "N1": {
+     "sofa": "high"
+    },
+    "N2": {
+     "pillar": "high",
+     "sofa": "high",
+     "table": "high"
+    },
+    "N3": {
+     "bin": "high",
+     "camera": "high",
+     "chair": "high",
+     "clock": "high",
+     "desk-organizer": "high",
+     "pillar": "high",
+     "table": "high",
+     "tablet": "high",
+     "tv-screen": "high"
+    },
+    "N4": {
+     "bin": "low",
+     "camera": "high",
+     "clock": "high",
+     "desk-organizer": "high",
+     "switch": "high",
+     "tablet": "high",
+     "tissue-paper": "high"
+    },
+    "N5": {
+     "camera": "low",
+     "tablet": "low",
+     "tissue-paper": "high"
+    }
+   }
+  },
+  "office1": {
+   "kind": "office",
+   "classes": [
+    "bin",
+    "blanket",
+    "blinds",
+    "bottle",
+    "chair",
+    "class_-1",
+    "cloth",
+    "desk",
+    "desk-organizer",
+    "monitor",
+    "panel",
+    "pillar",
+    "pillow",
+    "switch",
+    "table",
+    "tissue-paper",
+    "wall-plug"
+   ],
+   "proposed": {
+    "A1": {
+     "monitor": "high"
+    },
+    "A2": {},
+    "A3": {
+     "chair": "high"
+    },
+    "A4": {
+     "bin": "high"
+    },
+    "A5": {},
+    "N1": {},
+    "N2": {
+     "desk": "high",
+     "pillar": "high",
+     "table": "high"
+    },
+    "N3": {
+     "bin": "high",
+     "chair": "high",
+     "desk": "high",
+     "desk-organizer": "high",
+     "monitor": "high",
+     "pillar": "high",
+     "table": "high"
+    },
+    "N4": {
+     "bin": "low",
+     "bottle": "high",
+     "desk-organizer": "high",
+     "switch": "high",
+     "tissue-paper": "high"
+    },
+    "N5": {
+     "blanket": "high",
+     "cloth": "high",
+     "tissue-paper": "high"
+    }
+   }
+  },
+  "office2": {
+   "kind": "office",
+   "classes": [
+    "bin",
+    "bottle",
+    "camera",
+    "chair",
+    "class_-1",
+    "cushion",
+    "lamp",
+    "panel",
+    "sofa",
+    "stool",
+    "table",
+    "tablet",
+    "tissue-paper",
+    "tv-screen",
+    "vent",
+    "wall-plug"
+   ],
+   "proposed": {
+    "A1": {
+     "tv-screen": "high"
+    },
+    "A2": {},
+    "A3": {
+     "chair": "high",
+     "cushion": "low",
+     "sofa": "high",
+     "stool": "low"
+    },
+    "A4": {
+     "bin": "high"
+    },
+    "A5": {
+     "lamp": "high"
+    },
+    "N1": {
+     "cushion": "low",
+     "sofa": "high",
+     "stool": "high"
+    },
+    "N2": {
+     "sofa": "high",
+     "table": "high"
+    },
+    "N3": {
+     "bin": "high",
+     "camera": "high",
+     "chair": "high",
+     "table": "high",
+     "tablet": "high",
+     "tv-screen": "high"
+    },
+    "N4": {
+     "bin": "low",
+     "bottle": "high",
+     "camera": "high",
+     "cushion": "high",
+     "tablet": "high",
+     "tissue-paper": "high"
+    },
+    "N5": {
+     "camera": "low",
+     "cushion": "high",
+     "tablet": "low",
+     "tissue-paper": "high"
+    }
+   }
+  },
+  "office3": {
+   "kind": "office",
+   "classes": [
+    "bench",
+    "bin",
+    "blinds",
+    "bottle",
+    "box",
+    "camera",
+    "chair",
+    "class_-1",
+    "clock",
+    "cushion",
+    "desk-organizer",
+    "lamp",
+    "panel",
+    "pipe",
+    "sofa",
+    "switch",
+    "table",
+    "tablet",
+    "tissue-paper",
+    "tv-stand",
+    "vent",
+    "wall-plug"
+   ],
+   "proposed": {
+    "A1": {
+     "tv-stand": "low"
+    },
+    "A2": {
+     "clock": "high"
+    },
+    "A3": {
+     "bench": "low",
+     "chair": "high",
+     "cushion": "low",
+     "sofa": "high"
+    },
+    "A4": {
+     "bin": "high"
+    },
+    "A5": {
+     "lamp": "high"
+    },
+    "N1": {
+     "bench": "high",
+     "cushion": "low",
+     "sofa": "high"
+    },
+    "N2": {
+     "sofa": "high",
+     "table": "high",
+     "tv-stand": "low"
+    },
+    "N3": {
+     "bin": "high",
+     "camera": "high",
+     "chair": "high",
+     "clock": "high",
+     "desk-organizer": "high",
+     "table": "high",
+     "tablet": "high"
+    },
+    "N4": {
+     "bin": "low",
+     "bottle": "high",
+     "camera": "high",
+     "clock": "high",
+     "cushion": "high",
+     "desk-organizer": "high",
+     "switch": "high",
+     "tablet": "high",
+     "tissue-paper": "high"
+    },
+    "N5": {
+     "camera": "low",
+     "cushion": "high",
+     "tablet": "low",
+     "tissue-paper": "high"
+    }
+   }
+  },
+  "office4": {
+   "kind": "office",
+   "classes": [
+    "bench",
+    "bin",
+    "camera",
+    "chair",
+    "class_-1",
+    "clock",
+    "lamp",
+    "panel",
+    "table",
+    "tv-screen",
+    "vent"
+   ],
+   "proposed": {
+    "A1": {
+     "tv-screen": "high"
+    },
+    "A2": {
+     "clock": "high"
+    },
+    "A3": {
+     "bench": "low",
+     "chair": "high"
+    },
+    "A4": {
+     "bin": "high"
+    },
+    "A5": {
+     "lamp": "high"
+    },
+    "N1": {
+     "bench": "high"
+    },
+    "N2": {
+     "table": "high"
+    },
+    "N3": {
+     "bin": "high",
+     "camera": "high",
+     "chair": "high",
+     "clock": "high",
+     "table": "high",
+     "tv-screen": "high"
+    },
+    "N4": {
+     "bin": "low",
+     "camera": "high",
+     "clock": "high"
+    },
+    "N5": {
+     "camera": "low"
+    }
+   }
+  }
+ }
+}

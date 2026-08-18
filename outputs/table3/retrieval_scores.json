@@ -1,0 +1,2134 @@
+{
+ "machine_labels": true,
+ "rows": [
+  {
+   "scene": "room0",
+   "qid": "A1",
+   "answerable": true,
+   "picked": [
+    "book",
+    "plate",
+    "pot"
+   ],
+   "in_trace": true,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     0,
+     0,
+     0
+    ],
+    "0.75": [
+     0,
+     0,
+     0
+    ],
+    "1.0": [
+     0,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "scene": "room0",
+   "qid": "A2",
+   "answerable": true,
+   "picked": [
+    "picture",
+    "book",
+    "plate"
+   ],
+   "in_trace": true,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     0,
+     0,
+     0
+    ],
+    "0.75": [
+     1,
+     1,
+     1
+    ],
+    "1.0": [
+     1,
+     1,
+     1
+    ]
+   }
+  },
+  {
+   "scene": "room0",
+   "qid": "A3",
+   "answerable": true,
+   "picked": [
+    "book",
+    "plate",
+    "picture"
+   ],
+   "in_trace": true,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     0,
+     1,
+     1
+    ],
+    "0.75": [
+     0,
+     1,
+     1
+    ],
+    "1.0": [
+     0,
+     1,
+     1
+    ]
+   }
+  },
+  {
+   "scene": "room0",
+   "qid": "A4",
+   "answerable": true,
+   "picked": [
+    "book",
+    "picture",
+    "switch"
+   ],
+   "in_trace": true,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     0,
+     0,
+     0
+    ],
+    "0.75": [
+     0,
+     0,
+     0
+    ],
+    "1.0": [
+     0,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "scene": "room0",
+   "qid": "A5",
+   "answerable": true,
+   "picked": [
+    "book",
+    "plate",
+    "picture"
+   ],
+   "in_trace": true,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     0,
+     0,
+     0
+    ],
+    "0.75": [
+     0,
+     1,
+     1
+    ],
+    "1.0": [
+     0,
+     1,
+     1
+    ]
+   }
+  },
+  {
+   "scene": "room0",
+   "qid": "N1",
+   "answerable": true,
+   "picked": [
+    "cabinet",
+    "book",
+    "picture"
+   ],
+   "in_trace": false,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     0,
+     0,
+     0
+    ],
+    "0.75": [
+     0,
+     0,
+     0
+    ],
+    "1.0": [
+     0,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "scene": "room0",
+   "qid": "N2",
+   "answerable": true,
+   "picked": [
+    "table",
+    "book",
+    "plate"
+   ],
+   "in_trace": false,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     0,
+     0,
+     0
+    ],
+    "0.75": [
+     0,
+     0,
+     0
+    ],
+    "1.0": [
+     0,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "scene": "room0",
+   "qid": "N3",
+   "answerable": true,
+   "picked": [
+    "table",
+    "book",
+    "plate"
+   ],
+   "in_trace": false,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     0,
+     0,
+     0
+    ],
+    "0.75": [
+     0,
+     0,
+     0
+    ],
+    "1.0": [
+     0,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "scene": "room0",
+   "qid": "N4",
+   "answerable": true,
+   "picked": [
+    "picture",
+    "book",
+    "plate"
+   ],
+   "in_trace": true,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     0,
+     0,
+     0
+    ],
+    "0.75": [
+     0,
+     0,
+     0
+    ],
+    "1.0": [
+     1,
+     1,
+     1
+    ]
+   }
+  },
+  {
+   "scene": "room0",
+   "qid": "N5",
+   "answerable": true,
+   "picked": [
+    "rug",
+    "blanket",
+    "book"
+   ],
+   "in_trace": false,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     0,
+     0,
+     0
+    ],
+    "0.75": [
+     0,
+     0,
+     0
+    ],
+    "1.0": [
+     0,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "scene": "room1",
+   "qid": "A1",
+   "answerable": true,
+   "picked": [
+    "book",
+    "plate",
+    "cabinet"
+   ],
+   "in_trace": true,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     1,
+     1,
+     1
+    ],
+    "0.75": [
+     1,
+     1,
+     1
+    ],
+    "1.0": [
+     1,
+     1,
+     1
+    ]
+   }
+  },
+  {
+   "scene": "room1",
+   "qid": "A2",
+   "answerable": true,
+   "picked": [
+    "picture",
+    "book",
+    "plate"
+   ],
+   "in_trace": true,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     0,
+     0,
+     0
+    ],
+    "0.75": [
+     0,
+     0,
+     0
+    ],
+    "1.0": [
+     0,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "scene": "room1",
+   "qid": "A3",
+   "answerable": false
+  },
+  {
+   "scene": "room1",
+   "qid": "A4",
+   "answerable": true,
+   "picked": [
+    "book",
+    "picture",
+    "switch"
+   ],
+   "in_trace": true,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     1,
+     1,
+     1
+    ],
+    "0.75": [
+     1,
+     1,
+     1
+    ],
+    "1.0": [
+     1,
+     1,
+     1
+    ]
+   }
+  },
+  {
+   "scene": "room1",
+   "qid": "A5",
+   "answerable": false
+  },
+  {
+   "scene": "room1",
+   "qid": "N1",
+   "answerable": true,
+   "picked": [
+    "cabinet",
+    "book",
+    "picture"
+   ],
+   "in_trace": false,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     0,
+     0,
+     0
+    ],
+    "0.75": [
+     0,
+     0,
+     0
+    ],
+    "1.0": [
+     0,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "scene": "room1",
+   "qid": "N2",
+   "answerable": true,
+   "picked": [
+    "book",
+    "plate",
+    "picture"
+   ],
+   "in_trace": true,
+   "correct_class": true,
+   "hit": {
+    "0.5": [
+     1,
+     1,
+     1
+    ],
+    "0.75": [
+     1,
+     1,
+     1
+    ],
+    "1.0": [
+     1,
+     1,
+     1
+    ]
+   }
+  },
+  {
+   "scene": "room1",
+   "qid": "N3",
+   "answerable": true,
+   "picked": [
+    "book",
+    "plate",
+    "picture"
+   ],
+   "in_trace": true,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     0,
+     1,
+     1
+    ],
+    "0.75": [
+     0,
+     1,
+     1
+    ],
+    "1.0": [
+     1,
+     1,
+     1
+    ]
+   }
+  },
+  {
+   "scene": "room1",
+   "qid": "N4",
+   "answerable": true,
+   "picked": [
+    "picture",
+    "book",
+    "plate"
+   ],
+   "in_trace": true,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     0,
+     0,
+     0
+    ],
+    "0.75": [
+     0,
+     0,
+     1
+    ],
+    "1.0": [
+     1,
+     1,
+     1
+    ]
+   }
+  },
+  {
+   "scene": "room1",
+   "qid": "N5",
+   "answerable": true,
+   "picked": [
+    "rug",
+    "blanket",
+    "book"
+   ],
+   "in_trace": false,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     0,
+     0,
+     0
+    ],
+    "0.75": [
+     0,
+     0,
+     0
+    ],
+    "1.0": [
+     0,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "scene": "room2",
+   "qid": "A1",
+   "answerable": true,
+   "picked": [
+    "box",
+    "plate",
+    "shelf"
+   ],
+   "in_trace": true,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     0,
+     0,
+     0
+    ],
+    "0.75": [
+     0,
+     0,
+     0
+    ],
+    "1.0": [
+     0,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "scene": "room2",
+   "qid": "A2",
+   "answerable": true,
+   "picked": [
+    "plate",
+    "box",
+    "sculpture"
+   ],
+   "in_trace": false,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     0,
+     0,
+     0
+    ],
+    "0.75": [
+     0,
+     0,
+     0
+    ],
+    "1.0": [
+     0,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "scene": "room2",
+   "qid": "A3",
+   "answerable": true,
+   "picked": [
+    "plate",
+    "table",
+    "box"
+   ],
+   "in_trace": false,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     0,
+     0,
+     0
+    ],
+    "0.75": [
+     0,
+     0,
+     0
+    ],
+    "1.0": [
+     0,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "scene": "room2",
+   "qid": "A4",
+   "answerable": false
+  },
+  {
+   "scene": "room2",
+   "qid": "A5",
+   "answerable": true,
+   "picked": [
+    "box",
+    "sculpture",
+    "plate"
+   ],
+   "in_trace": true,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     0,
+     0,
+     1
+    ],
+    "0.75": [
+     0,
+     1,
+     1
+    ],
+    "1.0": [
+     1,
+     1,
+     1
+    ]
+   }
+  },
+  {
+   "scene": "room2",
+   "qid": "N1",
+   "answerable": true,
+   "picked": [
+    "box",
+    "shelf",
+    "plate"
+   ],
+   "in_trace": true,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     0,
+     0,
+     0
+    ],
+    "0.75": [
+     0,
+     0,
+     1
+    ],
+    "1.0": [
+     0,
+     0,
+     1
+    ]
+   }
+  },
+  {
+   "scene": "room2",
+   "qid": "N2",
+   "answerable": true,
+   "picked": [
+    "table",
+    "plate",
+    "box"
+   ],
+   "in_trace": true,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     0,
+     0,
+     1
+    ],
+    "0.75": [
+     1,
+     1,
+     1
+    ],
+    "1.0": [
+     1,
+     1,
+     1
+    ]
+   }
+  },
+  {
+   "scene": "room2",
+   "qid": "N3",
+   "answerable": true,
+   "picked": [
+    "table",
+    "plate",
+    "box"
+   ],
+   "in_trace": true,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     1,
+     1,
+     1
+    ],
+    "0.75": [
+     1,
+     1,
+     1
+    ],
+    "1.0": [
+     1,
+     1,
+     1
+    ]
+   }
+  },
+  {
+   "scene": "room2",
+   "qid": "N4",
+   "answerable": true,
+   "picked": [
+    "plate",
+    "box",
+    "switch"
+   ],
+   "in_trace": false,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     0,
+     0,
+     0
+    ],
+    "0.75": [
+     0,
+     0,
+     0
+    ],
+    "1.0": [
+     0,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "scene": "room2",
+   "qid": "N5",
+   "answerable": true,
+   "picked": [
+    "rug",
+    "plate",
+    "box"
+   ],
+   "in_trace": false,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     0,
+     0,
+     0
+    ],
+    "0.75": [
+     0,
+     0,
+     0
+    ],
+    "1.0": [
+     0,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "scene": "office0",
+   "qid": "A1",
+   "answerable": true,
+   "picked": [
+    "tv-screen",
+    "switch",
+    "panel"
+   ],
+   "in_trace": true,
+   "correct_class": true,
+   "hit": {
+    "0.5": [
+     0,
+     1,
+     1
+    ],
+    "0.75": [
+     0,
+     1,
+     1
+    ],
+    "1.0": [
+     1,
+     1,
+     1
+    ]
+   }
+  },
+  {
+   "scene": "office0",
+   "qid": "A2",
+   "answerable": true,
+   "picked": [
+    "clock",
+    "switch",
+    "table"
+   ],
+   "in_trace": true,
+   "correct_class": true,
+   "hit": {
+    "0.5": [
+     1,
+     1,
+     1
+    ],
+    "0.75": [
+     1,
+     1,
+     1
+    ],
+    "1.0": [
+     1,
+     1,
+     1
+    ]
+   }
+  },
+  {
+   "scene": "office0",
+   "qid": "A3",
+   "answerable": true,
+   "picked": [
+    "chair",
+    "table",
+    "sofa"
+   ],
+   "in_trace": true,
+   "correct_class": true,
+   "hit": {
+    "0.5": [
+     1,
+     1,
+     1
+    ],
+    "0.75": [
+     1,
+     1,
+     1
+    ],
+    "1.0": [
+     1,
+     1,
+     1
+    ]
+   }
+  },
+  {
+   "scene": "office0",
+   "qid": "A4",
+   "answerable": true,
+   "picked": [
+    "bin",
+    "tissue-paper",
+    "vent"
+   ],
+   "in_trace": true,
+   "correct_class": true,
+   "hit": {
+    "0.5": [
+     1,
+     1,
+     1
+    ],
+    "0.75": [
+     1,
+     1,
+     1
+    ],
+    "1.0": [
+     1,
+     1,
+     1
+    ]
+   }
+  },
+  {
+   "scene": "office0",
+   "qid": "A5",
+   "answerable": false
+  },
+  {
+   "scene": "office0",
+   "qid": "N1",
+   "answerable": true,
+   "picked": [
+    "chair",
+    "table",
+    "bin"
+   ],
+   "in_trace": true,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     0,
+     0,
+     0
+    ],
+    "0.75": [
+     0,
+     0,
+     0
+    ],
+    "1.0": [
+     0,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "scene": "office0",
+   "qid": "N2",
+   "answerable": true,
+   "picked": [
+    "clock",
+    "switch",
+    "bin"
+   ],
+   "in_trace": true,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     1,
+     1,
+     1
+    ],
+    "0.75": [
+     1,
+     1,
+     1
+    ],
+    "1.0": [
+     1,
+     1,
+     1
+    ]
+   }
+  },
+  {
+   "scene": "office0",
+   "qid": "N3",
+   "answerable": true,
+   "picked": [
+    "switch",
+    "tv-screen",
+    "sofa"
+   ],
+   "in_trace": true,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     0,
+     0,
+     0
+    ],
+    "0.75": [
+     0,
+     0,
+     0
+    ],
+    "1.0": [
+     0,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "scene": "office0",
+   "qid": "N4",
+   "answerable": true,
+   "picked": [
+    "sofa",
+    "switch",
+    "table"
+   ],
+   "in_trace": true,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     0,
+     0,
+     0
+    ],
+    "0.75": [
+     0,
+     0,
+     0
+    ],
+    "1.0": [
+     1,
+     1,
+     1
+    ]
+   }
+  },
+  {
+   "scene": "office0",
+   "qid": "N5",
+   "answerable": true,
+   "picked": [
+    "table",
+    "switch",
+    "class_-1"
+   ],
+   "in_trace": false,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     0,
+     0,
+     0
+    ],
+    "0.75": [
+     0,
+     0,
+     0
+    ],
+    "1.0": [
+     0,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "scene": "office1",
+   "qid": "A1",
+   "answerable": true,
+   "picked": [
+    "switch",
+    "monitor",
+    "panel"
+   ],
+   "in_trace": true,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     0,
+     0,
+     0
+    ],
+    "0.75": [
+     0,
+     0,
+     0
+    ],
+    "1.0": [
+     0,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "scene": "office1",
+   "qid": "A2",
+   "answerable": false
+  },
+  {
+   "scene": "office1",
+   "qid": "A3",
+   "answerable": true,
+   "picked": [
+    "chair",
+    "table",
+    "desk"
+   ],
+   "in_trace": false,
+   "correct_class": true,
+   "hit": {
+    "0.5": [
+     0,
+     0,
+     0
+    ],
+    "0.75": [
+     0,
+     0,
+     0
+    ],
+    "1.0": [
+     0,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "scene": "office1",
+   "qid": "A4",
+   "answerable": true,
+   "picked": [
+    "bin",
+    "cloth",
+    "tissue-paper"
+   ],
+   "in_trace": true,
+   "correct_class": true,
+   "hit": {
+    "0.5": [
+     1,
+     1,
+     1
+    ],
+    "0.75": [
+     1,
+     1,
+     1
+    ],
+    "1.0": [
+     1,
+     1,
+     1
+    ]
+   }
+  },
+  {
+   "scene": "office1",
+   "qid": "A5",
+   "answerable": false
+  },
+  {
+   "scene": "office1",
+   "qid": "N1",
+   "answerable": false
+  },
+  {
+   "scene": "office1",
+   "qid": "N2",
+   "answerable": true,
+   "picked": [
+    "switch",
+    "bottle",
+    "bin"
+   ],
+   "in_trace": true,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     0,
+     0,
+     0
+    ],
+    "0.75": [
+     0,
+     1,
+     1
+    ],
+    "1.0": [
+     1,
+     1,
+     1
+    ]
+   }
+  },
+  {
+   "scene": "office1",
+   "qid": "N3",
+   "answerable": true,
+   "picked": [
+    "pillow",
+    "cloth",
+    "switch"
+   ],
+   "in_trace": true,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     0,
+     0,
+     0
+    ],
+    "0.75": [
+     0,
+     0,
+     0
+    ],
+    "1.0": [
+     0,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "scene": "office1",
+   "qid": "N4",
+   "answerable": true,
+   "picked": [
+    "switch",
+    "table",
+    "chair"
+   ],
+   "in_trace": true,
+   "correct_class": true,
+   "hit": {
+    "0.5": [
+     1,
+     1,
+     1
+    ],
+    "0.75": [
+     1,
+     1,
+     1
+    ],
+    "1.0": [
+     1,
+     1,
+     1
+    ]
+   }
+  },
+  {
+   "scene": "office1",
+   "qid": "N5",
+   "answerable": true,
+   "picked": [
+    "table",
+    "desk",
+    "bottle"
+   ],
+   "in_trace": false,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     0,
+     0,
+     0
+    ],
+    "0.75": [
+     0,
+     0,
+     0
+    ],
+    "1.0": [
+     0,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "scene": "office2",
+   "qid": "A1",
+   "answerable": true,
+   "picked": [
+    "tv-screen",
+    "panel",
+    "camera"
+   ],
+   "in_trace": true,
+   "correct_class": true,
+   "hit": {
+    "0.5": [
+     0,
+     1,
+     1
+    ],
+    "0.75": [
+     0,
+     1,
+     1
+    ],
+    "1.0": [
+     0,
+     1,
+     1
+    ]
+   }
+  },
+  {
+   "scene": "office2",
+   "qid": "A2",
+   "answerable": false
+  },
+  {
+   "scene": "office2",
+   "qid": "A3",
+   "answerable": true,
+   "picked": [
+    "chair",
+    "table",
+    "stool"
+   ],
+   "in_trace": true,
+   "correct_class": true,
+   "hit": {
+    "0.5": [
+     1,
+     1,
+     1
+    ],
+    "0.75": [
+     1,
+     1,
+     1
+    ],
+    "1.0": [
+     1,
+     1,
+     1
+    ]
+   }
+  },
+  {
+   "scene": "office2",
+   "qid": "A4",
+   "answerable": true,
+   "picked": [
+    "bin",
+    "tissue-paper",
+    "bottle"
+   ],
+   "in_trace": true,
+   "correct_class": true,
+   "hit": {
+    "0.5": [
+     1,
+     1,
+     1
+    ],
+    "0.75": [
+     1,
+     1,
+     1
+    ],
+    "1.0": [
+     1,
+     1,
+     1
+    ]
+   }
+  },
+  {
+   "scene": "office2",
+   "qid": "A5",
+   "answerable": true,
+   "picked": [
+    "lamp",
+    "table",
+    "tv-screen"
+   ],
+   "in_trace": false,
+   "correct_class": true,
+   "hit": {
+    "0.5": [
+     0,
+     0,
+     0
+    ],
+    "0.75": [
+     0,
+     0,
+     0
+    ],
+    "1.0": [
+     0,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "scene": "office2",
+   "qid": "N1",
+   "answerable": true,
+   "picked": [
+    "chair",
+    "table",
+    "stool"
+   ],
+   "in_trace": true,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     0,
+     0,
+     0
+    ],
+    "0.75": [
+     0,
+     0,
+     0
+    ],
+    "1.0": [
+     0,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "scene": "office2",
+   "qid": "N2",
+   "answerable": true,
+   "picked": [
+    "bottle",
+    "bin",
+    "table"
+   ],
+   "in_trace": false,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     0,
+     0,
+     0
+    ],
+    "0.75": [
+     0,
+     0,
+     0
+    ],
+    "1.0": [
+     0,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "scene": "office2",
+   "qid": "N3",
+   "answerable": true,
+   "picked": [
+    "cushion",
+    "tv-screen",
+    "sofa"
+   ],
+   "in_trace": true,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     0,
+     0,
+     0
+    ],
+    "0.75": [
+     0,
+     0,
+     0
+    ],
+    "1.0": [
+     0,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "scene": "office2",
+   "qid": "N4",
+   "answerable": true,
+   "picked": [
+    "sofa",
+    "table",
+    "tv-screen"
+   ],
+   "in_trace": true,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     1,
+     1,
+     1
+    ],
+    "0.75": [
+     1,
+     1,
+     1
+    ],
+    "1.0": [
+     1,
+     1,
+     1
+    ]
+   }
+  },
+  {
+   "scene": "office2",
+   "qid": "N5",
+   "answerable": true,
+   "picked": [
+    "table",
+    "bottle",
+    "class_-1"
+   ],
+   "in_trace": true,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     0,
+     0,
+     0
+    ],
+    "0.75": [
+     0,
+     0,
+     0
+    ],
+    "1.0": [
+     1,
+     1,
+     1
+    ]
+   }
+  },
+  {
+   "scene": "office3",
+   "qid": "A1",
+   "answerable": true,
+   "picked": [
+    "box",
+    "switch",
+    "panel"
+   ],
+   "in_trace": false,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     0,
+     0,
+     0
+    ],
+    "0.75": [
+     0,
+     0,
+     0
+    ],
+    "1.0": [
+     0,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "scene": "office3",
+   "qid": "A2",
+   "answerable": true,
+   "picked": [
+    "clock",
+    "box",
+    "switch"
+   ],
+   "in_trace": true,
+   "correct_class": true,
+   "hit": {
+    "0.5": [
+     1,
+     1,
+     1
+    ],
+    "0.75": [
+     1,
+     1,
+     1
+    ],
+    "1.0": [
+     1,
+     1,
+     1
+    ]
+   }
+  },
+  {
+   "scene": "office3",
+   "qid": "A3",
+   "answerable": true,
+   "picked": [
+    "chair",
+    "bench",
+    "table"
+   ],
+   "in_trace": true,
+   "correct_class": true,
+   "hit": {
+    "0.5": [
+     1,
+     1,
+     1
+    ],
+    "0.75": [
+     1,
+     1,
+     1
+    ],
+    "1.0": [
+     1,
+     1,
+     1
+    ]
+   }
+  },
+  {
+   "scene": "office3",
+   "qid": "A4",
+   "answerable": true,
+   "picked": [
+    "bin",
+    "box",
+    "tissue-paper"
+   ],
+   "in_trace": true,
+   "correct_class": true,
+   "hit": {
+    "0.5": [
+     1,
+     1,
+     1
+    ],
+    "0.75": [
+     1,
+     1,
+     1
+    ],
+    "1.0": [
+     1,
+     1,
+     1
+    ]
+   }
+  },
+  {
+   "scene": "office3",
+   "qid": "A5",
+   "answerable": true,
+   "picked": [
+    "box",
+    "lamp",
+    "table"
+   ],
+   "in_trace": false,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     0,
+     0,
+     0
+    ],
+    "0.75": [
+     0,
+     0,
+     0
+    ],
+    "1.0": [
+     0,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "scene": "office3",
+   "qid": "N1",
+   "answerable": true,
+   "picked": [
+    "chair",
+    "table",
+    "box"
+   ],
+   "in_trace": true,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     0,
+     0,
+     0
+    ],
+    "0.75": [
+     0,
+     0,
+     0
+    ],
+    "1.0": [
+     0,
+     0,
+     1
+    ]
+   }
+  },
+  {
+   "scene": "office3",
+   "qid": "N2",
+   "answerable": true,
+   "picked": [
+    "clock",
+    "box",
+    "switch"
+   ],
+   "in_trace": true,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     0,
+     0,
+     0
+    ],
+    "0.75": [
+     1,
+     1,
+     1
+    ],
+    "1.0": [
+     1,
+     1,
+     1
+    ]
+   }
+  },
+  {
+   "scene": "office3",
+   "qid": "N3",
+   "answerable": true,
+   "picked": [
+    "cushion",
+    "box",
+    "switch"
+   ],
+   "in_trace": true,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     0,
+     0,
+     0
+    ],
+    "0.75": [
+     0,
+     0,
+     0
+    ],
+    "1.0": [
+     0,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "scene": "office3",
+   "qid": "N4",
+   "answerable": true,
+   "picked": [
+    "sofa",
+    "box",
+    "switch"
+   ],
+   "in_trace": true,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     0,
+     0,
+     1
+    ],
+    "0.75": [
+     1,
+     1,
+     1
+    ],
+    "1.0": [
+     1,
+     1,
+     1
+    ]
+   }
+  },
+  {
+   "scene": "office3",
+   "qid": "N5",
+   "answerable": true,
+   "picked": [
+    "table",
+    "box",
+    "bottle"
+   ],
+   "in_trace": false,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     0,
+     0,
+     0
+    ],
+    "0.75": [
+     0,
+     0,
+     0
+    ],
+    "1.0": [
+     0,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "scene": "office4",
+   "qid": "A1",
+   "answerable": true,
+   "picked": [
+    "tv-screen",
+    "panel",
+    "clock"
+   ],
+   "in_trace": true,
+   "correct_class": true,
+   "hit": {
+    "0.5": [
+     0,
+     1,
+     1
+    ],
+    "0.75": [
+     0,
+     1,
+     1
+    ],
+    "1.0": [
+     0,
+     1,
+     1
+    ]
+   }
+  },
+  {
+   "scene": "office4",
+   "qid": "A2",
+   "answerable": true,
+   "picked": [
+    "clock",
+    "table",
+    "tv-screen"
+   ],
+   "in_trace": true,
+   "correct_class": true,
+   "hit": {
+    "0.5": [
+     1,
+     1,
+     1
+    ],
+    "0.75": [
+     1,
+     1,
+     1
+    ],
+    "1.0": [
+     1,
+     1,
+     1
+    ]
+   }
+  },
+  {
+   "scene": "office4",
+   "qid": "A3",
+   "answerable": true,
+   "picked": [
+    "chair",
+    "bench",
+    "table"
+   ],
+   "in_trace": true,
+   "correct_class": true,
+   "hit": {
+    "0.5": [
+     1,
+     1,
+     1
+    ],
+    "0.75": [
+     1,
+     1,
+     1
+    ],
+    "1.0": [
+     1,
+     1,
+     1
+    ]
+   }
+  },
+  {
+   "scene": "office4",
+   "qid": "A4",
+   "answerable": true,
+   "picked": [
+    "bin",
+    "vent",
+    "table"
+   ],
+   "in_trace": true,
+   "correct_class": true,
+   "hit": {
+    "0.5": [
+     1,
+     1,
+     1
+    ],
+    "0.75": [
+     1,
+     1,
+     1
+    ],
+    "1.0": [
+     1,
+     1,
+     1
+    ]
+   }
+  },
+  {
+   "scene": "office4",
+   "qid": "A5",
+   "answerable": true,
+   "picked": [
+    "lamp",
+    "table",
+    "clock"
+   ],
+   "in_trace": false,
+   "correct_class": true,
+   "hit": {
+    "0.5": [
+     0,
+     0,
+     0
+    ],
+    "0.75": [
+     0,
+     0,
+     0
+    ],
+    "1.0": [
+     0,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "scene": "office4",
+   "qid": "N1",
+   "answerable": true,
+   "picked": [
+    "chair",
+    "table",
+    "bench"
+   ],
+   "in_trace": true,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     0,
+     0,
+     0
+    ],
+    "0.75": [
+     0,
+     0,
+     0
+    ],
+    "1.0": [
+     0,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "scene": "office4",
+   "qid": "N2",
+   "answerable": true,
+   "picked": [
+    "clock",
+    "bin",
+    "table"
+   ],
+   "in_trace": true,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     0,
+     0,
+     0
+    ],
+    "0.75": [
+     0,
+     0,
+     0
+    ],
+    "1.0": [
+     0,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "scene": "office4",
+   "qid": "N3",
+   "answerable": true,
+   "picked": [
+    "tv-screen",
+    "table",
+    "chair"
+   ],
+   "in_trace": true,
+   "correct_class": true,
+   "hit": {
+    "0.5": [
+     1,
+     1,
+     1
+    ],
+    "0.75": [
+     1,
+     1,
+     1
+    ],
+    "1.0": [
+     1,
+     1,
+     1
+    ]
+   }
+  },
+  {
+   "scene": "office4",
+   "qid": "N4",
+   "answerable": true,
+   "picked": [
+    "bench",
+    "table",
+    "tv-screen"
+   ],
+   "in_trace": true,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     0,
+     0,
+     0
+    ],
+    "0.75": [
+     0,
+     0,
+     0
+    ],
+    "1.0": [
+     0,
+     0,
+     0
+    ]
+   }
+  },
+  {
+   "scene": "office4",
+   "qid": "N5",
+   "answerable": true,
+   "picked": [
+    "table",
+    "class_-1",
+    "tv-screen"
+   ],
+   "in_trace": true,
+   "correct_class": false,
+   "hit": {
+    "0.5": [
+     0,
+     0,
+     0
+    ],
+    "0.75": [
+     0,
+     0,
+     0
+    ],
+    "1.0": [
+     0,
+     0,
+     0
+    ]
+   }
+  }
+ ],
+ "n_unanswerable": 8
+}

@@ -1,0 +1,214 @@
+[
+    {
+        "id": 0,
+        "caption": "This is a chair next to a desk."
+    },
+    {
+        "id": 1,
+        "caption": "This is a table and it is between chairs and on the floor."
+    },
+    {
+        "id": 2,
+        "caption": "This is a chair and it is tucked under the table"
+    },
+    {
+        "id": 3,
+        "caption": "This is a table and it is between chairs."
+    },
+    {
+        "id": 4,
+        "caption": "This is a chair and it is next to a table."
+    },
+    {
+        "id": 5,
+        "caption": "invalid"
+    },
+    {
+        "id": 6,
+        "caption": "a very small white circular table with several very small objects on it."
+    },
+    {
+        "id": 7,
+        "caption": "This is a chair and it is against a wall."
+    },
+    {
+        "id": 8,
+        "caption": "This is a black chair at a wooden table inside of a conference room"
+    },
+    {
+        "id": 9,
+        "caption": "This is a hand sanitizer dispenser on a small table inside of a conference room"
+    },
+    {
+        "id": 10,
+        "caption": "This is lotion and it is on the table."
+    },
+    {
+        "id": 11,
+        "caption": "This is an armchair beside a small round table."
+    },
+    {
+        "id": 12,
+        "caption": "This is a coiled cord on the table."
+    },
+    {
+        "id": 13,
+        "caption": "A smart display on a wooden table in a conference room."
+    },
+    {
+        "id": 14,
+        "caption": "This is a chair and it is tucked under the table."
+    },
+    {
+        "id": 15,
+        "caption": "This is a chair and it is tucked under the end of a table."
+    },
+    {
+        "id": 16,
+        "caption": "This is a chair and it is tucked under a table."
+    },
+    {
+        "id": 17,
+        "caption": "This is a table and it is between chairs."
+    },
+    {
+        "id": 18,
+        "caption": "This is a large monitor on a wall in a conference room"
+    },
+    {
+        "id": 19,
+        "caption": "This is a chair and it is tucked under the table."
+    },
+    {
+        "id": 20,
+        "caption": "invalid"
+    },
+    {
+        "id": 21,
+        "caption": "This is a picture and it is on the wall."
+    },
+    {
+        "id": 22,
+        "caption": "This is a thermostat and it is on the wall."
+    },
+    {
+        "id": 23,
+        "caption": "This is a thermostat and it is on the wall."
+    },
+    {
+        "id": 24,
+        "caption": "This is a door leading out of the room."
+    },
+    {
+        "id": 25,
+        "caption": "This is a door leading out of the room."
+    },
+    {
+        "id": 26,
+        "caption": "This is a door and it is next to a wall."
+    },
+    {
+        "id": 27,
+        "caption": "This is a trash can on the floor."
+    },
+    {
+        "id": 28,
+        "caption": "This is a white rectangular coffee table in front of a blue couch in a room."
+    },
+    {
+        "id": 29,
+        "caption": "This is an end-table near the couch."
+    },
+    {
+        "id": 30,
+        "caption": "This is a pillow and it is on a couch."
+    },
+    {
+        "id": 31,
+        "caption": "A peach colored pillow right behind a while pillow with graphics on it, on top of a blue sectional couch."
+    },
+    {
+        "id": 32,
+        "caption": "invalid"
+    },
+    {
+        "id": 33,
+        "caption": "These are pillows on the couch."
+    },
+    {
+        "id": 34,
+        "caption": "This is a white coffee table in front of an L-shaped couch in a conference room"
+    },
+    {
+        "id": 35,
+        "caption": "invalid"
+    },
+    {
+        "id": 36,
+        "caption": "A multi-colored pillow on a black sofa."
+    },
+    {
+        "id": 37,
+        "caption": "This is an intercom and it is on top of the table."
+    },
+    {
+        "id": 38,
+        "caption": "This is a cell phone on a white table being charged."
+    },
+    {
+        "id": 39,
+        "caption": "invalid"
+    },
+    {
+        "id": 40,
+        "caption": "This is a bench and it is on the floor."
+    },
+    {
+        "id": 41,
+        "caption": "This is a wooden filing cabinet."
+    },
+    {
+        "id": 42,
+        "caption": "This is a box and it is between other boxes."
+    },
+    {
+        "id": 43,
+        "caption": "This is a bench and it is on the floor against a wall."
+    },
+    {
+        "id": 44,
+        "caption": "This is a throw pillow on the couch."
+    },
+    {
+        "id": 45,
+        "caption": "This is a screen and it is above a bench."
+    },
+    {
+        "id": 46,
+        "caption": "This is a blue pillow on a couch."
+    },
+    {
+        "id": 47,
+        "caption": "This is a camera and it is above the screens."
+    },
+    {
+        "id": 48,
+        "caption": "invalid"
+    },
+    {
+        "id": 49,
+        "caption": "This object is a square table in the center of a room."
+    },
+    {
+        "id": 50,
+        "caption": "This is a wall and it is behind the couch."
+    },
+    {
+        "id": 51,
+        "caption": "This is a light in the ceiling."
+    },
+    {
+        "id": 52,
+        "caption": "This is a light and it is in the ceiling."
+    }
+]
