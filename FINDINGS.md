@@ -1,3 +1,21 @@
+---
+title: Object-centric VSA view memory — findings, recipe, and pitfalls
+type: analysis
+status: active
+created: 2026-08-15
+updated: 2026-08-17
+source_paths:
+  - sspslam/objectmap/
+  - experiments/run_view_localisation.py
+  - experiments/turntable_dataset.py
+  - experiments/run_object_map.py
+provenance:
+  exact: [§2, §4, §9]        # algebraic identities, verified to machine precision
+  synthetic: [§5, §7, §10]   # rendered turntable + HOG — illustration, not measurement
+  pending: [§6-rotation]     # awaits wiki/analysis/2026-08-17-3d-cogmaps-and-rotation-encoding.md
+tags: [vsa, cognitive-map, object-centric, viewpoint, anisotropy, fpe, errata]
+---
+
 # Object-centric VSA view memory — findings, recipe, and pitfalls
 
 Everything measured so far, compressed for a local rebuild. Written against
@@ -5,12 +23,113 @@ Everything measured so far, compressed for a local rebuild. Written against
 you'd rather not take the dependency.
 
 **One-line summary.** Give every object its own circle of viewpoints encoded
-with *integer-harmonic* FPE; store appearance as values on that circle, never
-as the circle itself; condition the latents by deleting the few directions
-that say *which object* rather than by whitening; then viewpoint becomes
-localisable from appearance alone, in closed form, at ~8–10° median.
+with *integer-harmonic* FPE and store appearance as values on that circle,
+never as the circle itself. Viewpoint is then recoverable from appearance
+alone, in closed form — one inverse FFT for the whole likelihood over the
+circle. Do **not** whiten the latents; whether the sharper "delete the
+directions that say *which object*" recipe helps on real embeddings is an open
+question, not a result (see §0 E3).
+
+**Read §0 first.** Every degree figure in this document is synthetic
+illustration from a rendered turntable, not a measurement.
 
 ---
+
+## 0. Errata and provenance — read before quoting anything below
+
+Added 2026-08-17, after reading `astm/docs/RESULTS_SO_FAR.md` and
+`astm/docs/provenance-audit.md` on `neuromorphs/VSACognitiveMapping@gpu-tasks`.
+Several claims in the original draft were stated more strongly than the
+evidence supports. The corrections are here rather than silently patched in.
+
+### E1. What kind of thing each number in this document is
+
+Three categories, and they are not interchangeable:
+
+| tag | what it means | where |
+|---|---|---|
+| **exact** | an algebraic identity, verified numerically to machine precision. Quotable as stated. | §2 periodicity and binding-as-rotation; §4 the one-FFT ≡ scan identity; §9 |
+| **synthetic illustration** | measured on a **rendered** turntable with a HOG descriptor. Illustrates a mechanism; is **not** a measurement of any real system, encoder, or robot. **Do not report as a result.** | §5 all figures; §7; the degree figures in §4 and §10 |
+| **pending** | awaits the 3-D/rotation handoff, which may supersede it | §6 rotation/quaternion recommendation |
+
+No number in this document was measured on real imagery, on DINOv2, or on a
+robot. The dataset is `experiments/turntable_dataset.py` — 6 procedurally
+rendered objects × 72 azimuths.
+
+### E2. §5 is an independent replication, not a new finding — priority is `astm`'s
+
+`RESULTS_SO_FAR.md` finding 1 ("isotropy predicts capacity, not key quality")
+and finding 2 ("centre or z-score, do not whiten") already establish this **on
+real robot data**, before anything here was run:
+
+> Whitening harder degrades retrieval monotonically: 0.720 → 0.693 → 0.654 →
+> 0.623 → 0.592 as 32, 64, 128 then all 256 directions are equalised.
+> … Whitening to 128 components scores **below chance** on held-out data.
+> — `astm/docs/RESULTS_SO_FAR.md`, findings 1–2 (measured)
+
+§5's whitening result reproduces that conclusion on a different read-out
+(view-direction rather than place retrieval) and on synthetic data. It is
+corroboration, not discovery. Cite theirs.
+
+### E3. §5's "drop the leading PCs" recipe does **not** transfer as written
+
+The spectra are not comparable:
+
+| | top dimension's share | dims for half the variance |
+|---|---|---|
+| `astm` crops, DINOv2, 256-D — *measured* | 5.3% | **49 of 256** |
+| §5 here, HOG on rendered turntable — *synthetic* | 17.8% | ~3 |
+
+The turntable spectrum is roughly an order of magnitude more concentrated than
+real crop embeddings. Deleting 2–5 directions is a strong intervention on the
+first and a weak one on the second, so the *effect size* in §5's recipe table
+will not carry over, and may vanish entirely.
+
+What may survive is the **criterion**, not the cut depth: selecting directions
+by *between-object variance share* is a different axis from the
+rogue-dimension analysis in `RESULTS_SO_FAR.md` finding 3, and has not been
+tested against real data at all. Treat §5's recipe as a **hypothesis to test**,
+not a recommendation to apply.
+
+### E4. The evaluation split here is not blocked
+
+§5 and §4 hold out alternate azimuths, so a held-out view sits at most 15° from
+a stored side. `RESULTS_SO_FAR.md` corrects exactly this pattern — a split that
+leaves neighbours of the query in memory measures memorisation, not
+generalisation, and scattering individual frames does not fix it.
+
+Partial mitigation, not a defence: the object file holds only K=12 sides at 30°
+spacing, and interpolating *between* stored sides is the intended task for view
+localisation rather than a leak. But it is still not a blocked split. The
+degree figures should be re-run with contiguous held-out arcs before being
+quoted anywhere.
+
+### E5. Never quote a bare whitening or conditioning multiplier
+
+`RESULTS_SO_FAR.md`: the public 365× and 22× figures were measured on the most
+anisotropic representation available and are 8.1× on DINOv2. Any ratio produced
+by the experiments here is single-encoder (HOG) and single-dataset; quote the
+encoder and the dataset with it or not at all.
+
+### E6. Prior art for §11 step 5
+
+`RESULTS_SO_FAR.md` finding 6 already implements a Kalman-style filter over
+this algebra for **position** — predict is one bind via the FPE homomorphism,
+update is one bundle, and it caps odometric drift (dead reckoning 3.803 m →
+0.627 m at σ=0.10). §11's "close the loop" is therefore not new for position.
+The object-centric analogue — feeding a *view-direction* likelihood back as a
+heading correction — is the part that does not yet exist.
+
+### E7. What remains unaffected
+
+The algebra is untouched by all of the above. The view circle is exactly
+2π-periodic, binding is exactly rotation on it, and the one-FFT likelihood is
+identical to the explicit scan to 6.7e-16. Those are proofs with a numerical
+check, not empirical claims, and E1–E6 do not weaken them. The *architecture*
+argument in §1 — two memories rather than one bound blob — is likewise
+structural: binding a bundle of random-looking terms into the spatial argument
+destroys the correlation peak for reasons that do not depend on the dataset,
+though the specific metre figures quoted are synthetic.
 
 ## 1. The two memories
 
@@ -138,8 +257,9 @@ separates them — treat it as a likelihood over viewpoint and fuse it with
 odometry, the same way you'd fuse a place-field readout rather than trusting
 it blind. `margin` is the honest symmetry detector.
 
-Measured on the turntable (6 objects, 72 azimuths, K=12 sides on file,
-151-D, held-out azimuths):
+On the turntable (6 objects, 72 azimuths, K=12 sides on file, 151-D,
+held-out azimuths) — **synthetic illustration, and on a split that is not
+blocked; see §0 E1 and E4**:
 
 ```
 chair     median  8.3°      mug      median  7.8°
@@ -155,6 +275,12 @@ in your test set permanently.
 ---
 
 ## 5. Anisotropy: the actual result
+
+> **Provenance: synthetic illustration.** Every figure in this section is HOG
+> on a rendered turntable. It corroborates `astm/docs/RESULTS_SO_FAR.md`
+> findings 1–2, which measured the same conclusion on real robot data and have
+> priority. The "drop the leading PCs" recipe below does **not** transfer as
+> written — see §0 E2, E3, E4.
 
 This is where the interesting finding is. Sweep partial whitening, `α = 0`
 centre-only through `α = 1` full PCA whitening, stats fitted on train
@@ -222,6 +348,11 @@ Two caveats I have not resolved:
 ---
 
 ## 6. Consequences for `npc-av-learning2025`
+
+> **Provenance: mixed.** The commutativity argument is exact algebra. The
+> practical rotation-encoding recommendation is **pending** the 3-D handoff
+> (`wiki/analysis/2026-08-17-3d-cogmaps-and-rotation-encoding.md`), which was
+> not reachable from this session and may supersede it.
 
 Three of these bear directly on that architecture.
 
@@ -301,6 +432,8 @@ They layer: coarse as the index, fine underneath for verification.
 ---
 
 ## 8. Why the numbers here are from a rendered turntable
+
+> **Provenance: synthetic illustration.** See §0 E1.
 
 Every dataset and weights host is blocked by this environment's egress
 policy — 403 on CONNECT, refused before TLS: `cave.cs.columbia.edu`,
@@ -389,6 +522,9 @@ Key entry points:
 
 ## 11. Open, in rough order of value
 
+Items 1–2 are now partly forced by §0: the recipe in §5 is untested against a
+real spectrum, and the split needs redoing before any degree figure is quoted.
+
 1. Select PCs by **between-object share** rather than rank (§5) — cheap, and
    probably free accuracy.
 2. Re-run §5 on **real DINOv2**; check whether high-norm patch tokens change
@@ -400,8 +536,10 @@ Key entry points:
 4. **Patch tokens on a surface coordinate** (§7), scored on occlusion and
    symmetry, where the pooled version should fail.
 5. Close the **loop**: feed `localise_view`'s likelihood back as a heading
-   correction, the way landmark recall corrects the path integrator in
-   SSP-SLAM. That's the point at which "I know which side I'm seeing" becomes
+   correction. Note the position version of this already exists — see §0 E6,
+   `RESULTS_SO_FAR.md` finding 6, where predict is one bind and update is one
+   bundle. What is new here is the *view-direction* likelihood as the update
+   term, which is the point at which "I know which side I'm seeing" becomes
    part of SLAM rather than an offline query.
 6. **`K` selection.** Currently merging by a fixed angular tolerance. Ought to
    be driven by the view kernel's lobe width and by how fast appearance

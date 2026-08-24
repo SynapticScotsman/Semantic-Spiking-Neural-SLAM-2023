@@ -7,8 +7,10 @@ the object when somebody moves it.
 Same idea as fractional-power-encoded SSPs for space — but the manifold is a
 circle around an object instead of a grid over a floor.
 
-See **`FINDINGS.md`** for the measured results, the latent-conditioning
-recipe, and the pitfalls.
+See **`FINDINGS.md`** for the results, the latent-conditioning recipe, and the
+pitfalls — and **read its §0 errata first**: every degree and metre figure in
+both documents is synthetic illustration from a rendered turntable, not a
+measurement of any real system.
 
 ```
 sspslam/objectmap/          numpy + scipy only, no nengo
