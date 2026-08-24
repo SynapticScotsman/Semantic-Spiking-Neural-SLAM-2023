@@ -58,6 +58,7 @@ Other options are available, see `python run_slam.py --help` and `python run_pat
     * * `run_slamview.py`: Runs the SLAMViewNetwork
     * `run_object_map.py`: Builds an object-centric map from a synthetic walk and measures every read-out (where is it, what is there, which side, orbit, object moved). `--plot` writes a summary figure.
     * `run_view_localisation.py`: Recovers which direction an object is being viewed from, and measures how the crop embeddings should be conditioned first. See `FINDINGS.md`.
+    * `run_blocked_split.py`: Re-runs the view-direction figures on contiguous held-out arcs (blocked split) and sweeps the gap width. See `FINDINGS.md` §0 E4.
     * `turntable_dataset.py`: Renders a COIL-style turntable (6 objects x 72 azimuths) so the viewpoint experiments need no download.
     * `test_object_map.py`: Checks for `sspslam.objectmap`
 

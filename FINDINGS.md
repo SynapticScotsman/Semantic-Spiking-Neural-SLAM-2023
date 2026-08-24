@@ -28,7 +28,9 @@ never as the circle itself. Viewpoint is then recoverable from appearance
 alone, in closed form — one inverse FFT for the whole likelihood over the
 circle. Do **not** whiten the latents; whether the sharper "delete the
 directions that say *which object*" recipe helps on real embeddings is an open
-question, not a result (see §0 E3).
+question, not a result (see §0 E3). The file **interpolates between stored
+sides and does not extrapolate past them**, so sides must be stored at roughly
+the view kernel's half-width (§0 E4).
 
 **Read §0 first.** Every degree figure in this document is synthetic
 illustration from a rendered turntable, not a measurement.
@@ -49,7 +51,7 @@ Three categories, and they are not interchangeable:
 | tag | what it means | where |
 |---|---|---|
 | **exact** | an algebraic identity, verified numerically to machine precision. Quotable as stated. | §2 periodicity and binding-as-rotation; §4 the one-FFT ≡ scan identity; §9 |
-| **synthetic illustration** | measured on a **rendered** turntable with a HOG descriptor. Illustrates a mechanism; is **not** a measurement of any real system, encoder, or robot. **Do not report as a result.** | §5 all figures; §7; the degree figures in §4 and §10 |
+| **synthetic illustration** | measured on a **rendered** turntable with a HOG descriptor. Illustrates a mechanism; is **not** a measurement of any real system, encoder, or robot. **Do not report as a result.** | §5 all figures; §7; the degree figures in §4 and §10 (and see E4 — §4's figures are additionally superseded by the blocked re-run) |
 | **pending** | awaits the 3-D/rotation handoff, which may supersede it | §6 rotation/quaternion recommendation |
 
 No number in this document was measured on real imagery, on DINOv2, or on a
@@ -91,18 +93,50 @@ rogue-dimension analysis in `RESULTS_SO_FAR.md` finding 3, and has not been
 tested against real data at all. Treat §5's recipe as a **hypothesis to test**,
 not a recommendation to apply.
 
-### E4. The evaluation split here is not blocked
+### E4. The split was not blocked — re-run, and the original figures were optimistic
 
-§5 and §4 hold out alternate azimuths, so a held-out view sits at most 15° from
-a stored side. `RESULTS_SO_FAR.md` corrects exactly this pattern — a split that
-leaves neighbours of the query in memory measures memorisation, not
-generalisation, and scattering individual frames does not fix it.
+§4 and §5 originally held out *alternate* azimuths, so a held-out view sat 5°
+from a view still in the object file. `RESULTS_SO_FAR.md` corrects exactly that
+pattern — a split leaving neighbours of the query in memory measures
+memorisation, not generalisation.
 
-Partial mitigation, not a defence: the object file holds only K=12 sides at 30°
-spacing, and interpolating *between* stored sides is the intended task for view
-localisation rather than a leak. But it is still not a blocked split. The
-degree figures should be re-run with contiguous held-out arcs before being
-quoted anywhere.
+**Re-run** with contiguous held-out arcs (`experiments/run_blocked_split.py`):
+alternating kept/held arcs so no held-out query is adjacent to a stored side,
+latent statistics and object files fitted on kept views only. Chance is 90°;
+a constant predictor also scores 90°.
+
+| held-out arc | nearest kept view | **in-gap median** | <15° | control (kept views) |
+|---|---|---|---|---|
+| interleaved *(original)* | 5.0° | **8.0°** | 0.66 | 7.0° |
+| 10° | 5.0° | 10.8° | 0.58 | 8.0° |
+| 20° | 7.5° | 21.2° | 0.36 | 5.0° |
+| 30° | 10.0° | **27.5°** | 0.18 | 6.0° |
+| 45° | 15.0° | 36.8° | 0.08 | 7.5° |
+| 60° | 17.5° | 59.0° | 0.06 | 7.0° |
+| 90° | 25.0° | 79.2° | 0.04 | 6.0° |
+
+Three things follow, and the first is a correction:
+
+1. **The original 8° was optimistic by roughly 3×.** At a 30° gap — the first
+   split with genuinely no adjacent stored side — it is 27.5°, and the fraction
+   within 15° collapses from 0.66 to 0.18. Any headline "~8–10° median" in
+   earlier drafts of this document should be read as 27.5° at a 30° gap.
+
+2. **The object file does not extrapolate, and that is the real result.** The
+   control column is flat at 5–8° for every gap width: the file is undamaged,
+   and error in the gap tracks gap width almost linearly to chance at 90°.
+   Viewpoints you never observed are not recoverable — the code interpolates
+   within roughly the view kernel and no further. This is the honest version of
+   §4 and arguably more useful than the original number.
+
+3. **A design rule falls out.** To localise to better than 15°, stored sides
+   must be spaced no wider than about the view kernel's half-width (16° at
+   `max_harmonic=8`). That is the number `merge_tol` should be set from, and it
+   converts directly into a coverage requirement on the orbit: ~22 sides for a
+   full circle, not "a few diverse sides".
+
+Per object at the 30° gap: `console` 18.8°, `L_block` 19.7°, `chair` 21.0°,
+`mug` 27.3°, `pot` 29.0°, `cube` 90.0° — the cube still aliasing correctly.
 
 ### E5. Never quote a bare whitening or conditioning multiplier
 
@@ -257,9 +291,10 @@ separates them — treat it as a likelihood over viewpoint and fuse it with
 odometry, the same way you'd fuse a place-field readout rather than trusting
 it blind. `margin` is the honest symmetry detector.
 
-On the turntable (6 objects, 72 azimuths, K=12 sides on file, 151-D,
-held-out azimuths) — **synthetic illustration, and on a split that is not
-blocked; see §0 E1 and E4**:
+On the turntable (6 objects, 72 azimuths, K=12 sides on file, 151-D) —
+**synthetic illustration on a non-blocked split. Superseded by the blocked
+re-run in §0 E4: at a 30° held-out arc these become 27.5° median overall, and
+the file is shown not to extrapolate.** Kept here only for comparison:
 
 ```
 chair     median  8.3°      mug      median  7.8°
