@@ -570,8 +570,9 @@ real spectrum, and the split needs redoing before any degree figure is quoted.
    the two objectives are actually in conflict in your setup.
 4. **Patch tokens on a surface coordinate** (§7), scored on occlusion and
    symmetry, where the pooled version should fail.
-5. Close the **loop**: feed `localise_view`'s likelihood back as a heading
-   correction. Note the position version of this already exists — see §0 E6,
+5. ~~Close the **loop**~~ — **done**, see §12. Feeding the likelihood into a
+   Bayes filter on the circle takes per-frame 17.0° to 6.0°, and to 4.0° with
+   one known starting direction. Note the position version already exists — §0 E6,
    `RESULTS_SO_FAR.md` finding 6, where predict is one bind and update is one
    bundle. What is new here is the *view-direction* likelihood as the update
    term, which is the point at which "I know which side I'm seeing" becomes
@@ -580,3 +581,57 @@ real spectrum, and the split needs redoing before any degree figure is quoted.
    be driven by the view kernel's lobe width and by how fast appearance
    actually changes — objects with a discontinuity (a handle appearing) need
    sides packed more tightly there than on a smooth flank.
+
+
+---
+
+## 12. Continuity: a Bayes filter on the view circle
+
+Decoded frame by frame, the estimate jumps 50–180° between consecutive crops.
+A camera orbiting an object cannot do that. Both steps of the fix are native to
+the representation:
+
+```
+predict   B_k <- B_k · exp(-i k Δ) · exp(-σ²k²/2)      shift, then blur
+update    b   <- b · softmax_β(likelihood)
+```
+
+The first factor of the predict step **is** binding by `S_view(Δ)` — the same
+operation as `orbit()`. The second is per-harmonic damping. This is the
+view-circle twin of `RESULTS_SO_FAR.md` finding 6.
+
+`experiments/run_view_tracking.py`, one full orbit, 72 frames 5° apart, object
+files holding kept views only (30° held-out arcs), σ=2°/frame, β=3, odometry
+noise 1.5°. A jump counts as impossible above 15°, three times the true step.
+
+| read-out | median error | largest jump | impossible jumps |
+|---|---|---|---|
+| per frame, no memory | 17.0° | 180° | 89 / 426 |
+| + Bayes filter, free start | **6.0°** | 175° | 25 / 426 |
+| + one known starting direction | **4.0°** | 42° | 11 / 426 |
+
+**Continuity fixes the coverage failure and not the aliasing one.** The filter
+coasts across held-out arcs on prediction instead of guessing, which is where
+most of the error went. But four equal branches give it nothing to choose
+between:
+
+| cube | median error | largest jump | impossible |
+|---|---|---|---|
+| per frame | 83.0° | 180° | 27 |
+| + filter, free start | 87.0° | 175° | 10 |
+| + known start | **2.0°** | 11° | **0** |
+
+That is the useful result: **continuity converts a per-frame ambiguity into a
+single global one.** A symmetric object costs one piece of information for the
+whole trajectory rather than one per frame — fix the branch once at the start
+and it stays fixed.
+
+Two implementation notes. A belief with two near-equal modes has a MAP that
+flips on noise alone, showing up as a 180° jump the belief never made; the
+read-out prefers the mode nearest the previous estimate unless another beats it
+by a margin. And β matters more than σ — at β=50 the appearance evidence
+overwhelms the prior and the filter buys almost nothing (45 impossible jumps);
+at β=3 it binds.
+
+*Provenance: synthetic illustration, same rendered turntable and HOG front end
+as §5. The algebraic identity in the predict step is exact.*
