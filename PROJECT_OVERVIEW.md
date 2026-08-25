@@ -97,6 +97,7 @@ Semantic-Spiking-Neural-SLAM-2023/
 ├── PROJECT_OVERVIEW.md   ← This file
 ├── OBJECT_CENTRIC_MAP.md ← The object-centric map: theory, API, measurements
 ├── FINDINGS.md           ← Results, latent recipe, pitfalls (§0 = errata/provenance)
+├── docs/view_circle.html ← Interactive: where view localisation works and fails
 └── README.md             ← Technical theory and installation instructions
 ```
 
