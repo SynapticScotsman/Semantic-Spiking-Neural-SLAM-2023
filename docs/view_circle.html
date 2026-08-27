@@ -327,6 +327,78 @@ code{font-family:"IBM Plex Mono",monospace;font-size:.9em;background:var(--sunke
 </section>
 
 <section>
+  <h2>Two different things are called anisotropy</h2>
+  <p class="lede" style="font-size:17px">One of them is the encoder&rsquo;s fault and one of them is
+  not, and they need opposite responses. All three numbers below come from the crops alone &mdash;
+  no object file, no split, no decode.</p>
+
+  <div class="grid2">
+    <div class="card pad">
+      <span class="eyebrow">removable</span>
+      <h3 style="margin-top:8px">Between-object</h3>
+      <p style="color:var(--ink-2);font-size:15px;margin-top:8px">The leading principal directions
+      say <em>which object this is</em> &mdash; PC0 carries 83.8% between-object variance, PC1 70.5%.
+      These are what the conditioning recipe deletes.</p>
+    </div>
+    <div class="card pad">
+      <span class="eyebrow">not the encoder</span>
+      <h3 style="margin-top:8px">Across-view</h3>
+      <p style="color:var(--ink-2);font-size:15px;margin-top:8px">Seven views spanning 30&deg; of
+      orbit occupy about <b>3.8 effective dimensions</b> out of 1764 &mdash; and that number does not
+      move when you condition. It is what walking a continuous trajectory produces, for any encoder.
+      The same thing as scene redundancy in a video.</p>
+    </div>
+  </div>
+
+  <div class="card pad">
+    <h3>They are linked, but backwards from the obvious guess</h3>
+    <p style="color:var(--ink-2);max-width:74ch;margin-top:10px">An object&rsquo;s identity does not
+    change as you walk around it. So the identity-carrying directions are <b>constant along the
+    orbit</b>, and sit as a DC pedestal on the appearance autocorrelation, lifting every lag
+    equally. Deleting them does not create angular information &mdash; it unmasks what was already
+    there.</p>
+    <div class="scroll" style="margin-top:16px">
+      <table>
+        <thead><tr><th></th><th>appearance half-width</th><th>independent views per orbit</th><th>local rank</th></tr></thead>
+        <tbody>
+          <tr><td>raw HOG, centred</td><td class="num">28&deg;</td><td class="num">2.8</td><td class="num">3.8</td></tr>
+          <tr class="hi"><td>top 2 PCs dropped</td><td class="num">18&deg;</td><td class="num">6.2</td><td class="num">3.8</td></tr>
+          <tr><td><em>view kernel, for comparison</em></td><td class="num">16&deg;</td><td class="num">&mdash;</td><td class="num">&mdash;</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="color:var(--ink-2);max-width:74ch;margin-top:12px"><b>Conditioning buys contrast, not
+    information.</b> Half-width nearly halves and effective sample size more than doubles, while the
+    intrinsic local dimensionality does not move at all.</p>
+  </div>
+
+  <div class="card pad">
+    <h3>Aliasing is visible in the descriptor, before any map exists</h3>
+    <div class="scroll" style="margin-top:12px">
+      <table>
+        <thead><tr><th>object</th><th>alias peak</th><th>at circular lag</th><th>measured error</th></tr></thead>
+        <tbody>
+          <tr class="hi"><td>cube</td><td class="num">0.910</td><td class="num">90&deg;</td><td class="num">90.5&deg;</td></tr>
+          <tr><td>mug</td><td class="num">0.581</td><td class="num">35&deg;</td><td class="num">29.5&deg;</td></tr>
+          <tr><td>pot</td><td class="num">0.578</td><td class="num">35&deg;</td><td class="num">27.5&deg;</td></tr>
+          <tr><td>console</td><td class="num">0.327</td><td class="num">180&deg;</td><td class="num">24.0&deg;</td></tr>
+          <tr><td>chair</td><td class="num">0.300</td><td class="num">90&deg;</td><td class="num">36.5&deg;</td></tr>
+          <tr><td>L_block</td><td class="num">0.273</td><td class="num">35&deg;</td><td class="num">25.0&deg;</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="color:var(--ink-2);max-width:74ch;margin-top:12px">The cube stands alone at 0.910,
+    peaking exactly at its 90&deg; symmetry. One autocorrelation per object tells you which
+    instances will be unlocalisable and at what offset &mdash; which is precisely the information
+    the continuity filter needs an anchor for.</p>
+    <p style="color:var(--ink-2);max-width:74ch;margin-top:12px"><b>It has to be circular distance.</b>
+    On a 72-view ring, a lag of 355&deg; is the <em>adjacent frame</em>. Scanning linear lag makes
+    five of six objects report their own neighbour as an alias. That bug was in the first version of
+    this analysis and inverted the ranking.</p>
+  </div>
+</section>
+
+<section>
   <h2>The DINOv2 row is missing, and stays missing</h2>
   <div class="card pad">
     <p style="color:var(--ink-2);max-width:74ch">Everything on this page runs on HOG. The obvious
@@ -353,8 +425,21 @@ code{font-family:"IBM Plex Mono",monospace;font-size:.9em;background:var(--sunke
     <p style="color:var(--ink-2);max-width:72ch">The obvious explanation was that localisation fails
     where appearance stops changing with angle — a flat stretch of the orbit gives nothing to key on.
     It is wrong. The correlation between local appearance rate <span class="mono">|dc/dφ|</span> and
-    error is <b>positive</b> (ρ = +0.38, n = 216): appearance changing <em>faster</em> goes with
+    error is <b>positive</b> (ρ = +0.38): appearance changing <em>faster</em> goes with
     <em>worse</em> localisation, the opposite of the prediction.</p>
+    <div class="prov" style="margin-top:14px">
+      <div>
+        <b>Correction &mdash; an earlier version of this page quoted &ldquo;n = 216, p = 7.6e-9&rdquo;</b>
+        <p>That n counted frames. Consecutive views on an orbit are strongly correlated, so they are
+        not independent samples: integrating the appearance autocorrelation gives about
+        <b>6 independent views per 72-frame orbit</b>, making the effective n nearer <b>19 than
+        216</b>. The p-value was therefore meaningless and has been withdrawn. The sign and the
+        ranking below stand — ρ is positive under every leave-one-object-out exclusion, and the
+        aliasing split is a difference between two large groups rather than a correlation. Any
+        interval computed by resampling frames needs a hierarchical bootstrap over objects, arcs
+        and seeds instead.</p>
+      </div>
+    </div>
     <p style="color:var(--ink-2);max-width:72ch;margin-top:12px">Applying the breadth check from
     <span class="mono">RESULTS_SO_FAR.md</span> — does the effect survive removing its strongest
     object? — it does survive, but weakly, and the sign never flips:</p>

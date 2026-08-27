@@ -53,6 +53,7 @@ Three categories, and they are not interchangeable:
 | **exact** | an algebraic identity, verified numerically to machine precision. Quotable as stated. | §2 periodicity and binding-as-rotation; §4 the one-FFT ≡ scan identity; §9 |
 | **synthetic illustration** | measured on a **rendered** turntable with a HOG descriptor. Illustrates a mechanism; is **not** a measurement of any real system, encoder, or robot. **Do not report as a result.** | §5 all figures; §7; the degree figures in §4 and §10 (and see E4 — §4's figures are additionally superseded by the blocked re-run) |
 | **pending** | awaits the 3-D/rotation handoff, which may supersede it | §6 rotation/quaternion recommendation |
+| **retracted** | quoted with an invalid sample size; see E8 | the p-value in §5's appearance-rate refutation |
 
 No number in this document was measured on real imagery, on DINOv2, or on a
 robot. The dataset is `experiments/turntable_dataset.py` — 6 procedurally
@@ -153,6 +154,38 @@ update is one bundle, and it caps odometric drift (dead reckoning 3.803 m →
 0.627 m at σ=0.10). §11's "close the loop" is therefore not new for position.
 The object-centric analogue — feeding a *view-direction* likelihood back as a
 heading correction — is the part that does not yet exist.
+
+### E8. Views on an orbit are not independent samples, and one p-value here was fiction
+
+§5's refutation of the appearance-rate hypothesis was reported as
+"ρ = +0.380, n = 216, p = 7.6e-9". The **n is wrong**, and so the p-value is
+meaningless. Consecutive views on an orbit are strongly correlated — that is
+the whole content of §13 — so 216 held-out frames are nowhere near 216
+independent observations.
+
+Integrating the appearance autocorrelation
+(`experiments/run_frontend_diagnostics.py`) gives an effective sample size of
+about **6 independent views per 72-frame orbit** (median 6.2 on conditioned
+keys, 2.8 raw). Across six objects with half the ring held out, the effective
+n is nearer **19 than 216** — an inflation of roughly 11×.
+
+What survives and what does not:
+
+- The **sign and the ranking survive**. ρ is positive under every
+  leave-one-object-out exclusion (+0.220 to +0.417), and the aliasing split
+  (single-peak 24.0° against multi-peak 80.5°) is a difference between two
+  large groups, not a correlation coefficient.
+- The **p-value does not survive**, and should never have been quoted. Nor
+  should any confidence interval computed by resampling frames.
+- Anything resampling frames as if they were independent needs a
+  **hierarchical bootstrap** — objects, then contiguous arcs, then seeds —
+  which is the same discipline `RESULTS_SO_FAR.md` applies and which this
+  document had not.
+
+This is the identical error to the one the blocked-split correction fixed in
+E4, in a different guise: E4 removed leakage between train and test, E8 is
+about leakage *within* the test set inflating confidence. The fix for both is
+to treat the arc, not the frame, as the unit.
 
 ### E7. What remains unaffected
 
@@ -635,3 +668,77 @@ at β=3 it binds.
 
 *Provenance: synthetic illustration, same rendered turntable and HOG front end
 as §5. The algebraic identity in the predict step is exact.*
+
+
+---
+
+## 13. What the front end alone determines
+
+Two things get called anisotropy. They have different causes, and only one of
+them is the encoder's fault.
+
+**Between-object** — the leading principal directions say *which object this
+is*: PC0 83.8% between-object variance, PC1 70.5%. Removable, and §5 removes
+them.
+
+**Across-view** — seven views spanning 30° of orbit occupy about **3.8
+effective dimensions** out of 1764. That number is **identical before and
+after conditioning** (3.8 both ways, per object 3.2–4.0). It is not an encoder
+pathology: it is what a continuous trajectory produces, for any encoder. It is
+the same phenomenon as scene redundancy in a video, where frames close in time
+are close in pose and therefore close in appearance.
+
+### The two are linked, but not the way you would guess
+
+An object's identity does not change as you walk around it. So the
+identity-carrying directions are **constant along the orbit**, and act as a DC
+pedestal on the appearance autocorrelation, lifting every lag equally.
+Removing them does not create angular information — it unmasks what was there:
+
+| | appearance half-width | N_eff of 72 | local rank |
+|---|---|---|---|
+| raw HOG, centred | 28° | 2.8 | 3.8 |
+| top 2 PCs dropped | **18°** | **6.2** | 3.8 |
+| *view kernel, for comparison* | *16°* | | |
+
+**Conditioning buys contrast, not information.** Half-width nearly halves and
+effective sample size more than doubles, while the intrinsic local
+dimensionality does not move at all.
+
+### Three numbers, no VSA required
+
+All computable from the crops alone, before any object file exists:
+
+| | what it is | what it predicts |
+|---|---|---|
+| **half-width** | lag at which similarity falls to half | the finest angular distinction the descriptor supports. If it exceeds the view kernel, extra `max_harmonic` is wasted |
+| **alias peak** | highest similarity at a **circular** lag beyond the kernel | aliasing. cube **0.910 at 90°**, next highest 0.581 — the four-fold symmetry, visible in the descriptor before any map is built |
+| **N_eff** | independent views per orbit | the sample size to use in any statistic |
+
+**The alias peak must be measured in circular distance.** Scanning linear lag
+on a 72-view ring treats 355° as far away when it is the adjacent frame; done
+that way, five of six objects report their own neighbour as an alias and the
+diagnostic is worthless. That bug was in the first version of this analysis.
+
+### Consequences
+
+1. **The encoder sets the achievable angular resolution.** The VSA kernel can
+   only be as sharp as the descriptor's autocorrelation. At 18° against a 16°
+   kernel these happen to be matched here; for the `pot` (55°) the kernel's
+   resolution is unusable and no VSA change recovers it.
+2. **Aliasing is screenable without building anything.** One autocorrelation
+   per object tells you which instances will be unlocalisable, and at what
+   offset — which is the information the continuity filter needs an anchor for
+   (§12).
+3. **Sample by decorrelation length, not by frame.** ~6 independent views per
+   orbit is the number that should size a split, a bootstrap, or a coverage
+   claim. This is where the blocked split of E4 comes from, derived rather
+   than imposed.
+4. **This is how to compare encoders cheaply.** Half-width, alias peak and
+   N_eff rank a front end for this task in seconds, with no map, no split and
+   no decode — which is the practical way to evaluate DINOv2 against HOG when
+   the weights become reachable.
+
+*Provenance: synthetic illustration — rendered turntable, HOG front end. The
+circular-distance requirement and the DC-pedestal argument are structural and
+do not depend on the dataset; the degrees do.*
