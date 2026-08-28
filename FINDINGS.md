@@ -742,3 +742,117 @@ diagnostic is worthless. That bug was in the first version of this analysis.
 *Provenance: synthetic illustration — rendered turntable, HOG front end. The
 circular-distance requirement and the DC-pedestal argument are structural and
 do not depend on the dataset; the degrees do.*
+
+
+---
+
+## 14. Formalising it: the identity pedestal
+
+§13 observed that conditioning nearly halves the appearance correlation length
+without changing the local dimensionality. That has an exact form, and it is
+worth writing down because three separate quantities turn out to be the same
+effect seen from different angles.
+
+### The decomposition
+
+For object *o* at viewing angle φ, split the crop embedding into a global mean,
+a part constant along the orbit, and a part that actually varies:
+
+```
+z_o(φ) = μ + a_o + v_o(φ),        ⟨v_o(φ)⟩_φ = 0
+```
+
+`a_o` is the object's identity — it does not change as you walk around it.
+Define the **identity fraction**
+
+```
+λ_o = ‖a_o‖² / ( ‖a_o‖² + ⟨‖v_o(φ)‖²⟩_φ )      ∈ [0, 1]
+```
+
+Since ⟨v_o⟩ = 0 the cross terms vanish on average, and the autocorrelation of
+the L2-normalised key separates:
+
+> **Law 1.**  ρ_o(Δ) = λ_o + (1 − λ_o)·r_o(Δ)
+
+where `r_o` is the autocorrelation of the view-varying part alone. This is an
+affine contrast map, and it has **no free parameters** — λ is measured, not
+fitted.
+
+**Tested** (`experiments/run_pedestal_model.py`), pointwise over all lags:
+
+| object | λ | half-width of ρ | half-width of r | max &#124;ρ − model&#124; | RMS |
+|---|---|---|---|---|---|
+| L_block | 0.115 | 25° | 20° | 0.022 | 0.012 |
+| console | 0.133 | 20° | 15° | 0.015 | 0.008 |
+| cube | 0.366 | 20° | 10° | 0.004 | 0.002 |
+| chair | 0.378 | 30° | 15° | 0.005 | 0.002 |
+| mug | 0.472 | 55° | 45° | 0.032 | 0.016 |
+| pot | **0.746** | 180° | 55° | 0.011 | 0.006 |
+
+### Three corollaries, one mechanism
+
+Everything §13 reported follows from Law 1 rather than being separate findings:
+
+**(a) Contrast.** The alias margin is `ρ(0) − ρ(Δ) = (1 − λ)(1 − r(Δ))`. An
+object whose appearance is largely view-invariant has *every* margin
+compressed toward zero even when `r` is perfectly informative. The `pot` at
+λ = 0.746 keeps only a quarter of its available contrast.
+
+**(b) Half-width.** ρ reaches ½ where r reaches `(½ − λ)/(1 − λ) < ½`, which
+occurs at a larger lag. The pedestal **inflates** the measured half-width —
+the 28° → 18° of §13.
+
+**(c) Effective sample size.** With `τ = 1 + 2Σ_{k≤m} ρ_k`, Law 1 gives
+
+```
+τ = 1 + 2mλ + 2(1 − λ)Σ r_k
+```
+
+The `2mλ` term grows with the summation window and has nothing to do with view
+correlation. So **N_eff computed on unconditioned keys is not well defined** —
+it depends on how many lags you chose to sum. This is why N_eff moved 2.8 → 6.2
+in §13, and it means the E8 correction should always be computed after removing
+the pedestal.
+
+**So removing the identity component is a contrast stretch of gain 1/(1 − λ).**
+It reorders nothing and creates no information — but it rescales the
+half-width, the alias margin and the effective sample size, and all three are
+used to size design decisions. That is the precise sense in which conditioning
+"buys contrast, not information".
+
+### A conjecture that failed
+
+The natural next step was that angular resolution should be the convolution of
+the appearance width and the view kernel, `√(w_app² + w_kern²)`, so sharpening
+the kernel past `w_app` ≈ 18° would buy nothing. Swept over `max_harmonic`,
+five random projections each, at a 30° held-out gap:
+
+| `max_harmonic` | kernel half-width | median error |
+|---|---|---|
+| 3 | 34° | **25.6° ± 1.7** |
+| 4 | 28° | 27.7° ± 5.6 |
+| 6 | 20° | 30.1° ± 1.9 |
+| 8 | 16° | 30.4° ± 2.7 |
+| 12 | 11° | 29.3° ± 2.6 |
+| 16 | 8° | 33.3° ± 1.5 |
+| 24 | 6° | **33.0° ± 4.7** |
+
+Spread 7.7° against a seed sd of 2.9° — real, at 2.6×, but with **the opposite
+sign to the prediction**. Error *rises* as the kernel sharpens.
+
+The conjecture is refuted, and the reason corrects §0 E4's phrasing. At sparse
+coverage the binding constraint is not resolution but **reach**: a broad kernel
+spans the held-out arc, a sharp one falls into it. So the rule is
+
+> **match the view kernel to the stored-view spacing, not to the appearance
+> width** — and never sharpen past coverage, because the resolution gained
+> cannot be used and the reach lost is immediate.
+
+E4 stated the same relation from the other side ("store sides no wider apart
+than the kernel half-width"); the two together say the two quantities should be
+*matched*, and that whichever you cannot change should set the other.
+
+*Provenance: Law 1 and its three corollaries are algebra, tested here to
+RMS ≤ 0.016 on the rendered turntable; the decomposition and the corollaries do
+not depend on the dataset. The kernel sweep is synthetic illustration, five
+seeds, one split.*

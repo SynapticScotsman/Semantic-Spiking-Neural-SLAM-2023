@@ -59,6 +59,7 @@ Other options are available, see `python run_slam.py --help` and `python run_pat
     * `run_object_map.py`: Builds an object-centric map from a synthetic walk and measures every read-out (where is it, what is there, which side, orbit, object moved). `--plot` writes a summary figure.
     * `run_view_localisation.py`: Recovers which direction an object is being viewed from, and measures how the crop embeddings should be conditioned first. See `FINDINGS.md`.
     * `run_blocked_split.py`: Re-runs the view-direction figures on contiguous held-out arcs (blocked split) and sweeps the gap width. See `FINDINGS.md` §0 E4.
+    * `run_pedestal_model.py`: The identity-pedestal law `rho = lambda + (1-lambda) r` and its three corollaries, plus a refuted conjecture about kernel width. See `FINDINGS.md` §14.
     * `run_frontend_diagnostics.py`: What the appearance encoder alone determines -- half-width, alias peak (in circular distance) and effective sample size, all without building a map. See `FINDINGS.md` §13.
     * `run_view_tracking.py`: Bayes filter on the view circle -- predict is a bind, update is a bundle. Stops the estimate teleporting between frames.
     * `build_view_circle_page.py`: Rebuilds `docs/view_circle.html` from the experiment code.
