@@ -135,12 +135,24 @@ def main():
             summary[key][nm] = {"med": round(float(np.median(e)), 1),
                                 "maxjump": round(float(j.max())),
                                 "imp": int((j > thr).sum()), "n": int(len(j))}
+        # identity-pedestal decomposition (FINDINGS.md section 14)
+        Zo = Z[order] - Z.mean(0)
+        a_o = Zo.mean(0)
+        Vv = Zo - a_o
+        lam = float((a_o @ a_o) / ((a_o @ a_o) + np.mean(np.sum(Vv ** 2, axis=1))))
+
+        def _acf(X):
+            U = X / np.maximum(np.linalg.norm(X, axis=1, keepdims=True), 1e-12)
+            return [round(float(np.mean(np.sum(U * np.roll(U, -d, axis=0), axis=1))), 4)
+                    for d in range(len(X))]
+        pedestal = dict(lam=round(lam, 4), rho=_acf(Zo), r=_acf(Vv))
+
         data["objects"].append(dict(
             name=nm, sprite=base64.b64encode(buf.getvalue()).decode(),
             angles=[round(float(x), 1) for x in np.rad2deg(a)],
             est=ests, err=errs, peaks=peaks,
             stored=[bool(x) for x in kept[order]],
-            fields=fields, track=track))
+            fields=fields, track=track, pedestal=pedestal))
     data["track_summary"] = summary
 
     blob = json.dumps(data, separators=(",", ":"))
