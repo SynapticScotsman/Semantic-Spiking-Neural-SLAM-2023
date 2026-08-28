@@ -18,22 +18,94 @@ tags: [vsa, cognitive-map, object-centric, viewpoint, anisotropy, fpe, errata]
 
 # Object-centric VSA view memory — findings, recipe, and pitfalls
 
-Everything measured so far, compressed for a local rebuild. Written against
-`sspslam/objectmap/`, but §9 is a from-scratch implementation in ~40 lines if
-you'd rather not take the dependency.
+## What this is
 
-**One-line summary.** Give every object its own circle of viewpoints encoded
-with *integer-harmonic* FPE and store appearance as values on that circle,
-never as the circle itself. Viewpoint is then recoverable from appearance
-alone, in closed form — one inverse FFT for the whole likelihood over the
-circle. Do **not** whiten the latents; whether the sharper "delete the
-directions that say *which object*" recipe helps on real embeddings is an open
-question, not a result (see §0 E3). The file **interpolates between stored
-sides and does not extrapolate past them**, so sides must be stored at roughly
-the view kernel's half-width (§0 E4).
+Give every object its own little turntable in memory. Walk round a chair and
+you store a handful of snapshots, each tagged with the angle you took it from.
+Later, show the memory a fresh photo and it tells you which side you are
+standing on — no pose input, appearance alone.
 
-**Read §0 first.** Every degree figure in this document is synthetic
-illustration from a rendered turntable, not a measurement.
+The whole object file is **one fixed-size vector**. Angles are stored on a real
+circle, so walking a full lap brings you back to exactly where you started, and
+"rotate the object 40°" is a single multiply.
+
+```
+object file    V = (1/K) Σ_k  c(z_k) ⊗ S_view(φ_k)
+```
+
+Plainly: `c(z_k)` is a fingerprint of what the object looked like, `S_view(φ_k)`
+is the angle you saw it from, `⊗` staples them together, and the sum is all of
+it in one vector.
+
+## What works
+
+| | plainly | §|
+|---|---|---|
+| The circle is a real circle | 360° gets you back to the exact same code, to 1e-16. Rotating is one multiply. | §2 |
+| Reading it is one FFT | You get the *whole* answer — how likely every angle is — not just a best guess. Instant. | §4 |
+| Tracking over time | Frame by frame the answer jumps around; feed it through a filter and it settles. 17° → 6°. | §12 |
+| One known starting angle | Fixes the symmetric objects completely. 83° → 2°. | §12 |
+
+## What doesn't
+
+**It can't guess sides you never looked at.** Leave a 30° hole in the orbit and
+the error inside that hole is ~27°, tracking the hole size all the way up to
+chance. It fills in *between* stored views and does not reach past them (§0 E4).
+
+**Symmetric objects can't be told apart, and no amount of data fixes it.** A
+cube looks identical from four sides. That is not a bug in the estimator —
+there are genuinely four right answers. Tracking plus one known starting angle
+is the only fix (§12).
+
+**Sharpening the code makes it worse, not better.** I assumed a finer angular
+code would help. It doesn't: 25.6° error with a broad code, 33.0° with a sharp
+one. When your stored views are far apart, *reach* beats precision (§14).
+
+## The three rules that cost us the most
+
+1. **Frames are not samples.** 72 frames round an orbit are worth about **6**
+   independent observations. I quoted `n=216, p=7.6e-9` once; the real n was
+   ~19 and the p-value was fiction. Retracted in §0 E8.
+2. **Never split by alternate frames.** A held-out view sitting 5° from a
+   stored one measures memory, not generalisation. It made us look 3× better
+   than we were (§0 E4).
+3. **Don't whiten the features.** It gives perfect-looking statistics and
+   destroys the answer — 11° → 86°, against 90° for guessing (§5, and `astm`
+   measured it first on real robot data).
+
+## The one idea underneath the front end
+
+Every crop is part *"which object this is"* and part *"which way it's facing."*
+The first part doesn't change as you walk round — a chair is still that chair
+from behind — so it sits under every similarity measurement like a floor.
+Call the floor's share `λ`:
+
+```
+ρ(Δ) = λ + (1 − λ)·r(Δ)
+```
+
+Measured similarity = floor + (what's left) × the real angle signal. Removing
+the floor is a **contrast knob, not an information gain** — it reorders nothing,
+but it rescales three numbers we use to make decisions. Holds to RMS 0.002–0.016
+with nothing fitted (§14).
+
+## Before you quote anything
+
+**Read §0 first.** Every degree in this document comes from a *rendered*
+turntable with a HOG descriptor — it demonstrates a mechanism, it is not a
+measurement of any real encoder or robot. The algebra (§2, §4, §9, and the
+filter's predict step) is exact and separately verified. DINOv2 has never run
+here; egress policy blocks the weights.
+
+## See it
+
+`docs/view_circle.html` — pick an object, scrub the orbit, watch the likelihood
+succeed or fail. The cube's four bright ridges are the clearest single view of
+why symmetry is unfixable without an anchor.
+
+```bash
+python experiments/build_view_circle_page.py     # rebuild it from the code
+```
 
 ---
 

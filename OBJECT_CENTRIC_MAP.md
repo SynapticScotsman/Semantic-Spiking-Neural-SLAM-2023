@@ -1,11 +1,13 @@
 # Object-Centric VSA Cognitive Map
 
-A mental map of an *object* rather than of a *room*: a sphere of viewpoints
-around a thing floating in space, which you can orbit, query, and carry with
-the object when somebody moves it.
+A memory of an *object* rather than of a *room*. Each thing gets its own
+turntable: walk round it, store a few snapshots tagged with the angle you took
+them from, and later a fresh photo tells you which side you are standing on.
+Push the chair across the room and the memory still holds — only its position
+needs rewriting.
 
-Same idea as fractional-power-encoded SSPs for space — but the manifold is a
-circle around an object instead of a grid over a floor.
+Same trick as SSPs use for space, with the manifold swapped: a circle around an
+object instead of a grid over a floor.
 
 See **`FINDINGS.md`** for the results, the latent-conditioning recipe, and the
 pitfalls — and **read its §0 errata first**: every degree and metre figure in
