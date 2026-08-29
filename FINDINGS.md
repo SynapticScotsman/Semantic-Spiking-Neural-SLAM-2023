@@ -49,17 +49,13 @@ it in one vector.
 | Two vectors per object, not one | Name the object with an unbound appearance prototype, read the angle with the view book. Identification 0.44 → 0.89 for one extra vector. | §16 E1 |
 | Twelve sides is the answer | Store a view every 30°. The same number for every object that isn't symmetric, and the cliff past it is sharp. | §16 E4 |
 | Vectors to objects, not places | Shift the whole room 3 m: a map of positions is wrong by 3 m, a map of vectors is untouched. And moving the robot updates every object at once, with one bind. | §16 E3 |
+| Turning is free | The spatial code has no notion of rotation — but it doesn't need one. The robot knows its heading, so a turn is a 2×2 matrix on the answer, not work on the memory. 0.05 m through a 3 m move and a 40° turn. | §16 E5 |
 
 ## What doesn't
 
 **It can't guess sides you never looked at.** Leave a 30° hole in the orbit and
 the error inside that hole is ~27°, tracking the hole size all the way up to
 chance. It fills in *between* stored views and does not reach past them (§0 E4).
-
-**Turn the world and everything breaks.** Rotate the scene 40° and every scene
-code fails equally — 2.2 m out, as bad as guessing. Translation is fine; the
-spatial code just has no notion of rotation in it. That is the one gap these
-experiments opened rather than closed (§16 E3).
 
 **Symmetric objects can't be told apart, and no amount of data fixes it.** A
 cube looks identical from four sides. That is not a bug in the estimator —
@@ -688,7 +684,8 @@ python experiments/run_nn_baseline.py                  # §16 E0, ~6 min
 python experiments/run_mirror_stage.py --symmetric-set # §16 E1, ~9 min
 python experiments/run_residue_code.py                 # §16 E2, ~20 min
 python experiments/run_k_curve.py --symmetric-set      # §16 E4, ~15 min
-python experiments/run_scene_frames.py                 # §16 E3, ~4 min
+python experiments/run_scene_frames.py                  # §16 E3, ~4 min
+python experiments/run_rotation_frames.py              # §16 E5, ~5 min
 ```
 
 Swap the front end with `--encoder dinov2` (needs torch + transformers +
@@ -1088,9 +1085,10 @@ having run them.
 | **E1** | mirror-symmetric intermediate (Freiwald & Tsao) | does deliberate aliasing *improve* identification, as it does in AL? | **done — refuted. It makes identification worse, in both symmetry regimes** |
 | **E2** | residue view code (Kymn 2024) | can a modular code hold K views at a fraction of the dimension? | **done — refuted. But it found the capacity knob E0 missed, and that ties E0's score** |
 | **E3** | object-vector-cell scene map (Høydal) | should the scene half be allocentric or egocentric-vector? | **done — egocentric, decisively. And motion becomes one bind** |
+| **E5** | rotation (Renner et al.), the gap E3 opened | can rotation be a bind, and does the scene map need it to be? | **done — yes it can, and no it does not** |
 | **E4** | the K curve (Logothetis / Poggio–Edelman) | where is the knee, and does it match IT view tuning? | **done — knee at K=12, store a side every 30°. The per-object prediction is refuted** |
 
-**Naming.** These are §16 E0–E4, the *experiments*. §0 E1–E8 are the *errata*.
+**Naming.** These are §16 E0–E5, the *experiments*. §0 E1–E8 are the *errata*.
 The document always writes the prefix; a bare "E4" in this section means the K
 curve, and in §0 means the blocked-split correction.
 
@@ -1676,7 +1674,88 @@ so unlike §16 E0–E2 and E4 none of these numbers depend on HOG or on the
 turntable. The translation and rotation results are properties of the SSP
 algebra and would reproduce at any dimension that decodes at all.*
 
-### What the five experiments jointly say
+---
+
+### E5 — rotation: **a bind exists, and you do not need it**
+
+E3's one open gap, closed. **Rotation *can* be one bind — in log-polar
+coordinates it is, to 1.4e-15 — but paying for it costs translation, and the
+cheap fix needs no VSA at all.** Keep the memory Cartesian, update it through
+motion by binding, and apply the robot's heading as a 2×2 matrix on the
+*decoded* answer: 0.05 m under any combination of a 3 m move and a 40° turn.
+
+Run it: `python experiments/run_rotation_frames.py`.
+
+#### Rotation as a bind
+
+Renner et al. (§15) make image-plane rotation and scale into binds by working
+in log-polar coordinates. The same construction applies to the scene map and
+needs no new machinery — the angle is the periodic integer-harmonic FPE §2
+already establishes, the radius is an ordinary FPE of `log r`:
+
+```
+S_polar(v) = S_θ(atan2 v) ⊗ S_logr(log|v|)
+
+rotate by α   →  bind by S_polar(α, 0)        exact
+scale by s    →  bind by S_polar(0, log s)    exact
+translate     →  not a bind
+```
+
+Checked in the manner of §2, before any decoding:
+
+| | max abs difference |
+|---|---|
+| log-polar, rotate 40° | **1.44e-15** |
+| log-polar, scale by 1.7 | **7.77e-16** |
+| log-polar, a full turn = identity | **9.99e-16** |
+| Cartesian, translate | 2.84e-16 |
+| Cartesian, rotate | 4.99e-01 — no bind exists |
+
+The full turn closes exactly for the same reason the view circle does: integer
+harmonics. This is §2's result reused on the spatial manifold rather than the
+view one.
+
+#### The trade is exactly diagonal
+
+Vector to each object after the robot moves 3 m and turns 40°, 20 seeds:
+
+| code | same | translated | rotated | turn + move |
+|---|---|---|---|---|
+| Cartesian | 0.04 m | **0.05 m** | 2.32 m | 2.56 m |
+| log-polar | 0.08 m | 3.00 m | **0.07 m** | 3.00 m |
+| **both** | **0.04 m** | **0.05 m** | **0.04 m** | **0.05 m** |
+
+Each single code is exact for its own transform and fails at the other, by
+about the size of the transform. **No single spatial code buys both**, and a
+robot does both, so the interesting row is the third.
+
+#### The answer: the gap is in the code, not in the system
+
+`both` is not a second memory. It keeps the one Cartesian bundle, updates it
+through translation by binding as in E3, and rotates the *decoded* points by a
+2×2 matrix at read-out. One memory, no second bundle to keep consistent, and no
+VSA operation for rotation at all.
+
+That works because **the robot knows its own heading**, so a turn is a change
+of query frame rather than a change of stored content. Rotating everything
+inside the bundle would be doing eagerly what can be done lazily on the handful
+of answers you actually asked for.
+
+Which makes the honest statement: E3's rotation failure is real for the *code*
+and not for the *system*. It matters only where no heading estimate exists —
+and if that case arises, §12's circular Bayes filter is already a head-direction
+ring and supplies exactly that quantity. Failing that, the log-polar space here
+is exact and is one file away from being library code; it is deliberately left
+in the experiment, because it is the right answer to a question this system does
+not currently have.
+
+*Provenance: measured — simulated scene, no images, 20 seeds. Section [A] is
+exact: an algebraic identity verified to 1e-15, in the sense of §0's "exact"
+tag. Section [B]'s metres depend on the decoding grid and on nothing else.*
+
+---
+
+### What the six experiments jointly say
 
 They were run to answer one question — *does an object-centric VSA map work, or
 is it a nice algebra with nothing behind it?* — and between them they answer it.
@@ -1690,7 +1769,7 @@ answer queries by unbinding rather than by search. That is the claim §15's
 literature gap can support. "More accurate" is not, and this document said so
 before E0 was run.
 
-**Four of the five predictions failed, and the failures were more useful than
+**Four of the six predictions failed, and the failures were more useful than
 the successes.**
 
 | | predicted | measured |
@@ -1700,6 +1779,7 @@ the successes.**
 | E2 | residue coding buys capacity | it destroys it |
 | E4 | §13's half-width predicts how densely to orbit | it predicts nothing; the answer is 30° for everything |
 | E3 | vector coding transfers across frames | **it does, exactly** |
+| E5 | rotation needs a rotation-equivariant code | it can have one, but does not need it — heading makes it a read-out |
 
 E2 is the case for running experiments you expect to fail: it refuted its own
 hypothesis *and* found the setting that turned E0's loss into a tie, which E0
@@ -1725,30 +1805,25 @@ and not one (E1, and the crossover in `test_object_map.py`).
 | sides per object | 12, one every 30° | E4 |
 | scene | `ID ⊗ S(p_obj − p_robot)`, egocentric | E3 |
 | motion | one bind of the whole memory by `S(−d)` | E3 |
+| turning | a 2×2 matrix on the decoded answer, not an operation on the memory | E5 |
 | symmetric objects | unfixable by any decoder; needs the §12 filter and an anchor | E1, E4 |
 
 ### What is actually left
 
-**1. Rotation.** The one gap the experiments opened rather than closed. E3's
-egocentric map is exact under translation and fails completely under a 40° turn
-(2.24 m, indistinguishable from the allocentric map's failure), because the 2-D
-SSP is translation-equivariant and nothing here is rotation-equivariant. This is
-§6's open question, now with a measurement attached. Renner et al.'s log-polar
-construction (§15) is the published candidate and is one manifold over from
-where they use it. **Highest value, and it is a real gap rather than a tuning
-exercise.**
-
-**2. DINOv2.** Still gates every absolute degree in E0, E1, E2 and E4 —
+**1. DINOv2.** Still gates every absolute degree in E0, E1, E2 and E4 —
 `huggingface.co` is blocked (§8). What the five experiments buy is that the
 swap is now cheap to interpret: every conclusion above is either a relative
 comparison on one front end or a structural property (E2's self-retrieval table,
 E3 entirely), and both survive an encoder change. Only the degrees move.
 
-**3. The two-stage read-out end to end.** `recognise()` exists and is tested,
+**2. The two-stage read-out end to end.** `recognise()` exists and is tested,
 but nothing has yet run identify-then-localise-then-filter as one pipeline
-against a walk. §12's Bayes filter and E1's prototype have never met.
+against a walk. §12's Bayes filter and E1's prototype have never met — and E5
+gives that a second reason, since the filter is also where a heading estimate
+would come from. **Highest value of what remains, and it is assembly rather
+than research.**
 
-**4. The library defaults.** `max_harmonic=8` is documented as being on the
+**3. The library defaults.** `max_harmonic=8` is documented as being on the
 wrong side of the optimum and left in place so that everything measured before
 §16 E2 reproduces. That is the right call for a results document and the wrong
 one for a library. Changing it means re-measuring §§4–13, which is a day and
