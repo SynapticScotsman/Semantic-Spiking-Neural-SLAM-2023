@@ -48,12 +48,18 @@ it in one vector.
 | The whole scene in one vector | Six objects, twelve views each, one vector, unbind an ID to query it. 72× smaller than a list, same accuracy. | §16 E0, E2 |
 | Two vectors per object, not one | Name the object with an unbound appearance prototype, read the angle with the view book. Identification 0.44 → 0.89 for one extra vector. | §16 E1 |
 | Twelve sides is the answer | Store a view every 30°. The same number for every object that isn't symmetric, and the cliff past it is sharp. | §16 E4 |
+| Vectors to objects, not places | Shift the whole room 3 m: a map of positions is wrong by 3 m, a map of vectors is untouched. And moving the robot updates every object at once, with one bind. | §16 E3 |
 
 ## What doesn't
 
 **It can't guess sides you never looked at.** Leave a 30° hole in the orbit and
 the error inside that hole is ~27°, tracking the hole size all the way up to
 chance. It fills in *between* stored views and does not reach past them (§0 E4).
+
+**Turn the world and everything breaks.** Rotate the scene 40° and every scene
+code fails equally — 2.2 m out, as bad as guessing. Translation is fine; the
+spatial code just has no notion of rotation in it. That is the one gap these
+experiments opened rather than closed (§16 E3).
 
 **Symmetric objects can't be told apart, and no amount of data fixes it.** A
 cube looks identical from four sides. That is not a bug in the estimator —
@@ -682,6 +688,7 @@ python experiments/run_nn_baseline.py                  # §16 E0, ~6 min
 python experiments/run_mirror_stage.py --symmetric-set # §16 E1, ~9 min
 python experiments/run_residue_code.py                 # §16 E2, ~20 min
 python experiments/run_k_curve.py --symmetric-set      # §16 E4, ~15 min
+python experiments/run_scene_frames.py                 # §16 E3, ~4 min
 ```
 
 Swap the front end with `--encoder dinov2` (needs torch + transformers +
@@ -1080,7 +1087,7 @@ having run them.
 | **E0** | list-of-views baseline | is the object file a better estimator, or only a smaller one? | **done — it is only smaller** |
 | **E1** | mirror-symmetric intermediate (Freiwald & Tsao) | does deliberate aliasing *improve* identification, as it does in AL? | **done — refuted. It makes identification worse, in both symmetry regimes** |
 | **E2** | residue view code (Kymn 2024) | can a modular code hold K views at a fraction of the dimension? | **done — refuted. But it found the capacity knob E0 missed, and that ties E0's score** |
-| **E3** | object-vector-cell scene map (Høydal) | should the scene half be allocentric or egocentric-vector? | spec below |
+| **E3** | object-vector-cell scene map (Høydal) | should the scene half be allocentric or egocentric-vector? | **done — egocentric, decisively. And motion becomes one bind** |
 | **E4** | the K curve (Logothetis / Poggio–Edelman) | where is the knee, and does it match IT view tuning? | **done — knee at K=12, store a side every 30°. The per-object prediction is refuted** |
 
 **Naming.** These are §16 E0–E4, the *experiments*. §0 E1–E8 are the *errata*.
@@ -1561,137 +1568,192 @@ arcs, hierarchical bootstrap over objects → arcs → seeds. The self-retrieval
 table is descriptor-independent by construction and the harmonic-count ordering
 in it is structural. The degrees on the real task are HOG numbers.*
 
-### E3 — object-vector-cell scene map
+### E3 — object-vector-cell scene map: **the egocentric code wins, and it path-integrates for free**
 
-The scene half is the untested half. `ID ⊗ S_allo(p)` is an allocentric position
-code; object vector cells (Høydal, §15) are *egocentric vector to object*, and
-their headline property is generalising **across environments**.
+**Store vectors to objects, not places.** Shift the whole scene three metres
+and the allocentric map is wrong by exactly three metres — 0 of 6 objects still
+placed within half a metre — while the egocentric code is untouched, 6 of 6, at
+0.05 m. And because `S(a) ⊗ S(b) = S(a+b)`, moving the robot updates the
+vectors to **every** object with a single bind, with no per-object work and no
+global frame anywhere. Sixteen steps of that accumulate 0.05 m.
 
-Test exactly that property. Build the map in one room layout, move every object,
-query in the new layout. Allocentric binding should fail; a vector-to-object
-code should transfer. Nothing else in this document separates the two, and the
-parent SSP-SLAM paper already has the machinery.
+This is the first measured result in this document about the scene half. Every
+number in §§1–14 and §16 E0–E2, E4 is about the view circle.
 
-This is also the experiment that decides §15's honest wrinkle — whether the
-scene half should be OVC-like at all, or whether the view circle is carrying the
-whole idea.
+Run it: `python experiments/run_scene_frames.py`.
 
----
+#### Three codes, same observations
 
-### E4 — the K curve: **the knee is real, the per-object prediction is not**
+```
+allo  M = Σ_o ID_o ⊗ S(p_o)               world frame — what the map does now
+ego   M = Σ_o ID_o ⊗ S(p_o − p_robot)     viewer-relative — the OVC form
+rel   M = Σ_o ID_o ⊗ S(p_o − p_anchor)    object-relative
+```
 
-**Every non-aliased object needs its stored views no more than 30° apart, and
-nothing about the object changes that.** The knee is sharp and identical across
-objects whose §13 descriptor half-widths span 15° to 40°. The prediction that
-§13's cheap diagnostic would say how densely to orbit a given thing is
-**refuted** — and there is a reason it had to be.
+Six objects in a 10×10 m room, `ssp_dim=1015`, 20 seeds. Median position error
+after the world changes underneath the map:
 
-Run it: `python experiments/run_k_curve.py --symmetric-set`.
-
-Measured at `max_harmonic=4`, `d=2401`, so §16 E2's capacity confound is gone
-and this curve is about coverage, which is what E4 is for.
-
-#### The pooled curve, and why K stops mattering
-
-| K | spacing | median gap to nearest stored view | object file | list |
+| code | same | translated 3 m | rotated 40° | rearranged |
 |---|---|---|---|---|
-| 2 | 180° | 42° | 68.5° | 70.0° |
-| 4 | 90° | 25° | 40.5° | 40.0° |
-| 6 | 60° | 18° | 24.0° | 25.0° |
-| **12** | **30°** | **10°** | **13.0°** | **15.0°** |
-| 18 | 20° | 10° | 16.5° | 15.0° |
-| 36 | 10° | 10° | 19.7° | 15.0° |
+| allo | 0.04 m | **3.00 m** | 2.23 m | 3.87 m |
+| **ego** | 0.05 m | **0.05 m** | 2.24 m | 3.84 m |
+| rel | 0.05 m | **0.05 m** | 2.49 m | 4.80 m |
 
-Knee at **K=12** for both decoders. Past it, look at the third column: the gap
-floors at 10° and stops falling. With held-out arcs 30° wide, a thirteenth
-stored view has nowhere closer to sit, so it adds bundle load without adding
-coverage. **K is the wrong axis** — it stops being informative exactly where
-the geometry saturates, not where the object does.
+*(a uniform guess in this room is 4.12 m)*
 
-#### The object file and the list are indistinguishable at every K
+Fraction still placed within 0.5 m:
 
-Difference of medians, hierarchical bootstrap:
+| code | same | translated | rotated | rearranged |
+|---|---|---|---|---|
+| allo | 1.00 | **0.00** | 0.04 | 0.02 |
+| ego | 1.00 | **1.00** | 0.03 | 0.02 |
+| rel | 0.87 | 0.87 | 0.18 | 0.17 |
 
-| K | 2 | 3 | 4 | 6 | 8 | 12 | 18 | 24 | 36 |
-|---|---|---|---|---|---|---|---|---|---|
-| vsa − list | −1.5° | +2.5° | +0.5° | −1.0° | +3.7° | −2.0° | +1.5° | +3.0° | +4.7° |
-| interval spans 0 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+Three things to read here, and the second and third are as important as the
+first.
 
-**Nine out of nine.** E2 established the tie at three values of K; this
-establishes it across the whole curve from 2 to 36. Wherever the two agree, the
-limit is coverage and not the representation — which is the cleanest statement
-of what the object file is: a compression of the list that costs nothing in
-accuracy.
+1. **Translation: the OVC claim holds exactly.** The allocentric map's error
+   under translation *is* the translation — 3.00 m for a 3 m shift, which is
+   what a stale absolute position looks like. The vector codes are unchanged
+   because a vector is what they store.
+2. **Rotation: everything fails, and that is ours to own.** 2.2–2.5 m for all
+   three. The 2-D SSP is translation-equivariant and not rotation-equivariant,
+   so turning the world 40° breaks every code equally. §6 already flagged that
+   nothing here composes rotations and that no biology backs doing so; this is
+   that gap, measured. An egocentric map buys frame-independence in
+   translation only.
+3. **Rearranged: everything fails, which is correct.** The objects genuinely
+   moved and no map can know where to without re-observing. It is in the table
+   as a control against reading the other columns too generously. `rel`'s 0.17
+   is an artefact and not a result: it is anchored on `obj_0`, which sits at
+   zero offset from itself in every condition, so 1/6 of its score is free.
 
-#### The right axis, and the refuted prediction
+`rel` also loses 0.13 on the *same* condition for the same reason — the
+zero-offset self-entry decodes ambiguously, because `S(0)` is the identity.
+Anchoring on an object is worse than anchoring on the viewer, and the viewer is
+what the biology uses.
 
-What a robot actually controls is not K but **how much of an orbit it walks**.
-Sweeping the held-out arc width instead, median error per object:
+#### The operation an allocentric map does not have
 
-| object | §13 half-width | 10° | 20° | 30° | 45° | 60° | widest arc filled to <15° |
-|---|---|---|---|---|---|---|---|
-| chair | 25° | 5.2° | 10.5° | 6.5° | 28.2° | 47.0° | **30°** |
-| mug | 35° | 7.0° | 12.3° | 7.3° | 25.8° | 44.5° | **30°** |
-| L_block | 25° | 6.0° | 7.5° | 7.0° | 26.3° | 38.5° | **30°** |
-| pot | 40° | 8.5° | 11.2° | 12.8° | 29.7° | 53.0° | **30°** |
-| console | 15° | 6.5° | 8.7° | 6.0° | 17.5° | 27.5° | **30°** |
-| tripod | 15° | 8.0° | 11.7° | 12.0° | 122.3° | 105.2° | **30°** |
-| cube | 15° | 87.0° | 95.0° | 90.0° | 85.0° | 92.5° | — |
-| cross | 15° | 90.2° | 140.0° | 90.0° | 90.2° | 171.7° | — |
-| drum | 35° | 90.0° | 100.7° | 90.0° | 90.0° | 153.5° | — |
+The reason to prefer the egocentric form is not the table above — it is that
+binding *is* the motion update. When the robot moves by `d`, one bind of the
+whole memory by `S(−d)` moves the vectors to every object at once:
 
-Six non-aliased objects. **Six identical answers.** Half-widths spanning 15° to
-40° — a 2.7-fold range — produce zero spread in the tolerable arc, so there is
-nothing for the half-width to correlate with. The cliff between 30° and 45° is
-in the same place for all of them.
+| steps | exact | odometry 1% | 5% | 10% |
+|---|---|---|---|---|
+| 1 | 0.04 m | 0.04 m | 0.05 m | 0.04 m |
+| 4 | 0.05 m | 0.05 m | 0.05 m | 0.07 m |
+| 8 | 0.05 m | 0.05 m | 0.06 m | 0.09 m |
+| 16 | **0.05 m** | 0.05 m | 0.06 m | **0.09 m** |
 
-**Why the prediction had to fail: half-width is two-sided.** A wide appearance
-autocorrelation means the object looks similar over a wide arc. That should let
-you reach further across a hole — but it is the same property that makes the
-angle hard to pin down once you get there, which §13's own consequence 1 already
-said about the `pot`. Reach and contrast move together and in opposite
-directions, so their product is flat. One number cannot predict a quantity that
-depends on both.
+**Flat.** The algebra contributes essentially nothing over sixteen steps — the
+0.05 m is the decoding grid and the bundle, not accumulation — and even 10%
+proportional odometry noise only reaches 0.09 m. One bind per step, six objects
+carried, no global frame constructed at any point.
 
-What *does* predict the cliff is the **view kernel lobe, 28°**, sitting right at
-the 30°/45° boundary, with the median descriptor half-width (22°) below it.
-Consistent with §14 and §16 E2: reach is the binding quantity, and the kernel is
-what supplies it.
+An allocentric map cannot do this, and not because it is worse at it: its
+contents do not depend on where the robot is, so there is nothing to update.
+It needs the robot's global pose supplied from somewhere else, which means
+self-localisation has to have already succeeded. The egocentric map needs only
+the increment.
 
-#### The practical number
+#### What this changes
 
-**Store a side every 30°, so twelve per object.** Fewer and the file cannot fill
-the hole; more and you are paying bundle capacity for coverage you already have.
-That is the answer to "how many views do I need", and it is the same answer for
-every object that is not symmetric — which makes it a much more useful rule than
-the per-object one that was predicted, even though it is the boring outcome.
+- **The scene map should store `ID ⊗ S(p_obj − p_robot)`**, with the
+  allocentric position derived when a global frame is actually wanted, rather
+  than the other way round. That is the change §15's honest wrinkle was
+  pointing at, now with a number behind it.
+- **Rotation is the open gap**, and it is the same gap as §6. Nothing here
+  handles a turn. Fixing it needs a rotation-equivariant spatial code —
+  log-polar in the manner of Renner et al. (§15) is the published candidate,
+  and it is one manifold over from what they use it for.
+- The parent SSP-SLAM paper already cites object vector cells; this says the
+  object-centric map should take them literally.
 
-Comparing 30° against published IT view-tuning widths (Logothetis, §15 leg 3)
-is the obvious next move and is **not done here**: that citation is tagged
-**[m]**, from memory, and this document does not compare a measured number
-against an unverified one.
+*Provenance: measured — simulated room, no images, 20 seeds, 6 objects,
+`ssp_dim=1015`, 0.1 m decoding grid. There is no front end in this experiment,
+so unlike §16 E0–E2 and E4 none of these numbers depend on HOG or on the
+turntable. The translation and rotation results are properties of the SSP
+algebra and would reproduce at any dimension that decodes at all.*
 
-*Provenance: measured — rendered turntable, ten objects with `--symmetric-set`,
-HOG front end, 3 seeds, `d=2401`, `max_harmonic=4`, blocked arcs, hierarchical
-bootstrap over objects → arcs → seeds. The 30° figure is a HOG number and would
-move with the encoder. That the knee saturates where the gap floors, and that
-half-width fails to predict the tolerable arc for the reason given, are
-structural.*
+### What the five experiments jointly say
 
-### The order
+They were run to answer one question — *does an object-centric VSA map work, or
+is it a nice algebra with nothing behind it?* — and between them they answer it.
 
-**E3 only**, with E0, E1, E2 and E4 done.
+**It works, and it is a store rather than an estimator.** On viewpoint accuracy
+the object file ties a plain list of stored views: nine out of nine K values
+from 2 to 36 with confidence intervals spanning zero (E4), confirming E2's tie
+at three. It never beats one. What it does is hold the same information in
+`n_obj × K` times less memory, with the whole scene in a single vector, and
+answer queries by unbinding rather than by search. That is the claim §15's
+literature gap can support. "More accurate" is not, and this document said so
+before E0 was run.
 
-Two items from E1 and E2 are already implemented rather than queued, because
-each was one line:
+**Four of the five predictions failed, and the failures were more useful than
+the successes.**
 
-- **An unbound appearance prototype per object** (`ObjectFile.prototype`,
-  `ObjectCentricMap.identify`, `recognise`), so naming does not go through the
-  capacity-bound view book. E1: 0.44 → 0.89 identification at `d=151`.
-- **`max_harmonic` is a capacity setting, not a resolution setting** (E2).
-  The repo default of 8 was the wrong side of the optimum; 4 is better at
-  every K tested and turns E0's loss into a tie.
+| | predicted | measured |
+|---|---|---|
+| E0 | the object file beats a list | it loses — later corrected to a tie |
+| E1 | a mirror-symmetric stage improves identification | it makes it worse, in both symmetry regimes |
+| E2 | residue coding buys capacity | it destroys it |
+| E4 | §13's half-width predicts how densely to orbit | it predicts nothing; the answer is 30° for everything |
+| E3 | vector coding transfers across frames | **it does, exactly** |
 
-*Provenance: E0 and E1 measured (see their own notes). E2–E4 are
-specifications — nothing in them is a result, and none of their predicted
-outcomes may be quoted as findings.*
+E2 is the case for running experiments you expect to fail: it refuted its own
+hypothesis *and* found the setting that turned E0's loss into a tie, which E0
+had missed by sweeping the vector dimension sixteen-fold while never touching
+`max_harmonic`.
+
+**One quantity explains most of it.** The number of distinct harmonics sets how
+many views a bundle holds (E2); `max_harmonic` therefore trades capacity
+against reach, and its optimum sits at a 28° lobe — *wider* than the
+descriptor's own 22° correlation length (E2, E4). §14's "reach beats precision"
+and E0's capacity ceiling turn out to be one constraint seen from two ends.
+Meanwhile identity and viewpoint want opposite things from the same
+descriptor — the pedestal that makes an object recognisable is the floor that
+makes its angle hard to read — which is why naming and pose need two vectors
+and not one (E1, and the crossover in `test_object_map.py`).
+
+**The build that came out of it**, all measured rather than assumed:
+
+| | setting | from |
+|---|---|---|
+| naming | unbound prototype per object, never the view book | E1 |
+| viewpoint | view book, `max_harmonic = 4` | E2 |
+| sides per object | 12, one every 30° | E4 |
+| scene | `ID ⊗ S(p_obj − p_robot)`, egocentric | E3 |
+| motion | one bind of the whole memory by `S(−d)` | E3 |
+| symmetric objects | unfixable by any decoder; needs the §12 filter and an anchor | E1, E4 |
+
+### What is actually left
+
+**1. Rotation.** The one gap the experiments opened rather than closed. E3's
+egocentric map is exact under translation and fails completely under a 40° turn
+(2.24 m, indistinguishable from the allocentric map's failure), because the 2-D
+SSP is translation-equivariant and nothing here is rotation-equivariant. This is
+§6's open question, now with a measurement attached. Renner et al.'s log-polar
+construction (§15) is the published candidate and is one manifold over from
+where they use it. **Highest value, and it is a real gap rather than a tuning
+exercise.**
+
+**2. DINOv2.** Still gates every absolute degree in E0, E1, E2 and E4 —
+`huggingface.co` is blocked (§8). What the five experiments buy is that the
+swap is now cheap to interpret: every conclusion above is either a relative
+comparison on one front end or a structural property (E2's self-retrieval table,
+E3 entirely), and both survive an encoder change. Only the degrees move.
+
+**3. The two-stage read-out end to end.** `recognise()` exists and is tested,
+but nothing has yet run identify-then-localise-then-filter as one pipeline
+against a walk. §12's Bayes filter and E1's prototype have never met.
+
+**4. The library defaults.** `max_harmonic=8` is documented as being on the
+wrong side of the optimum and left in place so that everything measured before
+§16 E2 reproduces. That is the right call for a results document and the wrong
+one for a library. Changing it means re-measuring §§4–13, which is a day and
+should be done deliberately.
+
+*Provenance: every claim in this subsection is a summary of a measured result
+in E0–E4 above, and carries that result's provenance. The rotation gap is
+measured (E3); the log-polar suggestion is a proposal and nothing more.*
