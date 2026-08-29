@@ -4,7 +4,7 @@ GitHub shows `.html` as source, not as a page. Open these through a raw proxy:
 
 | page | open | what it is |
 |---|---|---|
-| **View Circle Diagnostics** | [open rendered ▸](https://raw.githack.com/SynapticScotsman/Semantic-Spiking-Neural-SLAM-2023/claude/object-centric-vsa-map-kf8met/docs/view_circle.html) | Where object-centric view-direction localisation holds and where it breaks. Pick an object, scrub the orbit, watch the likelihood over the whole view circle. Self-contained, ~900 KB, works offline once loaded. |
+| **View Circle Diagnostics** | [open rendered ▸](https://raw.githack.com/SynapticScotsman/Semantic-Spiking-Neural-SLAM-2023/claude/object-centric-vsa-map-kf8met/docs/view_circle.html) | Which side of an object are you looking at? Pick one, scrub the orbit, watch the memory get it right or fail. Self-contained, ~930 KB, works offline once loaded. |
 
 **Read `FINDINGS.md` §0 before quoting any figure from these pages.** Every
 degree in them is synthetic illustration from a rendered turntable with a HOG

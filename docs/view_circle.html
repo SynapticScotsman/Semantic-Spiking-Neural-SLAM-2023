@@ -133,31 +133,54 @@ code{font-family:"IBM Plex Mono",monospace;font-size:.9em;background:var(--sunke
 <div class="wrap">
 
 <header>
-  <p class="eyebrow">Object-centric VSA cognitive map · view-direction read-out</p>
-  <h1>Where the view circle holds, and where it breaks</h1>
-  <p class="lede">An object file stores what a thing looks like from each side. Show it a
-  crop and it returns a likelihood over the whole circle of viewpoints — the peak is the side
-  you are looking from. This page is the instrument: pick an object, scrub the orbit, and watch
-  the likelihood succeed or fail. Two failure modes, and they need opposite fixes.</p>
+  <p class="eyebrow">object memory &middot; view-direction read-out</p>
+  <h1>Which side of it am I looking at?</h1>
+  <p class="lede">Give every object its own turntable in memory. Walk round a chair, store a
+  handful of snapshots each tagged with the angle you took it from &mdash; and later a fresh
+  photo tells you which side you are standing on. No pose input. Appearance alone.</p>
+  <p class="lede" style="font-size:17px;color:var(--muted)">This page is the instrument. Pick an
+  object, scrub the orbit, watch it work or fail. It fails in two ways, and they need opposite
+  fixes.</p>
+
+  <div class="grid2" style="margin-top:26px">
+    <div class="card pad">
+      <span class="verdict v-ok"><i class="dot"></i>what it does well</span>
+      <ul style="margin-top:12px;font-size:15px">
+        <li>The circle is a <b>real circle</b> &mdash; a full lap returns the identical code, to 1e-16. Rotating the object is one multiply.</li>
+        <li>Reading it is <b>one FFT</b>, and you get the whole answer: how likely every angle is, not just a best guess.</li>
+        <li>Track it over time and the answer settles &mdash; <b>17&deg; &rarr; 6&deg;</b>.</li>
+      </ul>
+    </div>
+    <div class="card pad">
+      <span class="verdict v-alias"><i class="dot"></i>where it breaks</span>
+      <ul style="margin-top:12px;font-size:15px">
+        <li>It <b>cannot guess sides you never looked at</b>. Leave a 30&deg; hole and the error inside it is ~27&deg;.</li>
+        <li>A cube looks the same from four sides. That is not a mistake &mdash; there are genuinely <b>four right answers</b>.</li>
+        <li>Sharpening the code makes it <b>worse</b>, not better. Reach beats precision when views are sparse.</li>
+      </ul>
+    </div>
+  </div>
 
   <div class="prov">
     <div>
-      <b>Provenance — synthetic illustration</b>
-      <p>Every number here is measured on a <em>procedurally rendered</em> turntable with a HOG
-      descriptor, on a blocked split with 30° held-out arcs. It is not a measurement of any real
-      encoder, dataset or robot, and must not be reported as one. The algebra underneath
-      (exact 2π periodicity, binding as rotation, the one-FFT likelihood) is exact and separately
-      verified to 1e-16.</p>
+      <b>Where these numbers come from</b>
+      <p>Objects I rendered, described with HOG &mdash; not a camera, not DINOv2, not a robot.
+      The page shows you a <em>mechanism</em>; please don't quote the degrees as a measurement of
+      anything real. The algebra underneath is a different matter: the circle closing exactly, and
+      the one-FFT read-out matching a brute-force scan, are checked to 1e-16 and hold regardless of
+      the data.</p>
     </div>
   </div>
 </header>
 
 <section>
   <h2>Every viewpoint at once</h2>
-  <p class="lede" style="font-size:17px">One row per crop the object file was shown; across each
-  row, how strongly the file believes that crop was taken from each direction. A clean single ridge
-  down the diagonal means the file recovers the viewing direction. Repeated parallel ridges mean the
-  object looks the same from several sides and the question has more than one answer.</p>
+  <p class="lede" style="font-size:17px">Each row is one photo you showed the memory. Reading
+  across that row: how strongly it believes the photo was taken from each direction &mdash; bright
+  means &ldquo;probably here&rdquo;. <b>One clean bright line running diagonally</b> means it gets
+  the angle right every time. <b>Several parallel lines</b> mean the object looks the same from
+  several sides, so the question genuinely has more than one answer. Try <span class="mono">L_block</span>,
+  then <span class="mono">cube</span>.</p>
 
   <div class="card rig">
     <div>
