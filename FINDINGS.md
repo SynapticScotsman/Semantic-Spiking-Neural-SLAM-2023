@@ -49,6 +49,7 @@ it in one vector.
 | Two vectors per object, not one | Name the object with an unbound appearance prototype, read the angle with the view book. Identification 0.44 → 0.89 for one extra vector. | §16 E1 |
 | Twelve sides is the answer | Store a view every 30°. The same number for every object that isn't symmetric, and the cliff past it is sharp. | §16 E4 |
 | Vectors to objects, not places | Shift the whole room 3 m: a map of positions is wrong by 3 m, a map of vectors is untouched. And moving the robot updates every object at once, with one bind. | §16 E3 |
+| It works as one system | Name it, read its angle, filter over time: 0.91 naming and 7.0° viewpoint on a walk. And the filter fixes the frames where the name was wrong — 107° down to 16°. | §16 E6 |
 | Turning is free | The spatial code has no notion of rotation — but it doesn't need one. The robot knows its heading, so a turn is a 2×2 matrix on the answer, not work on the memory. 0.05 m through a 3 m move and a 40° turn. | §16 E5 |
 
 ## What doesn't
@@ -686,6 +687,7 @@ python experiments/run_residue_code.py                 # §16 E2, ~20 min
 python experiments/run_k_curve.py --symmetric-set      # §16 E4, ~15 min
 python experiments/run_scene_frames.py                  # §16 E3, ~4 min
 python experiments/run_rotation_frames.py              # §16 E5, ~5 min
+python experiments/run_pipeline.py --symmetric-set     # §16 E6, ~12 min
 ```
 
 Swap the front end with `--encoder dinov2` (needs torch + transformers +
@@ -1086,9 +1088,10 @@ having run them.
 | **E2** | residue view code (Kymn 2024) | can a modular code hold K views at a fraction of the dimension? | **done — refuted. But it found the capacity knob E0 missed, and that ties E0's score** |
 | **E3** | object-vector-cell scene map (Høydal) | should the scene half be allocentric or egocentric-vector? | **done — egocentric, decisively. And motion becomes one bind** |
 | **E5** | rotation (Renner et al.), the gap E3 opened | can rotation be a bind, and does the scene map need it to be? | **done — yes it can, and no it does not** |
+| **E6** | all of it, end to end on a walk | do the pieces compose, or merely coexist? | **done — they compose, and the filter turns out to repair naming, not just smooth pose** |
 | **E4** | the K curve (Logothetis / Poggio–Edelman) | where is the knee, and does it match IT view tuning? | **done — knee at K=12, store a side every 30°. The per-object prediction is refuted** |
 
-**Naming.** These are §16 E0–E5, the *experiments*. §0 E1–E8 are the *errata*.
+**Naming.** These are §16 E0–E6, the *experiments*. §0 E1–E8 are the *errata*.
 The document always writes the prefix; a bare "E4" in this section means the K
 curve, and in §0 means the blocked-split correction.
 
@@ -1755,7 +1758,74 @@ tag. Section [B]'s metres depend on the decoding grid and on nothing else.*
 
 ---
 
-### What the six experiments jointly say
+### E6 — the whole thing, end to end: **the pieces compose, and the filter's real job is not what §12 thought**
+
+Everything above was measured alone. Run as one loop over a walk — name with the
+prototype, localise with the view book, feed the likelihood to §12's circular
+filter, carry the object vectors with one bind — the assembled system reaches
+**7.0° median viewpoint error at 0.91 naming accuracy**, on ten objects
+including four symmetric ones.
+
+The surprise is where the filter's value comes from.
+
+Run it: `python experiments/run_pipeline.py --symmetric-set`.
+
+#### The system, and the ablation
+
+64 walks of 24 frames, 5° per step, `d=2401`, `max_harmonic=4`, K=12:
+
+| | naming | per frame | filtered | filter worth |
+|---|---|---|---|---|
+| prototype naming | 0.91 | 9.0° | **7.0°** | +2.0° |
+| oracle naming *(ablated)* | 1.00 | 8.0° | 7.0° | +1.0° |
+
+**The assembled system lands on the same 7.0° as the version that is told the
+answer to stage one.** Imperfect naming costs 1° per frame before filtering and
+nothing after it.
+
+#### Why: the filter repairs stage one
+
+| frames | n | per frame | filtered |
+|---|---|---|---|
+| named correctly | 1405 | 8.0° | 6.0° |
+| **named wrongly** | 131 | **107.0°** | **16.0°** |
+
+A wrong name means the likelihood was read off the wrong object's book, so its
+viewpoint is not merely noisy — it is meaningless, and 107° says so. The filter
+brings those same frames to 16°, because the belief arriving from the
+correctly-named frames on either side outvotes one bad likelihood.
+
+**This reframes §12.** The filter was introduced to stop the 50–180° per-frame
+jumps a decoder makes on a continuous path — smoothing stage two. In the
+assembled system that is the smaller half of its value: with naming given, it
+buys 1°; with naming estimated, it buys 2°, and the difference is entirely the
+repair of misidentified frames. A continuity prior over viewpoint turns out to
+be a continuity prior over *identity* as well, for free, because the two are
+bound into the same belief.
+
+That is the answer to whether these parts compose. They do, and the composition
+is worth more than the sum: neither the prototype nor the filter alone reaches
+what they reach together.
+
+#### What it does not fix
+
+Per-walk spread, filtered: 3.2° / 6.2° / **171.8°** at the 10th, 50th and 90th
+percentiles. The tail is the symmetric objects, and it is not a tail of poor
+estimates — it is walks that locked onto the wrong lobe and stayed there,
+confidently, for the whole orbit. §12 already said this: continuity converts a
+per-frame ambiguity into a single global one, and only an anchor removes it. E6
+confirms the anchor is still needed and that no amount of assembly substitutes
+for it.
+
+*Provenance: measured — rendered turntable, ten objects with `--symmetric-set`,
+HOG front end, 8 seeds × 8 walks × 24 frames. Walks are the unit throughout,
+never frames (§0 E8). The degrees are HOG numbers; that the filter's gain is
+concentrated on misnamed frames is structural and would survive an encoder
+change.*
+
+---
+
+### What the seven experiments jointly say
 
 They were run to answer one question — *does an object-centric VSA map work, or
 is it a nice algebra with nothing behind it?* — and between them they answer it.
@@ -1769,7 +1839,7 @@ answer queries by unbinding rather than by search. That is the claim §15's
 literature gap can support. "More accurate" is not, and this document said so
 before E0 was run.
 
-**Four of the six predictions failed, and the failures were more useful than
+**Four of the seven predictions failed, and the failures were more useful than
 the successes.**
 
 | | predicted | measured |
@@ -1780,6 +1850,7 @@ the successes.**
 | E4 | §13's half-width predicts how densely to orbit | it predicts nothing; the answer is 30° for everything |
 | E3 | vector coding transfers across frames | **it does, exactly** |
 | E5 | rotation needs a rotation-equivariant code | it can have one, but does not need it — heading makes it a read-out |
+| E6 | the filter smooths viewpoint | it does, but its larger job is repairing misidentification |
 
 E2 is the case for running experiments you expect to fail: it refuted its own
 hypothesis *and* found the setting that turned E0's loss into a tie, which E0
@@ -1806,6 +1877,7 @@ and not one (E1, and the crossover in `test_object_map.py`).
 | scene | `ID ⊗ S(p_obj − p_robot)`, egocentric | E3 |
 | motion | one bind of the whole memory by `S(−d)` | E3 |
 | turning | a 2×2 matrix on the decoded answer, not an operation on the memory | E5 |
+| over time | §12's circular filter, which also repairs naming errors | E6 |
 | symmetric objects | unfixable by any decoder; needs the §12 filter and an anchor | E1, E4 |
 
 ### What is actually left
@@ -1816,12 +1888,14 @@ swap is now cheap to interpret: every conclusion above is either a relative
 comparison on one front end or a structural property (E2's self-retrieval table,
 E3 entirely), and both survive an encoder change. Only the degrees move.
 
-**2. The two-stage read-out end to end.** `recognise()` exists and is tested,
-but nothing has yet run identify-then-localise-then-filter as one pipeline
-against a walk. §12's Bayes filter and E1's prototype have never met — and E5
-gives that a second reason, since the filter is also where a heading estimate
-would come from. **Highest value of what remains, and it is assembly rather
-than research.**
+**2. The anchor.** E6's assembled system is 6.2° at the median and 171.8° at
+the 90th percentile per walk, and the whole tail is symmetric objects locking
+onto the wrong lobe for an entire orbit. §12 showed one known starting direction
+fixes exactly this (83° → 2°). Nothing in the pipeline currently supplies one.
+The obvious source is the scene map — knowing roughly where you are relative to
+the object bounds which side you can be seeing — and E3's egocentric code is the
+form that would provide it. **This is the one remaining hole in the system as
+assembled, and it is a connection between two parts that already exist.**
 
 **3. The library defaults.** `max_harmonic=8` is documented as being on the
 wrong side of the optimum and left in place so that everything measured before
