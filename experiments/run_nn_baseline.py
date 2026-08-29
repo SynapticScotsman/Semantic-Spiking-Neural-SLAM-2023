@@ -187,21 +187,41 @@ def one_run(Z, obj, az, kept, held, names, K, seed):
 # Hierarchical bootstrap: objects -> arcs -> seeds.  Never frames.
 # ---------------------------------------------------------------------------
 
-def hier_bootstrap(per_seed, obj_h, arc_h, n_obj, n_boot=2000, seed=0):
-    """95% CI on the median of a per-crop quantity, resampling the levels
-    that are actually exchangeable."""
+def hier_bootstrap(per_seed, obj_h, arc_h, n_obj, n_boot=2000, seed=0,
+                   stat=np.median, per_seed_b=None, obj_ids=None):
+    """95% CI on a summary of a per-crop quantity, resampling only the levels
+    that are actually exchangeable: objects, then contiguous arcs, then seeds.
+    Frames are never resampled -- see CLAUDE.md and sec.0 E8.
+
+    ``stat`` is ``np.median`` for errors in degrees, ``np.mean`` for a per-crop
+    hit indicator.  ``obj_ids`` restricts the object level to a subset (used
+    when stratifying), and must match the labels in ``obj_h``.
+
+    Pass ``per_seed_b`` for a paired contrast.  The statistic is then
+    ``stat(a) - stat(b)`` on the *same* resampled crops, NOT ``stat(a - b)``.
+    The distinction matters: two pipelines that share a stage agree exactly on
+    most crops, so the median of their per-crop difference is pinned at zero
+    however far apart their medians are.
+    """
     rng = np.random.default_rng(seed)
     n_seeds = len(per_seed)
-    arcs = {o: np.unique(arc_h[obj_h == o]) for o in range(n_obj)}
+    ids = np.arange(n_obj) if obj_ids is None else np.asarray(obj_ids)
+    idx = {o: {a: np.where((obj_h == o) & (arc_h == a))[0]
+               for a in np.unique(arc_h[obj_h == o])} for o in ids}
+    arcs = {o: np.array(sorted(idx[o])) for o in ids}
     stats = []
     for _ in range(n_boot):
-        s = per_seed[rng.integers(n_seeds)]
-        vals = []
-        for o in rng.integers(0, n_obj, n_obj):
+        si = rng.integers(n_seeds)
+        take = []
+        for o in ids[rng.integers(0, len(ids), len(ids))]:
             aa = arcs[o]
             for a in aa[rng.integers(0, len(aa), len(aa))]:
-                vals.append(s[(obj_h == o) & (arc_h == a)])
-        stats.append(np.median(np.concatenate(vals)))
+                take.append(idx[o][a])
+        take = np.concatenate(take)
+        v = stat(per_seed[si][take])
+        if per_seed_b is not None:
+            v = v - stat(per_seed_b[si][take])
+        stats.append(v)
     return float(np.percentile(stats, 2.5)), float(np.percentile(stats, 97.5))
 
 
@@ -273,13 +293,12 @@ def main():
     for K in Ks:
         for a, b in (("vsa", "nearest"), ("vsa", "kernel"),
                      ("vsa-scene", "vsa")):
-            diff = [x - y for x, y in zip(keep_for_boot[(K, a)],
-                                          keep_for_boot[(K, b)])]
-            lo, hi = hier_bootstrap(diff, obj_h, arc_h, n_obj,
-                                    n_boot=args.n_boot)
-            m = np.median(np.concatenate(diff))
-            verdict = "" if lo < 0 < hi else ("  <-- " + ("worse" if lo > 0
-                                                          else "better"))
+            ea, eb = keep_for_boot[(K, a)], keep_for_boot[(K, b)]
+            lo, hi = hier_bootstrap(ea, obj_h, arc_h, n_obj,
+                                    n_boot=args.n_boot, per_seed_b=eb)
+            m = np.median(np.concatenate(ea)) - np.median(np.concatenate(eb))
+            verdict = ("" if lo <= 0 <= hi else
+                       "  <-- " + ("worse" if lo > 0 else "better"))
             print(f"  {K:4d} {a + ' - ' + b:>22s} {m:11.1f}d "
                   f"[{lo:+6.1f}, {hi:+6.1f}]{verdict}")
 

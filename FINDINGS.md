@@ -45,7 +45,8 @@ it in one vector.
 | Reading it is one FFT | You get the *whole* answer — how likely every angle is — not just a best guess. Instant. | §4 |
 | Tracking over time | Frame by frame the answer jumps around; feed it through a filter and it settles. 17° → 6°. | §12 |
 | One known starting angle | Fixes the symmetric objects completely. 83° → 2°. | §12 |
-| The whole scene in one vector | Six objects, twelve views each, 4801 floats, unbind an ID to query it. 72× smaller than the list. | §16 |
+| The whole scene in one vector | Six objects, twelve views each, 4801 floats, unbind an ID to query it. 72× smaller than the list. | §16 E0 |
+| Two vectors per object, not one | Name the object with an unbound appearance prototype, read the angle with the view book. Identification 0.44 → 0.89 for one extra vector. | §16 E1 |
 
 ## What doesn't
 
@@ -62,6 +63,12 @@ is the only fix (§12).
 code would help. It doesn't: 25.6° error with a broad code, 33.0° with a sharp
 one. When your stored views are far apart, *reach* beats precision (§14).
 
+**Building the brain's middle stage doesn't help.** Face patches go
+view-specific → mirror-symmetric → view-invariant, so we built the mirror stage
+deliberately. It identifies objects *worse*, by −0.15, and equally so for
+symmetric and chiral objects — the regime argument that should have rescued it
+doesn't (§16 E1). The code works exactly as designed; the design doesn't pay.
+
 **And the big one: it is not more accurate than just keeping a list.** Store the
 same views in a list, take the nearest — 10.0° against the object file's 25.5°,
 and the list *improves* with more views on file while the object file gets
@@ -70,7 +77,7 @@ view, in **one 4801-float vector** at 13.5°, against 345,672 floats for the
 list. **72× smaller, 3.5° worse.** That is the honest pitch, and it is not the
 one this document was making before §16.
 
-## The four rules that cost us the most
+## The five rules that cost us the most
 
 1. **Frames are not samples.** 72 frames round an orbit are worth about **6**
    independent observations. I quoted `n=216, p=7.6e-9` once; the real n was
@@ -84,6 +91,11 @@ one this document was making before §16.
 4. **Run the dumb baseline first.** Everything in §§4–14 was unfalsified rather
    than validated until §16 compared it against a list and a nearest-neighbour.
    It lost. The claim had to be rewritten, not the experiment (§16 E0).
+5. **One object is not evidence.** In §16 E1 the cube was the single object
+   whose identification improved under mirroring, and it looked like a clean
+   confirmation of the published account. Adding four more symmetric objects
+   flipped it from +0.13 to −0.06. It had been an artefact of which distractors
+   happened to be in the set.
 
 ## The one idea underneath the front end
 
@@ -656,6 +668,7 @@ python experiments/test_object_map.py                  # 38 checks
 python experiments/run_view_localisation.py --plot     # §4 and §5, ~8 s
 python experiments/run_object_map.py --plot            # §1, the full map
 python experiments/run_nn_baseline.py                  # §16 E0, ~6 min
+python experiments/run_mirror_stage.py --symmetric-set # §16 E1, ~9 min
 ```
 
 Swap the front end with `--encoder dinov2` (needs torch + transformers +
@@ -1019,6 +1032,11 @@ property of the data, not the architecture.
 **§13's cube result is therefore not a defect we failed to engineer away. It is
 what the primate visual system also does, for the same reason.**
 
+That much survives testing. What does **not** survive is the next step —
+building the stage deliberately. §16 E1 does exactly that and finds it makes
+identification worse, equally for symmetric and chiral objects. Emergent in a
+trained network is not the same as useful in a designed one.
+
 ### Where the biology does *not* back us
 
 | our choice | status |
@@ -1039,13 +1057,15 @@ like from here*, in one algebra. No single cell type does both.
 
 ## 16. What to run next, and what E0 found
 
-The §15 literature review reorders the queue. Ranked, with E0 already run
-because it is the one that could invalidate the premise:
+The §15 literature review reorders the queue. E0 and E1 have been run; E0
+because it could invalidate the premise, E1 because it was the only one making
+a prediction that could fail. Both came back against us, which is the point of
+having run them.
 
 | | experiment | what it decides | status |
 |---|---|---|---|
-| **E0** | list-of-views baseline | is the object file a better estimator, or only a smaller one? | **done — see below. It is only smaller** |
-| **E1** | mirror-symmetric intermediate (Freiwald & Tsao) | does deliberate aliasing *improve* identification, as it does in AL? | spec below |
+| **E0** | list-of-views baseline | is the object file a better estimator, or only a smaller one? | **done — it is only smaller** |
+| **E1** | mirror-symmetric intermediate (Freiwald & Tsao) | does deliberate aliasing *improve* identification, as it does in AL? | **done — refuted. It makes identification worse, in both symmetry regimes** |
 | **E2** | residue view code (Kymn 2024) | can a modular code hold K views at a fraction of the dimension? | spec below — **promoted by E0** |
 | **E3** | object-vector-cell scene map (Høydal) | should the scene half be allocentric or egocentric-vector? | spec below |
 | **E4** | the K curve (Logothetis / Poggio–Edelman) | where is the knee, and does it match IT view tuning? | spec below |
@@ -1122,17 +1142,28 @@ Identification degrades the same way: 0.97 for the list against 0.55–0.64 for
 the object file.
 
 Hierarchical bootstrap over objects → arcs → seeds (2000 draws, 3 seeds,
-6 arcs), paired difference `vsa − nearest`:
+6 arcs), difference of medians `vsa − nearest`:
 
-| K | median diff | 95% CI |
+| K | diff of medians | 95% CI |
 |---|---|---|
-| 6 | +0.5° | [−1.0, +2.5] |
-| 12 | +8.5° | [+1.2, +12.0] |
-| 24 | +10.0° | [+4.0, +13.0] |
-| 36 | +10.5° | [+5.0, +14.0] |
+| 6 | +3.0° | [−3.5, +17.5] |
+| 12 | **+15.5°** | **[+6.0, +64.5]** |
+| 24 | +14.0° | [+0.0, +63.0] |
+| 36 | +15.5° | [−6.0, +64.5] |
 
-At K=6 it is a tie. From K=12 up, the interval excludes zero and the object
-file is worse. No frame was treated as a sample anywhere in that.
+At K=6 it is a tie. At K=12 the interval excludes zero and the object file is
+worse. No frame was treated as a sample anywhere in that.
+
+**A note on the statistic.** These are `median(vsa) − median(nearest)` on each
+resample, not `median(vsa − nearest)`. The first version of this table used the
+latter and reported +8.5° [+1.2, +12.0] at K=12 — a different quantity, and one
+that does not match the +15.5° the [A] table implies. The median of a per-crop
+difference is pinned near zero whenever two decoders agree on most crops, which
+is exactly what happens when they share a stage; §16 E1's end-to-end contrast
+degenerated to a hard `+0.000 [+0.000, +0.000]` before the fix. The intervals
+here are correspondingly wider, because a difference of medians carries more
+variance than a median of differences. The conclusion does not change; the
+number quoted for it does.
 
 ### [D] Dimension sweep — where the real answer is
 
@@ -1204,39 +1235,162 @@ curve and the direction of every comparison are structural.*
 
 ---
 
-### E1 — mirror-symmetric intermediate
+### E1 — mirror-symmetric intermediate: **refuted**
 
-The most interesting experiment in the queue, because the biology makes a
-prediction we have not tested. Freiwald & Tsao's ML → **AL** → AM hierarchy
-(§15) puts a *mirror-symmetric* stage between view-specific and view-invariant:
-AL neurons genuinely cannot tell a left profile from a right one. That is
-aliasing, in a brain, as a designed stage.
+**The prediction failed, and so did the rescue.** Bundling each view with its
+mirror image does not improve identification — it makes it **worse**, by
+−0.148 [−0.261, −0.058] at `d=2401`, and the interval excludes zero at two of
+three dimensions. The falsifier stated in the spec fired. This subsection keeps
+the failed conjecture on the page.
 
-Build a second object file in which each view is deliberately bundled with its
-reflection:
+Run it: `python experiments/run_mirror_stage.py --symmetric-set`.
+
+#### What was built
+
+Freiwald & Tsao's hierarchy (§15 leg 4) is ML/MF → **AL** → AM: view-specific,
+then mirror-symmetric, then view-invariant. Each stage is one line here:
 
 ```
-book_AL = (1/K) Σ_k c(z_k) ⊗ [ S_view(φ_k) + S_view(−φ_k) ]
+book_ML = (1/K) Σ_k  c(z_k) ⊗ S_view(φ_k)                        view-specific
+book_AL = (1/K) Σ_k  c(z_k) ⊗ [S_view(φ_k) + S_view(2μ − φ_k)]   mirror-symmetric
+book_AM = (1/K) Σ_k  c(z_k)                                      view-invariant
 ```
 
-That is an AL-stage code by construction, in one line of algebra.
+`μ` is the mirror axis; reflecting about it sends φ → 2μ − φ. AM is the honest
+end of the sequence — bundle the appearance, bind no angle at all. The measured
+prediction was: identification improves along ML → AL → AM, pose degrades along
+it, and AL degrades *specifically*, keeping distance from the mirror axis and
+losing only the sign.
 
-**Predicts:** identification accuracy goes **up**, pose error goes **up**, and
-the two files used in sequence — AL to pick the object, then the view-specific
-file to pick the side — beat either alone. **Falsified if** identification does
-not improve, in which case mirror symmetry is only lost information and
-Farzmahdi's CNN result does not transfer to a bundled code.
+Ten objects (the six-object set plus four built symmetric on purpose — see
+below), K=12, 30° blocked arcs, three seeds.
 
-E0 sharpens the prediction: identification at `d=151` is currently 0.55–0.64
-against the list's 0.97, so there is a great deal of room for an identification
-stage to help, and identification is the axis on which the object file is
-losing worst.
+#### The mechanism works. It just doesn't help.
 
-Cheap — no new front end, no new data, and the pairing halves the number of
-distinct angles the bundle has to hold, which by E0's capacity curve should
-*also* buy dimension. `experiments/run_mirror_stage.py`.
+| d | stage | ID hit | pose err | unsigned err | sign acc |
+|---|---|---|---|---|---|
+| 151 | ML | 0.44 | 35.0° | 24.5° | 0.61 |
+| 151 | AL | 0.36 | 73.8° | 24.0° | **0.50** |
+| 151 | **AM** | **0.89** | — | — | — |
+| 601 | ML | 0.84 | 16.5° | 15.0° | 0.67 |
+| 601 | AL | 0.67 | 62.0° | 17.5° | **0.51** |
+| 601 | **AM** | **0.90** | — | — | — |
+| 2401 | ML | **0.94** | 14.5° | 14.0° | 0.69 |
+| 2401 | AL | 0.79 | 64.2° | 15.0° | **0.50** |
+| 2401 | AM | 0.91 | — | — | — |
 
----
+*Unsigned err* is the error in |φ − μ|, the distance from the mirror axis.
+*Sign acc* is how often the estimate lands on the correct side of it.
+
+**Read the last two columns first: the AL code is correct.** Signed pose
+collapses (14.5° → 64.2°) while unsigned pose barely moves (14.0° → 15.0°), and
+sign accuracy sits at exactly 0.50. That is a mirror-symmetric representation
+doing precisely what one is supposed to do — it keeps how far round you are and
+throws away which way. The axis sweep confirms it is mirroring and not an
+artefact of where the turntable starts: AL identification is 0.79–0.81 for
+mirror axes at 0°, 30°, 60° and 90°, while ML sits flat at 0.94 as the control.
+
+So this is not an implementation failure. The stage is real and it costs
+identification anyway.
+
+#### The rescue hypothesis, and why it also fails
+
+The first run used the six-object set, where the cube was the *only* object
+whose identification improved under mirroring (+0.13). That looked like
+Farzmahdi et al.'s actual claim — mirror tuning emerges from training on
+**symmetric** categories, and faces are near-symmetric, so left/right there is
+nuisance variation rather than signal. Most objects on this turntable are
+chiral, where left/right *is* the signal. On that reading AL was being tested
+outside the regime it was proposed for.
+
+Testing it needs more than one symmetric object, so `turntable_dataset.py`
+gained an opt-in set of four built symmetric by construction — `bar` (2-fold),
+`cross` (4-fold), `drum` (16-fold), `tripod` (3-fold), flat-painted so the
+rasteriser's `abs(n·light)` shading preserves the geometry's symmetry. It is
+off by default and no previously published figure moves.
+
+Objects are then sorted by their **measured** §13 alias peak, not by intent:
+
+| object | alias peak | at lag | group | ML ID | AL ID | AL − ML |
+|---|---|---|---|---|---|---|
+| chair | 0.527 | 20° | chiral | 0.99 | 1.00 | +0.01 |
+| mug | 0.680 | 20° | chiral | 1.00 | 0.89 | −0.11 |
+| cube | 0.924 | 90° | **symmetric** | 0.83 | 0.78 | −0.06 |
+| L_block | 0.521 | 20° | chiral | 0.93 | 0.66 | −0.27 |
+| pot | 0.673 | 20° | chiral | 0.97 | 0.98 | +0.01 |
+| console | 0.363 | 20° | chiral | 0.98 | 0.79 | −0.19 |
+| bar | **1.000** | 180° | **symmetric** | 1.00 | 0.67 | −0.33 |
+| cross | 0.997 | 180° | **symmetric** | 0.93 | 0.77 | −0.16 |
+| drum | **1.000** | 180° | **symmetric** | 0.83 | 0.78 | −0.06 |
+| tripod | 0.565 | 120° | chiral | 0.95 | 0.63 | −0.32 |
+
+| group | AL − ML identification | 95% CI |
+|---|---|---|
+| symmetric (4 objects) | **−0.150** | [−0.306, −0.021] |
+| chiral (6 objects) | **−0.147** | [−0.315, −0.028] |
+
+**Identical, and both negative.** Mirroring does not hurt chiral objects and
+help symmetric ones; it hurts both, by the same amount. The regime argument is
+dead.
+
+Note also that the cube's +0.13 in the six-object set became **−0.06** once
+four more objects were added. It was never evidence — it was a small-set
+artefact of which distractors happened to be present. The single datum that
+looked like a confirmation did not survive more data, which is the whole reason
+for the alias-peak stratification rather than eyeballing one object.
+
+#### What did earn its place: AM, and not where expected
+
+| d | pipeline | ID hit | end-to-end pose |
+|---|---|---|---|
+| 151 | ML→ML | 0.44 | 90.0° |
+| 151 | AL→ML | 0.36 | 90.0° |
+| 151 | **AM→ML** | **0.89** | **64.8°** |
+| 601 | ML→ML | 0.84 | 19.5° |
+| 601 | **AM→ML** | **0.90** | 20.0° |
+| 2401 | ML→ML | **0.94** | **15.0°** |
+| 2401 | AM→ML | 0.91 | 16.8° |
+
+*(a wrong object scores 90°, so this is the number a robot lives with, not a
+pose figure conditioned on already knowing what it is looking at)*
+
+**AM identifies at 0.89–0.91 and does not care about dimension.** It has no
+binding in it, so it has no capacity pressure — the §16 E0 constraint simply
+does not apply. ML needs `d=2401` to catch it up. At `d=151`, where §§4–13 were
+measured, using an unbound prototype to name the object and the view book only
+to read the side takes identification from **0.44 to 0.89** and end-to-end pose
+from 90° (chance) to 64.8°, for one extra `d`-vector per object.
+
+That is the actionable finding, and it is not the one the biology predicted:
+**two vectors per object, not three stages.** An unbound appearance prototype
+for *what*, a view-bound book for *which way*. The middle stage is the one to
+drop.
+
+#### Where this leaves the biology
+
+§15 said §13's cube "is what the primate visual system also does". That claim
+survives — AL neurons are genuinely mirror-symmetric and the cube is genuinely
+aliased. What does **not** survive is the inference that building the stage
+deliberately should help. Two readings remain open and this experiment cannot
+separate them:
+
+1. Mirror symmetry in AL is a *consequence* of the training distribution, as
+   Farzmahdi et al. argue, not a computation worth reproducing. Emergent is not
+   the same as useful.
+2. It pays off for a task this one does not test — faces, or many instances
+   within a category, where left/right genuinely is nuisance. Our objects are
+   ten distinct instances, so identification is a between-category problem.
+
+Reading 2 is the honest caveat, but note the symmetric group above is the
+closest this dataset comes to it and AL lost there too. Anyone wanting to
+revive it should test within-category discrimination, not add more symmetric
+instances.
+
+*Provenance: measured — rendered turntable (ten objects with `--symmetric-set`,
+six without), HOG front end, 3 seeds, 30° blocked arcs, hierarchical bootstrap
+over objects → arcs → seeds with the object level restricted to each group. The
+degrees and hit rates are HOG numbers. The sign-accuracy result, the axis
+independence, and the direction of the identification effect are structural.*
 
 ### E2 — residue view code
 
@@ -1250,6 +1404,10 @@ addresses.
 Replace the single integer-harmonic band with residues modulo co-prime
 *m₁, m₂, m₃* over φ, following Kymn et al. (§15), whose modules map to grid
 modules in the entorhinal analogy.
+
+E1 raises the stakes here too: it was the other candidate fix for
+identification, and it failed. Capacity is now the only lever left on the table
+for the object file's weakest axis.
 
 **Report it as a capacity experiment, with resolution held fixed** — error at
 equal *floats*, against E0's `d`-sweep as the baseline curve. The question is
@@ -1299,12 +1457,18 @@ Rerun it at `d = 2401` so the knee being measured is the coverage knee.
 
 ### The order
 
-**E1, E2, E4, E3.** E1 because it is the only one with a novel prediction and
-it attacks identification, which E0 shows is where the object file is weakest.
-E2 second because E0 promoted it from speculation to the direct attack on the
-first-order constraint. E3 last only because it is the largest build, not
-because it matters least.
+**E2, E4, E3**, with E0 and E1 done. E2 first because E0 promoted it from
+speculation to the direct attack on the first-order constraint, and because E1
+just removed the other candidate fix for identification. E3 last only because it
+is the largest build, not because it matters least.
 
-*Provenance: E0 measured (see its own note). E1–E4 are specifications — nothing
-in them is a result, and none of their predicted outcomes may be quoted as
-findings.*
+E1 also adds a free item ahead of all of them, because it costs one line:
+**give every object an unbound appearance prototype alongside its view book**,
+and route identification through the prototype. At `d=151` that is 0.44 → 0.89
+identification for one extra vector per object. Nothing in §§1–14 does this;
+the scene map currently identifies by the view book, which E0 showed is the
+capacity-bound path.
+
+*Provenance: E0 and E1 measured (see their own notes). E2–E4 are
+specifications — nothing in them is a result, and none of their predicted
+outcomes may be quoted as findings.*

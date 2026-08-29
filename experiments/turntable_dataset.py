@@ -131,6 +131,57 @@ def make_objects():
     return o
 
 
+def uniform(part, colour):
+    """Repaint a primitive a single flat colour.
+
+    The primitives shade their faces by index, which quietly destroys
+    rotational symmetry: opposite faces of a ``box`` get 1.0 and 0.55, so even
+    a perfectly square bar looks different from the front and the back.  The
+    rasteriser shades by ``abs(n . light)``, which *is* symmetric under a
+    half-turn, so a flat-painted mesh inherits the symmetry of its geometry.
+    Use this for anything whose symmetry is meant to be the point.
+    """
+    tris, _ = part
+    return tris, [np.asarray(colour, float)] * len(tris)
+
+
+def make_symmetric_objects():
+    """An opt-in set whose members are symmetric *by construction*.
+
+    sec.16 E1 needs several near-symmetric instances, not one: Farzmahdi et
+    al. show mirror-symmetric tuning emerges from training on **symmetric**
+    categories, so testing whether a mirror stage helps needs a group of them
+    to stratify on.  ``make_objects`` has exactly one (``cube``), which is not
+    enough to resample over.
+
+    Kept separate and off by default so every figure already published against
+    the six-object set stays reproducible byte for byte.  Symmetry is still
+    *measured* downstream from the alias peak rather than taken on trust here
+    -- lighting and perspective mean the orders below are nominal.
+    """
+    o = {}
+    grey = (0.62, 0.62, 0.66)
+
+    o["bar"] = uniform(box(0, 0, 0, 0.90, 0.22, 0.22, grey), grey)   # 2-fold
+
+    t, c = [], []
+    for part in (uniform(box(0, 0, 0, 0.90, 0.20, 0.20, grey), grey),
+                 uniform(box(0, 0, 0, 0.20, 0.90, 0.20, grey), grey)):
+        t += part[0]; c += part[1]
+    o["cross"] = (t, c)                                              # 4-fold
+
+    o["drum"] = uniform(cylinder(0, 0, 0, 0.36, 0.55, grey, n=16), grey)
+
+    t, c = [], []
+    for k in range(3):                                               # 3-fold
+        a = 2 * np.pi * k / 3
+        t2, c2 = uniform(box(0.30 * np.cos(a), 0.30 * np.sin(a), 0,
+                             0.18, 0.18, 0.70, grey), grey)
+        t += t2; c += c2
+    o["tripod"] = (t, c)
+    return o
+
+
 # ---------------------------------------------------------------------------
 # Rasteriser: perspective camera on a circle, z-buffered triangles
 # ---------------------------------------------------------------------------
@@ -183,9 +234,18 @@ def render(tris, cols, azimuth, elevation=0.35, dist=2.3, res=96, f=1.6):
     return np.clip(img, 0, 1)
 
 
-def load_turntable(n_views=72, res=96, elevation=0.35, seed=0):
-    """Returns images (N*V, res, res, 3), object index, azimuth in radians."""
+def load_turntable(n_views=72, res=96, elevation=0.35, seed=0, extra=None):
+    """Returns images (N*V, res, res, 3), object index, azimuth in radians.
+
+    ``extra="symmetric"`` appends :func:`make_symmetric_objects`.  Off by
+    default: everything already reported was measured on the six-object set
+    and must stay reproducible.
+    """
     objs = make_objects()
+    if extra == "symmetric":
+        objs.update(make_symmetric_objects())
+    elif extra is not None:
+        raise ValueError(f"unknown extra set {extra!r}")
     names = list(objs)
     imgs, oidx, az = [], [], []
     angles = np.linspace(-np.pi, np.pi, n_views, endpoint=False)
