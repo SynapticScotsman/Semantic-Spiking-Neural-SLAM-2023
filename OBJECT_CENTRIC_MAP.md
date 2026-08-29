@@ -29,6 +29,10 @@ python experiments/run_object_map.py --plot --save-dir data/objectmap
 
 ## Two memories, not one blob
 
+Keep two things separate: a **list of what is where**, and, per object, **what
+it looks like from each side**. Merging them into one vector breaks both — the
+measurement is below.
+
 **Scene map** — which instances exist and where:
 
 ```
@@ -55,10 +59,13 @@ two poses.
 
 ### Why the two memories are not merged
 
-The compact single-phasor form `M_obj = ID ⊗ S_allo ⊗ V` does not work, and
-the failure is not marginal. Unbinding `ID` then leaves `S_allo ⊗ V`, and `V`
-is a bundle of random-looking terms, so binding it in scatters the spatial
-peak:
+The tempting move is one vector per object, `ID ⊗ S_allo ⊗ V`. It fails badly.
+
+Plainly: asking "where is it?" is supposed to leave you holding the position
+code. With everything stapled together you are left holding *position stapled
+to the view book*, and the view book looks like noise, so the position smears
+out. Same in reverse — asking "what does this side look like?" leaves you
+holding *appearance stapled to position*, which is not appearance.
 
 ```
 [8] Two memories vs one fully-bound blob
@@ -66,14 +73,13 @@ peak:
     mean                  0.030 m         7.130 m       (in a 14 x 14 m room)
 ```
 
-It breaks the other direction too: unbinding `ID ⊗ S_view(φ)` from that blob
-leaves `S_allo ⊗ c`, not `c`. (In the demo `table_a` sits exactly at the
-origin, where `S_allo` *is* the binding identity — so binding it in is a
-no-op and that one object's view read-out survives. That is the mechanism
-showing through, not an exception to it.)
+One object in the demo bucks this: `table_a` sits exactly at the origin, where
+the position code happens to be the do-nothing element, so stapling it in
+changes nothing and that object reads out fine. That is the mechanism showing
+through, not an exception to it.
 
-If you want one vector per object, superpose the roles instead of binding
-them — `ObjectCentricMap.object_vector(oid, mode='bundle')` gives
+If you do want one vector per object, **stack the two roles instead of
+stapling them** — `ObjectCentricMap.object_vector(oid, mode='bundle')` gives
 `ID ⊗ unit(S_allo + V)`, which keeps both read-outs at the cost of extra
 cross-talk. `mode='bind'` reproduces the fully-bound form so the difference
 stays measurable rather than asserted.
@@ -82,9 +88,12 @@ stays measurable rather than asserted.
 
 ## The view circle
 
-An ordinary SSP uses real-valued phases, so `S(x)` never repeats — right for
-a room, wrong for an orbit. Restricting the phase matrix to **integer
-harmonics** makes the code exactly periodic:
+A normal SSP encodes a line: walk far enough and you are somewhere new. An
+orbit is not a line — walk far enough and you are back where you started. If
+the code does not know that, 359° and 1° are strangers.
+
+The fix is one line of arithmetic: **use whole-number frequencies**. Then the
+code repeats exactly every 360°, and "rotate by Δ" becomes a single multiply.
 
 ```
 S(φ) = ifft( exp(i·k·φ) ),  k integer
@@ -103,14 +112,19 @@ identity to machine precision. From the test output:
        cos to target +0.424 vs another side -0.019
 ```
 
-`max_harmonic` sets the angular resolution — how wide an arc one stored view
-generalises over — the way a length scale sets spatial resolution:
+`max_harmonic` is the sharpness knob: how wide an arc one stored snapshot
+covers. Same role a length scale plays for space.
 
 | `max_harmonic` | lobe half-width | worst sidelobe |
 |---|---|---|
 | 6 | 21° | −0.16 |
 | 8 | 16° | −0.13 |
 | 12 | 11° | −0.10 |
+
+**Sharper is not better.** Measured at a 30° gap between stored views:
+25.6° error with a broad kernel, 33.0° with a sharp one. A sharp code has short
+reach and falls into the gaps between what you stored. Match the kernel to your
+stored-view spacing (`FINDINGS.md` §14).
 
 The kernel cannot be made non-negative: one dimension out of `ssp_dim`
 carries DC, so the kernel averages to `1/ssp_dim` over the circle while
@@ -143,14 +157,14 @@ for det in detections:                            # per YOLO/DINOv2 crop
     )
 ```
 
-`observe` does the whole write path: crop → `c`; mint `ID` if this is a new
-instance; derive `φ` from the two poses; merge the view into the book.
+One call does everything: fingerprint the crop, invent a name if this is a
+thing you have not seen before, work out which side of it you are on, and file
+the snapshot under that angle.
 
-**`K` stays small by construction.** A new view within `merge_tol` of a
-stored one merges into it (circular mean of the angle, running mean of the
-key) instead of appending. Every frame of a walk past a chair is nearly the
-same view, and bundling near-duplicates costs capacity without adding
-information:
+**Near-duplicate snapshots get merged, not appended.** Fifty frames walking
+past a chair are fifty near-identical pictures; storing all of them costs
+capacity and adds nothing. Anything within `merge_tol` of a stored angle folds
+into it instead.
 
 ```
 [PASS] merging keeps K far below the detection count:
@@ -163,6 +177,10 @@ mean.
 ---
 
 ## Reading it
+
+Every question is answered by division. You know part of what went in, so you
+divide it out, and whatever is left is the answer — then you match that against
+the things you know about.
 
 | question | call | operation |
 |---|---|---|
@@ -189,9 +207,31 @@ From the demo (8 objects, 2600 detections, 151-D, 15% of detections held out):
 [7] orbit              correct side ranked first for 9/9 orbits
 ```
 
+### Frame by frame it jumps; over time it settles
+
+Asked afresh each frame, the answer hops around by 50° or more — which a camera
+walking round a chair obviously cannot do. Feeding the answer through a filter
+that remembers where you just were fixes it, and both halves of that filter are
+operations this code already has: *predict* is one bind by `S_view(Δ)`, exactly
+what `orbit()` does, and *update* is a multiply by the new likelihood.
+
+| read-out | typical error | impossible jumps |
+|---|---|---|
+| per frame, no memory | 17.0° | 89 / 426 |
+| + filter | 6.0° | 25 / 426 |
+| + one known starting angle | **4.0°** | 11 / 426 |
+
+The last row is what fixes symmetric objects. Tracking alone cannot choose
+between a cube's four identical sides, but it turns *four answers every frame*
+into *one choice for the whole trip* — so one known starting angle settles it
+permanently. `experiments/run_view_tracking.py`, written up in `FINDINGS.md` §12.
+
+---
+
 ### Two angles, not one
 
-These are different quantities and mixing them silently corrupts the book:
+There are two angles in play and they are easy to confuse. Get them the wrong
+way round and the object file quietly fills with nonsense.
 
 - **`view_azimuth(obj, robot, obj_yaw)`** — measured *at the object*, from
   its own front, towards the robot. *Which side am I looking at?* This is
@@ -209,10 +249,13 @@ you happen to be facing.
 
 ## What not to do
 
-**Do not FPE the embedding** (`exp(i·W·z)`). FPE builds a similarity
-manifold; that is right for space and viewpoint and wrong for appearance,
-because "similar embedding" means "looks alike", which merges two different
-chairs rather than two sides of one chair. Measured on look-alike crops:
+Each of these was tried and measured, not guessed at.
+
+**Do not FPE the embedding** (`exp(i·W·z)`). FPE makes similar inputs get
+similar codes. That is what you want for space and for angle. It is exactly
+what you do *not* want for appearance: "similar-looking" then means "same
+thing", so two different chairs merge into one instead of two sides of one
+chair staying apart. Measured on look-alike crops:
 
 ```
 [5] keys of look-alike crops stay near-orthogonal:  mean off-diagonal cos -0.025
@@ -230,19 +273,20 @@ FPE of embedding              +0.414                        +0.335
 A good key keeps both low — different sides are different entries, different
 objects are different keys. FPE raises both.
 
-**Do not whiten the appearance keys.** Centring (or z-scoring) removes the
-shared mean direction that makes every crop look alike, and is worth doing.
-Whitening keeps going and amplifies the low-variance directions where the
-embedding is mostly noise. `AppearanceCodec` accepts `'center'`, `'zscore'`
+**Do not whiten the appearance keys.** Subtracting the average crop is worth
+doing — it removes the sameness that every crop shares. Whitening does not stop
+there: it also blows up the directions where the embedding is mostly noise, and
+the answer goes with it (11° → 86°, against 90° for guessing). `AppearanceCodec` accepts `'center'`, `'zscore'`
 or `'none'` and raises on anything else.
 
-**Do not bind heading to a viewpoint-invariant place descriptor.** A
-descriptor built to be the same from every angle carries no angle to bind to;
-the product is heading times a constant.
+**Do not bind heading to a viewpoint-invariant place descriptor.** If a
+descriptor is deliberately built to look the same from every angle, there is no
+angle left in it to bind to. You get heading times a constant.
 
 **Do not use a snapshot map `c_i ⊗ S_ego` as a substitute for object files.**
-That is a map of places you stood, and it dies the moment the object moves.
-The object file does not:
+That records *where you were standing*, not what the object looks like. Move the
+chair and it is worthless. An object file survives, because only the chair's
+position changed and not its sides:
 
 ```
 [10] moved chair_a to [-0.5 0.5]: decoded [-0.5 0.5], err 0.000 m
@@ -251,28 +295,35 @@ The object file does not:
 
 Only `S_allo` was rewritten.
 
-**Do not use the crop as the name.** `ID` is a random atom precisely so that
-identity survives a new side, new lighting, or a partial occlusion.
+**Do not use the crop as the name.** A name has to survive seeing the thing
+from behind, in different light, half hidden. A picture of it does not. That is
+why `ID` is a random atom with no connection to appearance.
 
 ---
 
-## Capacity
+## How much fits
 
-Both memories are bundles of unit vectors, so read-out SNR falls off roughly
-as `1/√(terms)` — capacity is *objects × distinct views*, not pixels. In the
+Everything is piled into a fixed-size vector, so the more you add, the noisier
+each read-out gets — roughly `1/√(number of things piled in)`. What costs you is
+*objects × distinct views*, not image resolution. In the
 demo, 8 objects at 151-D give an unbind peak around 0.34 against a noise
 floor near 0.1; the cross-talk panel of `object_map.png` shows the margin
 directly. Raise `ssp_dim` for more objects; keep `K` small per object by
 leaving `merge_tol` near the view kernel's lobe width.
 
-`ObjectFile.coverage(view_space)` reports the fraction of the view circle
-within the main lobe of some stored view — a "have I walked far enough around
-this thing" number. Prediction quality tracks it: a side never walked past is
-a hole in the file, not something the code invents.
+`ObjectFile.coverage(view_space)` answers "have I walked far enough round this
+thing yet?" — the fraction of the circle within reach of some stored snapshot.
+Accuracy follows it closely, because **a side you never looked at is a hole, not
+something the code can invent**. To localise better than 15° you need snapshots
+no more than ~16° apart, which is about 22 round a full circle.
 
 ---
 
 ## Relation to the rest of the repo
+
+Nothing here is a new kind of memory. It is the split SSP-SLAM already makes —
+smooth codes for *where*, random atoms for *what* — pointed at an object instead
+of a room.
 
 This is the same split Dumont's SSP-SLAM already makes — FPE for space,
 atoms for what. The added piece is the view circle `S_view`, with appearance
