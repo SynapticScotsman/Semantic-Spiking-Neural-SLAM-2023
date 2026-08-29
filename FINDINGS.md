@@ -45,6 +45,7 @@ it in one vector.
 | Reading it is one FFT | You get the *whole* answer — how likely every angle is — not just a best guess. Instant. | §4 |
 | Tracking over time | Frame by frame the answer jumps around; feed it through a filter and it settles. 17° → 6°. | §12 |
 | One known starting angle | Fixes the symmetric objects completely. 83° → 2°. | §12 |
+| The whole scene in one vector | Six objects, twelve views each, 4801 floats, unbind an ID to query it. 72× smaller than the list. | §16 |
 
 ## What doesn't
 
@@ -61,7 +62,15 @@ is the only fix (§12).
 code would help. It doesn't: 25.6° error with a broad code, 33.0° with a sharp
 one. When your stored views are far apart, *reach* beats precision (§14).
 
-## The three rules that cost us the most
+**And the big one: it is not more accurate than just keeping a list.** Store the
+same views in a list, take the nearest — 10.0° against the object file's 25.5°,
+and the list *improves* with more views on file while the object file gets
+worse. What the VSA actually buys is size: the whole map, six objects and every
+view, in **one 4801-float vector** at 13.5°, against 345,672 floats for the
+list. **72× smaller, 3.5° worse.** That is the honest pitch, and it is not the
+one this document was making before §16.
+
+## The four rules that cost us the most
 
 1. **Frames are not samples.** 72 frames round an orbit are worth about **6**
    independent observations. I quoted `n=216, p=7.6e-9` once; the real n was
@@ -72,6 +81,9 @@ one. When your stored views are far apart, *reach* beats precision (§14).
 3. **Don't whiten the features.** It gives perfect-looking statistics and
    destroys the answer — 11° → 86°, against 90° for guessing (§5, and `astm`
    measured it first on real robot data).
+4. **Run the dumb baseline first.** Everything in §§4–14 was unfalsified rather
+   than validated until §16 compared it against a list and a nearest-neighbour.
+   It lost. The claim had to be rewritten, not the experiment (§16 E0).
 
 ## The one idea underneath the front end
 
@@ -643,6 +655,7 @@ pip install numpy scipy matplotlib scikit-image        # nengo not needed
 python experiments/test_object_map.py                  # 38 checks
 python experiments/run_view_localisation.py --plot     # §4 and §5, ~8 s
 python experiments/run_object_map.py --plot            # §1, the full map
+python experiments/run_nn_baseline.py                  # §16 E0, ~6 min
 ```
 
 Swap the front end with `--encoder dinov2` (needs torch + transformers +
@@ -661,6 +674,9 @@ Key entry points:
 ---
 
 ## 11. Open, in rough order of value
+
+**Superseded by §16**, which reorders this list against the literature and
+against E0's result. Kept for the front-end items 1–4, which §16 does not cover.
 
 Items 1–2 are now partly forced by §0: the recipe in §5 is untested against a
 real spectrum, and the split needs redoing before any degree figure is quoted.
@@ -956,6 +972,12 @@ checking it.
 with appearance as values on it*, read out by unbinding to a viewpoint
 likelihood. Every ingredient is published; the combination is not.
 
+**That is a novelty claim, not a superiority claim.** §16 measures the object
+file against the obvious non-VSA alternative — a list of stored views and a
+nearest-neighbour — and it loses on accuracy at the dimension used here. What it
+wins is memory, by a factor of `n_obj × K`. Do not cite the gap as evidence the
+method is better.
+
 ### The neuroscience — four legs
 
 **1. Object vector cells.** [Høydal, Skytøen, Andersson, Moser & Moser, *Nature*
@@ -1011,3 +1033,278 @@ me*, not *which face of it I am seeing*. The view circle is closer to IT view
 tuning than to entorhinal vector coding. **The contribution is the stitch** —
 MEC-style vector coding for *where*, IT-style view tuning for *what it looks
 like from here*, in one algebra. No single cell type does both.
+
+
+---
+
+## 16. What to run next, and what E0 found
+
+The §15 literature review reorders the queue. Ranked, with E0 already run
+because it is the one that could invalidate the premise:
+
+| | experiment | what it decides | status |
+|---|---|---|---|
+| **E0** | list-of-views baseline | is the object file a better estimator, or only a smaller one? | **done — see below. It is only smaller** |
+| **E1** | mirror-symmetric intermediate (Freiwald & Tsao) | does deliberate aliasing *improve* identification, as it does in AL? | spec below |
+| **E2** | residue view code (Kymn 2024) | can a modular code hold K views at a fraction of the dimension? | spec below — **promoted by E0** |
+| **E3** | object-vector-cell scene map (Høydal) | should the scene half be allocentric or egocentric-vector? | spec below |
+| **E4** | the K curve (Logothetis / Poggio–Edelman) | where is the knee, and does it match IT view tuning? | spec below |
+
+**Naming.** These are §16 E0–E4, the *experiments*. §0 E1–E8 are the *errata*.
+The document always writes the prefix; a bare "E4" in this section means the K
+curve, and in §0 means the blocked-split correction.
+
+DINOv2 still gates every absolute degree figure in all five (`huggingface.co`
+blocked — §8). All five compare decoders on one front end, so their *relative*
+conclusions survive the swap; their degrees do not.
+
+---
+
+### E0 — does unbinding actually beat a list of stored views?
+
+**Short answer: at the dimension this repo has been measured at, no — it loses,
+badly.** At `d=151` with `K=12` views on file, nearest-neighbour over the same
+conditioned keys gets **10.0°** median in-gap error and the object file gets
+**25.5°**. The whole-scene vector gets 76.8°. §15 claimed a gap in the
+literature; this section is the reason that claim has to be stated as *nobody
+has done it* rather than *it is better*.
+
+**Longer answer: the loss is a capacity limit, not a dead end.** The gap closes
+with dimension, and what the object file actually buys is memory, not accuracy.
+At `d=4801` the entire map — six objects, twelve views each — sits in **one
+4801-float vector** and decodes to 13.5°, against 345,672 floats for the list at
+10.0°. That is **72× less memory for 3.5° more error**, and there is no
+list-based method with an analogue at that budget.
+
+Run it: `python experiments/run_nn_baseline.py`.
+
+### Why this experiment exists
+
+Neubert & Schubert (§15) do viewpoint-*invariant* recognition by bundling
+descriptors, with no unbinding anywhere. Nothing in §§4–14 had ever been
+compared against the obvious non-VSA thing: keep the K conditioned descriptors
+in a list, take the nearest. Every claim in this document was unfalsified rather
+than validated.
+
+Four decoders, identical inputs — same crops, same conditioning (`drop=2`), same
+30° blocked arcs, same K views on file:
+
+| decoder | what it does | can it interpolate? |
+|---|---|---|
+| `nearest` | cosine to each stored key, report that key's angle | no — it quantises to the store |
+| `kernel` | circular mean of stored angles, softmax-weighted by cosine, temperature fitted leave-one-out **on the store** | yes |
+| `vsa` | §4's one-FFT likelihood over the object file | yes |
+| `vsa-scene` | all six object files superposed into ONE vector via `bind(ID_o, book_o)`, unbound at query time | yes |
+
+### [A] Equal store, `d=151` — the repo's own configuration
+
+| K | decoder | median err | <15° | ID hit | map floats |
+|---|---|---|---|---|---|
+| 6 | nearest | 20.0° | 0.37 | 0.89 | 5,436 |
+| 6 | kernel | 17.2° | 0.44 | 0.89 | 5,436 |
+| 6 | vsa | 23.0° | 0.36 | 0.63 | 906 |
+| 12 | **nearest** | **10.0°** | 0.63 | 0.97 | 10,872 |
+| 12 | kernel | 10.0° | 0.65 | 0.97 | 10,872 |
+| 12 | **vsa** | **25.5°** | 0.29 | 0.55 | 906 |
+| 24 | nearest | 15.0° | 0.60 | 0.98 | 21,744 |
+| 24 | vsa | 29.0° | 0.16 | 0.64 | 906 |
+| 36 | nearest | 15.0° | 0.58 | 0.98 | 32,616 |
+| 36 | vsa | 30.5° | 0.12 | 0.63 | 906 |
+
+Read the two columns against each other and the mechanism is obvious: **the
+list gets better with more stored views and the object file gets worse.**
+23.0 → 25.5 → 29.0 → 30.5 as K goes 6 → 36. That is not a property of
+unbinding, it is bundle capacity — K appearance keys, mutually correlated by
+the §14 identity pedestal, superposed into one 151-D vector. Adding a view adds
+more crosstalk than signal.
+
+Identification degrades the same way: 0.97 for the list against 0.55–0.64 for
+the object file.
+
+Hierarchical bootstrap over objects → arcs → seeds (2000 draws, 3 seeds,
+6 arcs), paired difference `vsa − nearest`:
+
+| K | median diff | 95% CI |
+|---|---|---|
+| 6 | +0.5° | [−1.0, +2.5] |
+| 12 | +8.5° | [+1.2, +12.0] |
+| 24 | +10.0° | [+4.0, +13.0] |
+| 36 | +10.5° | [+5.0, +14.0] |
+
+At K=6 it is a tie. From K=12 up, the interval excludes zero and the object
+file is worse. No frame was treated as a sample anywhere in that.
+
+### [D] Dimension sweep — where the real answer is
+
+`d=151` is where §§4–13 were measured, and it is also where the bundle runs out
+of room. Sweeping it, at K=12:
+
+| d | k_max | per-object | scene vector | list floats | scene floats |
+|---|---|---|---|---|---|
+| 151 | 16 | 25.5° | 67.0° | 10,872 | 151 |
+| 301 | 16 | 15.0° | 47.0° | 21,672 | 301 |
+| 601 | 16 | 13.5° | 38.0° | 43,272 | 601 |
+| 1201 | 16 | 13.0° | 19.5° | 86,472 | 1,201 |
+| 2401 | 16 | 11.0° | 15.5° | 172,872 | 2,401 |
+| 4801 | 16 | **10.5°** | **13.5°** | 345,672 | **4,801** |
+
+Three things fall out.
+
+1. **The object file needs ~16× the dimension to match the list on accuracy.**
+   10.5° at `d=4801` against the list's 10.0°. It never clearly wins on error.
+2. **It wins on memory by a factor of K, and the scene vector by a factor of
+   `n_obj × K`.** The list must keep `n_obj × K × d` floats; the whole-scene
+   vector is `d`. At the matched-accuracy point that is 345,672 against 4,801.
+3. **The scene vector needs `d ≳ 1200` to work at all.** Below that, six
+   objects × twelve views do not fit and it returns near-chance. This is the
+   capacity curve for superposing a whole map, measured rather than assumed.
+
+`k_max=16` beats `k_max=8` at every dimension above 151 — the 16° lobe of the
+default is coarser than the 18° descriptor half-width of §13 suggested was
+needed, and sharpening it is free once there is dimension to spend.
+
+### [C] Per object, K=12, d=151
+
+| object | nearest | kernel | vsa | vsa-scene |
+|---|---|---|---|---|
+| chair | 10.0° | 10.0° | 22.2° | 76.5° |
+| mug | 10.0° | 10.0° | 22.7° | 52.0° |
+| **cube** | **90.0°** | **90.0°** | **90.0°** | **89.8°** |
+| L_block | 10.0° | 10.0° | 23.8° | 71.0° |
+| pot | 10.0° | 10.0° | 26.3° | 86.7° |
+| console | 10.0° | 10.0° | 15.0° | 62.8° |
+
+The cube is at chance for **every** decoder, including the two that have no VSA
+in them. That is the control working: aliasing is a property of the object and
+the descriptor, not of the representation (§13), and any decoder that looked
+good on the cube would be reading something other than pose.
+
+### What this changes
+
+- **§15's gap claim stands as novelty, not as superiority.** The combination is
+  unpublished; it is not yet better. Anywhere this document implies the object
+  file is a better *estimator*, it is wrong — it is a better *store*.
+- **The honest pitch is compression and superposition.** One vector for a whole
+  scene, queried by unbinding an ID, at 72× less memory than the list. That is
+  worth having and has no list-based analogue. Accuracy parity is the price.
+- **`d=151` is too small and every earlier number is affected.** §§4–13 were all
+  measured there. The absolute degrees in those sections are pessimistic for the
+  object file by roughly a factor of two; the *relative* conclusions (which PCs
+  to drop, aliasing, the pedestal law) are unaffected because they are properties
+  of the descriptor, not the code.
+- **Bundle capacity is now the first-order constraint**, which is exactly the
+  problem residue number systems are for (§15, Kymn 2024) — see E2 below. That
+  experiment was ranked last on the assumption that the descriptor was the
+  binding limit. It is not, at K ≥ 12.
+
+*Provenance: measured — rendered turntable, HOG front end, 3 seeds, 30° blocked
+arcs, hierarchical bootstrap over objects → arcs → seeds. The degrees are HOG
+numbers and would move with a different encoder; the K-dependence, the capacity
+curve and the direction of every comparison are structural.*
+
+---
+
+### E1 — mirror-symmetric intermediate
+
+The most interesting experiment in the queue, because the biology makes a
+prediction we have not tested. Freiwald & Tsao's ML → **AL** → AM hierarchy
+(§15) puts a *mirror-symmetric* stage between view-specific and view-invariant:
+AL neurons genuinely cannot tell a left profile from a right one. That is
+aliasing, in a brain, as a designed stage.
+
+Build a second object file in which each view is deliberately bundled with its
+reflection:
+
+```
+book_AL = (1/K) Σ_k c(z_k) ⊗ [ S_view(φ_k) + S_view(−φ_k) ]
+```
+
+That is an AL-stage code by construction, in one line of algebra.
+
+**Predicts:** identification accuracy goes **up**, pose error goes **up**, and
+the two files used in sequence — AL to pick the object, then the view-specific
+file to pick the side — beat either alone. **Falsified if** identification does
+not improve, in which case mirror symmetry is only lost information and
+Farzmahdi's CNN result does not transfer to a bundled code.
+
+E0 sharpens the prediction: identification at `d=151` is currently 0.55–0.64
+against the list's 0.97, so there is a great deal of room for an identification
+stage to help, and identification is the axis on which the object file is
+losing worst.
+
+Cheap — no new front end, no new data, and the pairing halves the number of
+distinct angles the bundle has to hold, which by E0's capacity curve should
+*also* buy dimension. `experiments/run_mirror_stage.py`.
+
+---
+
+### E2 — residue view code
+
+**Promoted from last place by E0.** The ranking before E0 assumed the
+descriptor's 18° half-width (§13) was the binding constraint, so a sharper code
+could not help. E0 shows the actual constraint at K ≥ 12 is bundle capacity: the
+object file's error *rises* with K while the list's falls, and it takes ~16× the
+dimension to reach parity. That is precisely the problem a residue number system
+addresses.
+
+Replace the single integer-harmonic band with residues modulo co-prime
+*m₁, m₂, m₃* over φ, following Kymn et al. (§15), whose modules map to grid
+modules in the entorhinal analogy.
+
+**Report it as a capacity experiment, with resolution held fixed** — error at
+equal *floats*, against E0's `d`-sweep as the baseline curve. The question is
+whether residues reach 13.5° at `d = 1201` in a few hundred, not whether they
+beat HOG. Reporting it as accuracy would be measuring the front end and
+crediting the code.
+
+The honest risk: residue codes are efficient for *unambiguous range*, and a
+circle has no range to extend. The gain has to come from cleaner superposition,
+which is a different mechanism from the one the papers advertise, so a negative
+result here is informative and should be written up either way.
+
+---
+
+### E3 — object-vector-cell scene map
+
+The scene half is the untested half. `ID ⊗ S_allo(p)` is an allocentric position
+code; object vector cells (Høydal, §15) are *egocentric vector to object*, and
+their headline property is generalising **across environments**.
+
+Test exactly that property. Build the map in one room layout, move every object,
+query in the new layout. Allocentric binding should fail; a vector-to-object
+code should transfer. Nothing else in this document separates the two, and the
+parent SSP-SLAM paper already has the machinery.
+
+This is also the experiment that decides §15's honest wrinkle — whether the
+scene half should be OVC-like at all, or whether the view circle is carrying the
+whole idea.
+
+---
+
+### E4 — the K curve
+
+§0 E4 measured that the object file interpolates between stored views and does
+not extrapolate past them. The published claim is stronger: performance against
+the *number* of stored views, with a knee.
+
+Sweep K from 2 to 36 and plot error against angular gap, per object, comparing
+the knee to published IT view-tuning widths. An afternoon, mostly plotting, and
+the cheapest external validation available.
+
+E0 already has half of it — the K column of table [A] — but at fixed `d=151`,
+where the object file's curve is dominated by capacity rather than coverage.
+Rerun it at `d = 2401` so the knee being measured is the coverage knee.
+
+---
+
+### The order
+
+**E1, E2, E4, E3.** E1 because it is the only one with a novel prediction and
+it attacks identification, which E0 shows is where the object file is weakest.
+E2 second because E0 promoted it from speculation to the direct attack on the
+first-order constraint. E3 last only because it is the largest build, not
+because it matters least.
+
+*Provenance: E0 measured (see its own note). E1–E4 are specifications — nothing
+in them is a result, and none of their predicted outcomes may be quoted as
+findings.*
