@@ -928,3 +928,86 @@ than the kernel half-width"); the two together say the two quantities should be
 RMS ≤ 0.016 on the rendered turntable; the decomposition and the corollaries do
 not depend on the dataset. The kernel sweep is synthetic illustration, five
 seeds, one split.*
+
+
+---
+
+## 15. Where this sits in the literature
+
+Searched 2026-08-17. Every reference below is marked **[v]** if the citation was
+checked against a source in that session, or **[m]** if it is from memory and
+still needs verifying before it goes in a paper. Do not cite an **[m]** without
+checking it.
+
+### The VSA lineage
+
+| work | what it gives us |
+|---|---|
+| Plate, *Holographic Reduced Representations*, IEEE TNN 1995 **[m]** | bind and bundle |
+| Kanerva, *Hyperdimensional computing*, Cogn. Comput. 2009 **[m]** | the framing |
+| [Frady, Kleyko, Kymn, Olshausen & Sommer, *Computing on Functions Using Randomized Vector Representations*, arXiv:2109.03429, 2021](https://arxiv.org/abs/2109.03429) **[v]** | **the one that matters most here.** FPE as a unitary representation of an abelian group, and *kernel design as the explicit knob*. Our integer-harmonic circle is a special case of their framework — the compact one they set up but do not pursue for viewpoint |
+| [Dumont & Eliasmith, *Exploiting semantic information in a spiking neural SLAM system*, Front. Neurosci. 2023](https://www.frontiersin.org/journals/neuroscience/articles/10.3389/fnins.2023.1190515/full) **[v]** | the direct parent — this repo. Constrains itself to quantities known in hippocampus: head direction, **object vector cells**, place, grid |
+| [Kymn, Mazelet, Thomas, Kleyko, Frady, Sommer & Olshausen, *Binding in hippocampal-entorhinal circuits enables compositionality in cognitive maps*, NeurIPS 2024, arXiv:2406.18808](https://arxiv.org/abs/2406.18808) **[v]** | current state of the art on the VSA–brain link. Position in a **residue number system**, residues as complex vectors, modular attractor whose modules map to grid modules. Does *space*, not objects |
+| [Renner et al., *Visual odometry with neuromorphic resonator networks*, Nature MI 2024](https://www.nature.com/articles/s42256-024-00846-2) and [*Neuromorphic visual scene understanding with resonator networks*](https://www.nature.com/articles/s42256-024-00848-0) **[v]** | the closest existing "rotation as binding". Log-polar coordinates *so that binding becomes equivariant to rotation and scale* — our trick, one manifold over: image-plane rotation, not object viewpoint |
+| [Neubert & Schubert, *An Introduction to Hyperdimensional Computing for Robotics*, KI 2019](https://link.springer.com/article/10.1007/s13218-019-00623-z); [CVPR 2021 descriptor aggregation](https://openaccess.thecvf.com/content/CVPR2021/papers/Neubert_Hyperdimensional_Computing_as_a_Framework_for_Systematic_Aggregation_of_Image_Descriptors_CVPR_2021_paper.pdf) **[v]** | VSA in robotics. Read carefully: they do viewpoint-**invariant** recognition. They discard viewpoint; we estimate it |
+| [HyperSpace, arXiv:2604.15113, 2026](https://arxiv.org/abs/2604.15113) **[v]** | benchmarks HRR vs FHRR on continuous spatial domains and finds **similarity and cleanup dominate runtime**, not binding. §4's closed form removes exactly that cost — this is the citation for why it is worth having |
+
+**The gap.** Nothing found stores, per object instance, a *periodic view manifold
+with appearance as values on it*, read out by unbinding to a viewpoint
+likelihood. Every ingredient is published; the combination is not.
+
+### The neuroscience — four legs
+
+**1. Object vector cells.** [Høydal, Skytøen, Andersson, Moser & Moser, *Nature*
+568:400, 2019](https://www.nature.com/articles/s41586-019-1077-7) **[v]**. MEC
+neurons firing at a specific **distance and direction from an object**,
+generalising across objects and environments. Nearly `ID ⊗ S_allo` with a vector
+to the object. Best citation for the scene-map half — and already cited by the
+parent SSP-SLAM paper.
+
+**2. Spatial view cells.** [Rolls et al., *Cereb. Cortex* 9(3):197,
+1999](https://academic.oup.com/cercor/article/9/3/197/428888), reviewed in
+[*Hippocampus* 2024](https://onlinelibrary.wiley.com/doi/full/10.1002/hipo.23666)
+**[v]**. Primate hippocampal neurons coding the allocentric location **being
+looked at**, not where the animal is. The information split is stark: **0.47
+bits about spatial view, against 0.017 for eye position, 0.005 for head
+direction, 0.033 for place.** Direct support for §3 — the viewing relation is
+its own quantity, kept separate from self-pose.
+
+**3. View-tuned neurons in IT.** Predicted by Poggio & Edelman, *Nature* 343:263,
+1990 **[m]**; found by Logothetis, Pauls & Poggio in monkeys trained on paperclip
+objects **[m]** (both referenced by [*3D Object Recognition: A Model of
+View-Tuned Neurons*, NIPS
+1997](https://papers.nips.cc/paper/1296-3d-object-recognition-a-model-of-view-tuned-neurons)
+**[v]**). Objects stored as **a set of views**, novel views handled by
+**interpolating across them**. This is the object file, found in 1995 — and our
+measured signature (§0 E4: interpolates between stored views, does not
+extrapolate past them) is the same behaviour.
+
+**4. Mirror-symmetric view tuning — the one that vindicates the cube.**
+Freiwald & Tsao, *Science* 2010 **[m]**, whose ML/MF → AL → AM hierarchy is
+quoted and replicated in [Farzmahdi et al., *eLife* 13:e90256,
+2024](https://elifesciences.org/articles/90256) **[v]**: **view-specific →
+mirror-symmetric → view-invariant.** AL neurons genuinely cannot tell a left
+profile from a right one. That is aliasing, in a brain, as a *designed
+intermediate stage*. Farzmahdi et al. further show the same tuning emerges
+spontaneously in CNNs trained on symmetric object categories — so it is a
+property of the data, not the architecture.
+
+**§13's cube result is therefore not a defect we failed to engineer away. It is
+what the primate visual system also does, for the same reason.**
+
+### Where the biology does *not* back us
+
+| our choice | status |
+|---|---|
+| integer-harmonic circle | **engineering convenience.** Grid modules are multi-scale, not integer-harmonic. Cite Frady for the maths, not biology |
+| one-FFT likelihood (§4) | **no biological claim.** An algorithmic shortcut |
+| Bayes filter on the circle (§12) | **arguably supported** — the head-direction ring attractor with angular-velocity input *is* a circular filter with a velocity-driven predict step |
+| SO(3) composition (§6) | **nothing.** No evidence any brain composes 3-D rotations this way. Leave it alone |
+
+One honest wrinkle: object vector cells encode *where the object is relative to
+me*, not *which face of it I am seeing*. The view circle is closer to IT view
+tuning than to entorhinal vector coding. **The contribution is the stitch** —
+MEC-style vector coding for *where*, IT-style view tuning for *what it looks
+like from here*, in one algebra. No single cell type does both.
