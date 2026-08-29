@@ -47,6 +47,7 @@ it in one vector.
 | One known starting angle | Fixes the symmetric objects completely. 83° → 2°. | §12 |
 | The whole scene in one vector | Six objects, twelve views each, one vector, unbind an ID to query it. 72× smaller than a list, same accuracy. | §16 E0, E2 |
 | Two vectors per object, not one | Name the object with an unbound appearance prototype, read the angle with the view book. Identification 0.44 → 0.89 for one extra vector. | §16 E1 |
+| Twelve sides is the answer | Store a view every 30°. The same number for every object that isn't symmetric, and the cliff past it is sharp. | §16 E4 |
 
 ## What doesn't
 
@@ -680,6 +681,7 @@ python experiments/run_object_map.py --plot            # §1, the full map
 python experiments/run_nn_baseline.py                  # §16 E0, ~6 min
 python experiments/run_mirror_stage.py --symmetric-set # §16 E1, ~9 min
 python experiments/run_residue_code.py                 # §16 E2, ~20 min
+python experiments/run_k_curve.py --symmetric-set      # §16 E4, ~15 min
 ```
 
 Swap the front end with `--encoder dinov2` (needs torch + transformers +
@@ -1079,7 +1081,7 @@ having run them.
 | **E1** | mirror-symmetric intermediate (Freiwald & Tsao) | does deliberate aliasing *improve* identification, as it does in AL? | **done — refuted. It makes identification worse, in both symmetry regimes** |
 | **E2** | residue view code (Kymn 2024) | can a modular code hold K views at a fraction of the dimension? | **done — refuted. But it found the capacity knob E0 missed, and that ties E0's score** |
 | **E3** | object-vector-cell scene map (Høydal) | should the scene half be allocentric or egocentric-vector? | spec below |
-| **E4** | the K curve (Logothetis / Poggio–Edelman) | where is the knee, and does it match IT view tuning? | spec below |
+| **E4** | the K curve (Logothetis / Poggio–Edelman) | where is the knee, and does it match IT view tuning? | **done — knee at K=12, store a side every 30°. The per-object prediction is refuted** |
 
 **Naming.** These are §16 E0–E4, the *experiments*. §0 E1–E8 are the *errata*.
 The document always writes the prefix; a bare "E4" in this section means the K
@@ -1576,25 +1578,109 @@ whole idea.
 
 ---
 
-### E4 — the K curve
+### E4 — the K curve: **the knee is real, the per-object prediction is not**
 
-§0 E4 measured that the object file interpolates between stored views and does
-not extrapolate past them. The published claim is stronger: performance against
-the *number* of stored views, with a knee.
+**Every non-aliased object needs its stored views no more than 30° apart, and
+nothing about the object changes that.** The knee is sharp and identical across
+objects whose §13 descriptor half-widths span 15° to 40°. The prediction that
+§13's cheap diagnostic would say how densely to orbit a given thing is
+**refuted** — and there is a reason it had to be.
 
-Sweep K from 2 to 36 and plot error against angular gap, per object, comparing
-the knee to published IT view-tuning widths. An afternoon, mostly plotting, and
-the cheapest external validation available.
+Run it: `python experiments/run_k_curve.py --symmetric-set`.
 
-E0 already has half of it — the K column of table [A] — but at fixed `d=151`,
-where the object file's curve is dominated by capacity rather than coverage.
-Rerun it at `d = 2401` so the knee being measured is the coverage knee.
+Measured at `max_harmonic=4`, `d=2401`, so §16 E2's capacity confound is gone
+and this curve is about coverage, which is what E4 is for.
 
----
+#### The pooled curve, and why K stops mattering
+
+| K | spacing | median gap to nearest stored view | object file | list |
+|---|---|---|---|---|
+| 2 | 180° | 42° | 68.5° | 70.0° |
+| 4 | 90° | 25° | 40.5° | 40.0° |
+| 6 | 60° | 18° | 24.0° | 25.0° |
+| **12** | **30°** | **10°** | **13.0°** | **15.0°** |
+| 18 | 20° | 10° | 16.5° | 15.0° |
+| 36 | 10° | 10° | 19.7° | 15.0° |
+
+Knee at **K=12** for both decoders. Past it, look at the third column: the gap
+floors at 10° and stops falling. With held-out arcs 30° wide, a thirteenth
+stored view has nowhere closer to sit, so it adds bundle load without adding
+coverage. **K is the wrong axis** — it stops being informative exactly where
+the geometry saturates, not where the object does.
+
+#### The object file and the list are indistinguishable at every K
+
+Difference of medians, hierarchical bootstrap:
+
+| K | 2 | 3 | 4 | 6 | 8 | 12 | 18 | 24 | 36 |
+|---|---|---|---|---|---|---|---|---|---|
+| vsa − list | −1.5° | +2.5° | +0.5° | −1.0° | +3.7° | −2.0° | +1.5° | +3.0° | +4.7° |
+| interval spans 0 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+
+**Nine out of nine.** E2 established the tie at three values of K; this
+establishes it across the whole curve from 2 to 36. Wherever the two agree, the
+limit is coverage and not the representation — which is the cleanest statement
+of what the object file is: a compression of the list that costs nothing in
+accuracy.
+
+#### The right axis, and the refuted prediction
+
+What a robot actually controls is not K but **how much of an orbit it walks**.
+Sweeping the held-out arc width instead, median error per object:
+
+| object | §13 half-width | 10° | 20° | 30° | 45° | 60° | widest arc filled to <15° |
+|---|---|---|---|---|---|---|---|
+| chair | 25° | 5.2° | 10.5° | 6.5° | 28.2° | 47.0° | **30°** |
+| mug | 35° | 7.0° | 12.3° | 7.3° | 25.8° | 44.5° | **30°** |
+| L_block | 25° | 6.0° | 7.5° | 7.0° | 26.3° | 38.5° | **30°** |
+| pot | 40° | 8.5° | 11.2° | 12.8° | 29.7° | 53.0° | **30°** |
+| console | 15° | 6.5° | 8.7° | 6.0° | 17.5° | 27.5° | **30°** |
+| tripod | 15° | 8.0° | 11.7° | 12.0° | 122.3° | 105.2° | **30°** |
+| cube | 15° | 87.0° | 95.0° | 90.0° | 85.0° | 92.5° | — |
+| cross | 15° | 90.2° | 140.0° | 90.0° | 90.2° | 171.7° | — |
+| drum | 35° | 90.0° | 100.7° | 90.0° | 90.0° | 153.5° | — |
+
+Six non-aliased objects. **Six identical answers.** Half-widths spanning 15° to
+40° — a 2.7-fold range — produce zero spread in the tolerable arc, so there is
+nothing for the half-width to correlate with. The cliff between 30° and 45° is
+in the same place for all of them.
+
+**Why the prediction had to fail: half-width is two-sided.** A wide appearance
+autocorrelation means the object looks similar over a wide arc. That should let
+you reach further across a hole — but it is the same property that makes the
+angle hard to pin down once you get there, which §13's own consequence 1 already
+said about the `pot`. Reach and contrast move together and in opposite
+directions, so their product is flat. One number cannot predict a quantity that
+depends on both.
+
+What *does* predict the cliff is the **view kernel lobe, 28°**, sitting right at
+the 30°/45° boundary, with the median descriptor half-width (22°) below it.
+Consistent with §14 and §16 E2: reach is the binding quantity, and the kernel is
+what supplies it.
+
+#### The practical number
+
+**Store a side every 30°, so twelve per object.** Fewer and the file cannot fill
+the hole; more and you are paying bundle capacity for coverage you already have.
+That is the answer to "how many views do I need", and it is the same answer for
+every object that is not symmetric — which makes it a much more useful rule than
+the per-object one that was predicted, even though it is the boring outcome.
+
+Comparing 30° against published IT view-tuning widths (Logothetis, §15 leg 3)
+is the obvious next move and is **not done here**: that citation is tagged
+**[m]**, from memory, and this document does not compare a measured number
+against an unverified one.
+
+*Provenance: measured — rendered turntable, ten objects with `--symmetric-set`,
+HOG front end, 3 seeds, `d=2401`, `max_harmonic=4`, blocked arcs, hierarchical
+bootstrap over objects → arcs → seeds. The 30° figure is a HOG number and would
+move with the encoder. That the knee saturates where the gap floors, and that
+half-width fails to predict the tolerable arc for the reason given, are
+structural.*
 
 ### The order
 
-**E4, then E3**, with E0, E1 and E2 done.
+**E3 only**, with E0, E1, E2 and E4 done.
 
 Two items from E1 and E2 are already implemented rather than queued, because
 each was one line:
