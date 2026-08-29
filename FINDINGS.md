@@ -50,6 +50,7 @@ it in one vector.
 | Twelve sides is the answer | Store a view every 30°. The same number for every object that isn't symmetric, and the cliff past it is sharp. | §16 E4 |
 | Vectors to objects, not places | Shift the whole room 3 m: a map of positions is wrong by 3 m, a map of vectors is untouched. And moving the robot updates every object at once, with one bind. | §16 E3 |
 | It works as one system | Name it, read its angle, filter over time: 0.91 naming and 7.0° viewpoint on a walk. And the filter fixes the frames where the name was wrong — 107° down to 16°. | §16 E6 |
+| The two memories fix each other | The scene map knows roughly which side of a cube you're standing on, which is exactly what appearance can't tell you. One hint at one frame: worst-case error 171.8° → 9.4°. | §16 E6 |
 | Turning is free | The spatial code has no notion of rotation — but it doesn't need one. The robot knows its heading, so a turn is a 2×2 matrix on the answer, not work on the memory. 0.05 m through a 3 m move and a 40° turn. | §16 E5 |
 
 ## What doesn't
@@ -58,10 +59,11 @@ it in one vector.
 the error inside that hole is ~27°, tracking the hole size all the way up to
 chance. It fills in *between* stored views and does not reach past them (§0 E4).
 
-**Symmetric objects can't be told apart, and no amount of data fixes it.** A
-cube looks identical from four sides. That is not a bug in the estimator —
-there are genuinely four right answers. Tracking plus one known starting angle
-is the only fix (§12).
+**Symmetric objects can't be told apart by appearance, and no amount of data
+fixes it.** A cube looks identical from four sides. That is not a bug in the
+estimator — there are genuinely four right answers. What fixes it is not more
+pictures but the *other* memory: the scene map knows which side of the cube you
+are standing on, and it only has to know that to within 30° (§12, §16 E6).
 
 **Sharpening the code makes it worse, not better.** I assumed a finer angular
 code would help. It doesn't: 25.6° error with a broad code, 33.0° with a sharp
@@ -1088,7 +1090,7 @@ having run them.
 | **E2** | residue view code (Kymn 2024) | can a modular code hold K views at a fraction of the dimension? | **done — refuted. But it found the capacity knob E0 missed, and that ties E0's score** |
 | **E3** | object-vector-cell scene map (Høydal) | should the scene half be allocentric or egocentric-vector? | **done — egocentric, decisively. And motion becomes one bind** |
 | **E5** | rotation (Renner et al.), the gap E3 opened | can rotation be a bind, and does the scene map need it to be? | **done — yes it can, and no it does not** |
-| **E6** | all of it, end to end on a walk | do the pieces compose, or merely coexist? | **done — they compose, and the filter turns out to repair naming, not just smooth pose** |
+| **E6** | all of it, end to end on a walk | do the pieces compose, or merely coexist? | **done — they compose; the filter repairs naming, and the scene map fixes the symmetric objects** |
 | **E4** | the K curve (Logothetis / Poggio–Edelman) | where is the knee, and does it match IT view tuning? | **done — knee at K=12, store a side every 30°. The per-object prediction is refuted** |
 
 **Naming.** These are §16 E0–E6, the *experiments*. §0 E1–E8 are the *errata*.
@@ -1807,15 +1809,51 @@ That is the answer to whether these parts compose. They do, and the composition
 is worth more than the sum: neither the prototype nor the filter alone reaches
 what they reach together.
 
-#### What it does not fix
+#### What it does not fix, and where the fix comes from
 
 Per-walk spread, filtered: 3.2° / 6.2° / **171.8°** at the 10th, 50th and 90th
 percentiles. The tail is the symmetric objects, and it is not a tail of poor
 estimates — it is walks that locked onto the wrong lobe and stayed there,
 confidently, for the whole orbit. §12 already said this: continuity converts a
-per-frame ambiguity into a single global one, and only an anchor removes it. E6
-confirms the anchor is still needed and that no amount of assembly substitutes
-for it.
+per-frame ambiguity into a single global one, and only an anchor removes it.
+
+**The anchor does not have to come from outside the system.** The scene map
+already holds the vector from the robot to the object (E3), and
+`geometry.view_azimuth` already turns that vector plus the object's heading into
+a view azimuth. So the *spatial* memory can say which side of a thing you must
+be standing on, and the *appearance* memory only has to say where on that side.
+A cube looks the same from four directions — but you are only standing in one of
+them.
+
+Starting the filter from a von Mises prior on the **first frame only**, with
+width `σ` standing for how badly the scene map may be wrong:
+
+| scene σ | all p50 | all p90 | chiral p50 | symmetric p50 | symmetric p90 |
+|---|---|---|---|---|---|
+| none | 6.2° | **171.8°** | 6.0° | 12.5° | 176.5° |
+| **5°** | 5.0° | **9.4°** | 5.5° | **4.0°** | **9.9°** |
+| 15° | 5.0° | 10.8° | 5.0° | 6.0° | 12.8° |
+| **30°** | 5.5° | **11.3°** | 5.5° | 6.5° | 25.9° |
+| 60° | 6.3° | 140.3° | 5.5° | 9.0° | 168.9° |
+| 90° | 6.8° | 165.3° | 5.5° | 52.0° | 172.3° |
+
+**One hint, at one frame, collapses the tail from 171.8° to 9.4°.** The
+symmetric objects go from 12.5° median and a hopeless 90th percentile to 4.0°
+and 9.9° — fixed, not improved. The chiral objects sit at 5.0–5.5° throughout
+and never needed it, which is the control that says the anchor is doing what it
+claims.
+
+**The requirement is σ ≤ 30°, and that number is principled rather than
+empirical.** The anchor has to separate adjacent aliases, and the tightest alias
+on this set is the cube's at 90°, so a prior needs to be confident within ±45° to
+pick between them. The measurement puts the breakdown between 30° and 60°,
+exactly there. In general: **the scene map must know your bearing around the
+object to better than half its alias period.**
+
+That is a very loose requirement. Knowing which 60° arc of an orbit you are on
+is easy for a metric scene map at any usable position accuracy — and it is
+precisely the quantity E3's egocentric code carries through motion with one
+bind. The two memories close each other's gap.
 
 *Provenance: measured — rendered turntable, ten objects with `--symmetric-set`,
 HOG front end, 8 seeds × 8 walks × 24 frames. Walks are the unit throughout,
@@ -1878,7 +1916,8 @@ and not one (E1, and the crossover in `test_object_map.py`).
 | motion | one bind of the whole memory by `S(−d)` | E3 |
 | turning | a 2×2 matrix on the decoded answer, not an operation on the memory | E5 |
 | over time | §12's circular filter, which also repairs naming errors | E6 |
-| symmetric objects | unfixable by any decoder; needs the §12 filter and an anchor | E1, E4 |
+| symmetric objects | a first-frame prior from the scene map; σ ≤ half the alias period | E6 |
+| symmetric objects | unfixable by appearance alone — the scene map supplies the anchor | E1, E4, E6 |
 
 ### What is actually left
 
@@ -1888,14 +1927,13 @@ swap is now cheap to interpret: every conclusion above is either a relative
 comparison on one front end or a structural property (E2's self-retrieval table,
 E3 entirely), and both survive an encoder change. Only the degrees move.
 
-**2. The anchor.** E6's assembled system is 6.2° at the median and 171.8° at
-the 90th percentile per walk, and the whole tail is symmetric objects locking
-onto the wrong lobe for an entire orbit. §12 showed one known starting direction
-fixes exactly this (83° → 2°). Nothing in the pipeline currently supplies one.
-The obvious source is the scene map — knowing roughly where you are relative to
-the object bounds which side you can be seeing — and E3's egocentric code is the
-form that would provide it. **This is the one remaining hole in the system as
-assembled, and it is a connection between two parts that already exist.**
+**2. Wiring the anchor into `ObjectCentricMap`.** E6 measures that a scene-map
+prior fixes the symmetric objects and that σ ≤ 30° suffices, but it does so by
+simulating the prior rather than reading it out of a live map. Both halves
+exist — `view_azimuth` computes the angle from poses, `localise_view` returns a
+full field — and nothing yet joins them into a `track()` that takes its
+starting belief from the scene map. **Small, and it is the last piece of the
+system rather than a new question.**
 
 **3. The library defaults.** `max_harmonic=8` is documented as being on the
 wrong side of the optimum and left in place so that everything measured before

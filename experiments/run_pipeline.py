@@ -46,6 +46,26 @@ from run_view_localisation import encode_hog, fit_basis, condition  # noqa: E402
 from run_blocked_split import blocked_masks  # noqa: E402
 from run_nn_baseline import pick_store, DROP  # noqa: E402
 from run_view_tracking import track, readout  # noqa: E402
+from run_frontend_diagnostics import diagnose  # noqa: E402
+
+
+def scene_prior(grid, phi_hat, sigma_rad):
+    """A von Mises belief to start the filter from.
+
+    The anchor sec.12 needed, and it does not have to come from outside the
+    system.  The scene map already holds the vector from the robot to the
+    object (sec.16 E3), and ``geometry.view_azimuth`` already turns that vector
+    plus the object's heading into a view azimuth -- so the *spatial* memory
+    can say which side of a thing you must be looking at, and the *appearance*
+    memory only has to say where on that side.
+
+    That is the one thing that breaks a symmetric object's global ambiguity:
+    a cube looks the same from four directions, but you are only standing in
+    one of them.  ``sigma_rad`` is how well the scene map knows which.
+    """
+    kappa = 1.0 / max(sigma_rad ** 2, 1e-6)
+    b = np.exp(np.minimum(kappa * (np.cos(grid - phi_hat) - 1.0), 0.0))
+    return b / b.sum()
 
 
 def build_object(keys, angles, vs):
@@ -62,7 +82,8 @@ def walk(rng, n_views, n_steps, step_views):
 
 
 def run_trajectory(keys, obj, az, vi, books, protos, vs, order, true_obj,
-                   step_rad, sigma, beta, oracle_id, n_grid=360):
+                   step_rad, sigma, beta, oracle_id, n_grid=360,
+                   anchor_sigma=None, rng=None):
     """One walk.  Returns per-frame naming and viewpoint outcomes."""
     k = np.fft.fftfreq(n_grid, 1.0 / n_grid)
     grid = np.linspace(-np.pi, np.pi, n_grid, endpoint=False)
@@ -78,7 +99,12 @@ def run_trajectory(keys, obj, az, vi, books, protos, vs, order, true_obj,
         fields[t] = L
         per_frame[t] = abs(float(np.rad2deg(
             wrap_angle(grid[int(np.argmax(L))] - az[idx]))))
-    belief = track(fields, step_rad, sigma, beta, k)
+    b0 = None
+    if anchor_sigma is not None:
+        phi_hat = wrap_angle(az[order[0]]
+                             + anchor_sigma * rng.standard_normal())
+        b0 = scene_prior(grid, phi_hat, anchor_sigma)
+    belief = track(fields, step_rad, sigma, beta, k, b0=b0)
     filtered, prev = np.empty(len(order)), None
     for t in range(len(order)):
         prev = readout(belief[t], grid, prev)
@@ -122,6 +148,7 @@ def main():
 
     got = {"name": [], "frame": [], "filt": [], "frame_named": [],
            "filt_named": [], "frame_mis": [], "filt_mis": []}
+    walks_meta = []
     for seed in range(args.seeds):
         rng = np.random.default_rng(seed)
         W = rng.standard_normal((V.shape[0], args.ssp_dim)) / np.sqrt(V.shape[0])
@@ -143,6 +170,7 @@ def main():
             nm, pf, fl = run_trajectory(keys, obj, az, vi, books, protos, vs,
                                         order, o, step_rad, args.sigma,
                                         args.beta, args.oracle_id)
+            walks_meta.append(o)
             hit = nm == o
             got["name"].append(hit)
             got["frame"].append(pf); got["filt"].append(fl)
@@ -193,6 +221,75 @@ def main():
     print("  a walk is the unit here, not a frame: frames within one orbit are "
           "not\n  independent (sec.0 E8), and the filter's whole job is to "
           "exploit that.")
+
+    anchor_sweep(Z, obj, az, kept, held, names, mu, V, lam, step_rad, args)
+
+
+# ---------------------------------------------------------------------------
+# [D] Closing the last hole: how well must the SCENE map know where you are,
+# for it to fix the objects the APPEARANCE map cannot?
+#
+# Section [C]'s 90th percentile is entirely symmetric objects locking onto a
+# wrong lobe for a whole orbit.  Section 12 showed one known starting direction
+# fixes exactly that.  The scene map is already holding the quantity that would
+# supply it -- this asks how accurate it has to be.
+# ---------------------------------------------------------------------------
+
+def anchor_sweep(Z, obj, az, kept, held, names, mu, V, lam, step_rad, args):
+    n_obj = len(names)
+    sigmas = (None, 5.0, 15.0, 30.0, 60.0, 90.0)
+    print("\n[D] anchoring the filter from the scene map: how good must the "
+          "position be?")
+    print(f"  {'scene sigma':>12s} {'all: p50':>9s} {'p90':>8s} "
+          f"{'chiral p50':>11s} {'symmetric p50':>14s} {'sym p90':>9s}")
+    print("  " + "-" * 68)
+    diag = None
+    for sig in sigmas:
+        per_walk, per_walk_obj = [], []
+        for seed in range(args.seeds):
+            rng = np.random.default_rng(seed)
+            W = (rng.standard_normal((V.shape[0], args.ssp_dim))
+                 / np.sqrt(V.shape[0]))
+            keys = condition(Z, mu, V, lam, W, drop=DROP)
+            vs = CircularSSPSpace(1, ssp_dim=args.ssp_dim,
+                                  max_harmonic=args.kmax,
+                                  rng=np.random.default_rng(seed + 1000))
+            if diag is None:
+                diag = diagnose(keys, obj, az, names, args.n_views,
+                                np.rad2deg(vs.lobe_width()))
+            books, protos = [], []
+            for o in range(n_obj):
+                sel = np.where((obj == o) & kept)[0]
+                pick = sel[pick_store(az[sel], args.K)]
+                b, p = build_object(keys[pick], az[pick], vs)
+                books.append(b); protos.append(p)
+            books = np.stack(books)
+            for w in range(args.walks):
+                o = rng.integers(n_obj)
+                base = np.where(obj == o)[0]
+                order = base[walk(rng, args.n_views, args.steps,
+                                  args.step_views)]
+                _, _, fl = run_trajectory(
+                    keys, obj, az, None, books, protos, vs, order, o,
+                    step_rad, args.sigma, args.beta, args.oracle_id,
+                    anchor_sigma=None if sig is None else np.deg2rad(sig),
+                    rng=rng)
+                per_walk.append(float(np.median(fl)))
+                per_walk_obj.append(o)
+        per_walk = np.array(per_walk)
+        po = np.array(per_walk_obj)
+        sym = np.array([diag[o]["alias_peak"] >= 0.75 for o in range(n_obj)])
+        ms, mc = sym[po], ~sym[po]
+        lab = "none" if sig is None else f"{sig:.0f} deg"
+        print(f"  {lab:>12s} {np.median(per_walk):8.1f}d "
+              f"{np.percentile(per_walk, 90):7.1f}d "
+              f"{(np.median(per_walk[mc]) if mc.any() else float('nan')):10.1f}d "
+              f"{(np.median(per_walk[ms]) if ms.any() else float('nan')):13.1f}d "
+              f"{(np.percentile(per_walk[ms], 90) if ms.any() else float('nan')):8.1f}d")
+    print("  the anchor is a von Mises prior on the FIRST frame only -- one "
+          "hint at the\n  start of the walk, not a correction at every step. "
+          "'scene sigma' is how\n  badly the scene map may be wrong about "
+          "which side you are standing on.")
 
 
 if __name__ == "__main__":
