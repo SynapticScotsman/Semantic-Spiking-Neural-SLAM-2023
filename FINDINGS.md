@@ -1916,13 +1916,12 @@ and not one (E1, and the crossover in `test_object_map.py`).
 | motion | one bind of the whole memory by `S(−d)` | E3 |
 | turning | a 2×2 matrix on the decoded answer, not an operation on the memory | E5 |
 | over time | §12's circular filter, which also repairs naming errors | E6 |
-| symmetric objects | a first-frame prior from the scene map; σ ≤ half the alias period | E6 |
-| symmetric objects | unfixable by appearance alone — the scene map supplies the anchor | E1, E4, E6 |
+| symmetric objects | unfixable by appearance alone; a first-frame prior from the scene map, σ ≤ half the alias period | E1, E4, E6 |
 
 ### What is actually left
 
 **1. DINOv2.** Still gates every absolute degree in E0, E1, E2 and E4 —
-`huggingface.co` is blocked (§8). What the five experiments buy is that the
+`huggingface.co` is blocked (§8). What the seven experiments buy is that the
 swap is now cheap to interpret: every conclusion above is either a relative
 comparison on one front end or a structural property (E2's self-retrieval table,
 E3 entirely), and both survive an encoder change. Only the degrees move.
@@ -1941,6 +1940,6 @@ wrong side of the optimum and left in place so that everything measured before
 one for a library. Changing it means re-measuring §§4–13, which is a day and
 should be done deliberately.
 
-*Provenance: every claim in this subsection is a summary of a measured result
-in E0–E6 above, and carries that result's provenance. The rotation gap is measured (E3)
-and closed (E5).*
+*Provenance: every claim in this subsection is a summary of a measured result in
+E0–E6 above, and carries that result's provenance. The rotation gap is measured
+(E3) and closed (E5).*
