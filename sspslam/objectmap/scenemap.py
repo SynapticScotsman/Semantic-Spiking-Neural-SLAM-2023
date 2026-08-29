@@ -513,7 +513,56 @@ class ObjectCentricMap:
         return obj_id, score, self.localise_view(obj_id, None, n_per_dim,
                                                  key=key)
 
-    def localise_view(self, obj_id, embedding, n_per_dim=720, key=None):
+    def view_prior(self, obj_id, robot_pos, sigma, n_per_dim=720):
+        """Which side of this object can I possibly be looking at?
+
+        The two memories closing each other's gap.  A symmetric object is
+        unlocalisable from appearance -- a cube looks the same from four
+        directions and no decoder can pick between them (FINDINGS.md sec.13).
+        But you are only *standing* in one of them, and the scene map knows
+        which: it holds where the object is, and :func:`.view_azimuth` turns
+        that plus the object's heading into a view azimuth.
+
+        So the spatial memory says which side, and the appearance memory says
+        where on that side.  Sec.16 E6 measures what that is worth: used as
+        the starting belief of the sec.12 filter it takes the worst-case
+        per-walk error from 171.8 to 9.4 degrees, and the requirement on
+        ``sigma`` is only that it separate adjacent aliases -- **better than
+        half the object's alias period**, so 30 degrees suffices for a
+        four-fold symmetry.  Objects that are not symmetric are unaffected,
+        which is how you know it is doing what it claims.
+
+        Parameters
+        ----------
+        obj_id : str
+        robot_pos : array_like
+            Where the robot believes it is.  Only the *bearing* around the
+            object matters, so this tolerates a lot of position error.
+        sigma : float
+            Width of the prior in radians -- how wrong the scene map may be
+            about that bearing.
+
+        Returns
+        -------
+        (np.ndarray, np.ndarray, float)
+            Grid angles, the **log** prior on that grid (peaking at 0, so it
+            adds directly to a similarity field), and the geometric azimuth
+            it is centred on.
+        """
+        if self.view_dims != 1:
+            raise NotImplementedError(
+                "view_prior is defined for the azimuth circle; a view sphere "
+                "needs a prior over both angles"
+            )
+        obj = self.objects[obj_id]
+        mu = float(view_azimuth(obj.position, np.asarray(robot_pos, float),
+                                obj.yaw))
+        angles = np.linspace(-np.pi, np.pi, int(n_per_dim), endpoint=False)
+        kappa = 1.0 / max(float(sigma) ** 2, 1e-9)
+        return angles, kappa * (np.cos(angles - mu) - 1.0), mu
+
+    def localise_view(self, obj_id, embedding, n_per_dim=720, key=None,
+                      prior=None):
         """*I can see this thing -- which side of it am I looking at?*
 
         The view-circle twin of localising in space.  Localising in a room
@@ -538,6 +587,13 @@ class ObjectCentricMap:
             instead if you have already encoded it.
         n_per_dim : int
             Resolution of the returned field.
+        prior : array_like or None
+            A **log** prior over the same grid, as returned by
+            :meth:`view_prior`.  Added to the similarity field before the peak
+            is taken, which is what lets the scene map break an appearance
+            ambiguity it cannot see.  The margin is computed on the combined
+            field, so a prior that resolves an alias shows up as a margin that
+            was not there before.
 
         Returns
         -------
@@ -550,6 +606,14 @@ class ObjectCentricMap:
         book = self.objects[obj_id].view_book(self.view_space)
         angles, field = self.view_space.view_likelihood(
             book, np.asarray(key).reshape(-1), n_per_dim=n_per_dim)
+        if prior is not None:
+            prior = np.asarray(prior, dtype=float)
+            if prior.shape != field.shape:
+                raise ValueError(
+                    f"prior has shape {prior.shape}, field has {field.shape}; "
+                    f"use the same n_per_dim for view_prior and localise_view"
+                )
+            field = field + prior
         flat = field.reshape(-1)
         best = int(np.argmax(flat))
         peak = angles.reshape(-1, self.view_dims)[best] if self.view_dims > 1 \

@@ -590,6 +590,64 @@ def test_prototype():
                     f"localise_view({got[0]!r}) directly")
     total += 1
 
+    # The scene map breaking an appearance ambiguity the view book cannot
+    # see.  Store the SAME key at phi and phi+180, which is a two-fold
+    # symmetric object by construction: the likelihood must have two equal
+    # peaks and the argmax must be a coin flip.  Then let the geometry vote.
+    m2 = toy_map(n_objects=2, n_sides=4, pedestal=0.6)[0]
+    oid = list(m2.objects)[0]
+    o2 = m2.objects[oid]
+    o2.views = o2.views[:2]
+    o2.views[1].key = o2.views[0].key.copy()
+    o2.views[1].phi = wrap_angle(o2.views[0].phi + np.pi)
+    true_phi = float(o2.views[0].phi[0])
+    loc = m2.localise_view(oid, None, key=o2.views[0].key)
+    passed += check("a two-fold symmetric object gives no margin",
+                    abs(loc.margin) < 0.05,
+                    f"margin {loc.margin:+.3f} between the two peaks")
+    total += 1
+
+    # Stand where the true side is visible and re-ask.
+    robot = o2.position + 3.0 * np.array([np.cos(true_phi + o2.yaw),
+                                          np.sin(true_phi + o2.yaw)])
+    angles, logp, mu = m2.view_prior(oid, robot, np.deg2rad(30.0),
+                                     n_per_dim=720)
+    passed += check("view_prior centres on the geometric azimuth",
+                    abs(float(np.rad2deg(wrap_angle(mu - true_phi)))) < 1.0,
+                    f"prior at {np.rad2deg(mu):.1f} deg, true "
+                    f"{np.rad2deg(true_phi):.1f} deg")
+    total += 1
+
+    anch = m2.localise_view(oid, None, key=o2.views[0].key, prior=logp)
+    err_anch = abs(float(np.rad2deg(wrap_angle(anch.phi[0] - true_phi))))
+    passed += check("a 30 deg scene prior resolves the ambiguity",
+                    err_anch < 20.0 and anch.margin > loc.margin,
+                    f"error {err_anch:.0f} deg, margin "
+                    f"{loc.margin:+.3f} -> {anch.margin:+.3f}")
+    total += 1
+
+    # The decisive version: the SAME crop, the robot standing on the other
+    # side.  Appearance cannot tell these apart -- the prior must, and it must
+    # flip the answer by exactly 180 degrees.
+    other = wrap_angle(true_phi + np.pi)
+    robot2 = o2.position + 3.0 * np.array([np.cos(other + o2.yaw),
+                                           np.sin(other + o2.yaw)])
+    _, logp2, _ = m2.view_prior(oid, robot2, np.deg2rad(30.0), n_per_dim=720)
+    flip = m2.localise_view(oid, None, key=o2.views[0].key, prior=logp2)
+    sep = abs(float(np.rad2deg(wrap_angle(flip.phi[0] - anch.phi[0]))))
+    passed += check("the same crop decodes to the side the robot is on",
+                    abs(sep - 180.0) < 5.0
+                    and abs(float(np.rad2deg(
+                        wrap_angle(flip.phi[0] - other)))) < 20.0,
+                    f"identical crop, two robot positions, answers "
+                    f"{sep:.0f} deg apart")
+    total += 1
+
+    passed += check("a mismatched prior grid is refused",
+                    _raises(lambda: m2.localise_view(
+                        oid, None, key=o2.views[0].key, prior=logp[:100])))
+    total += 1
+
     # An object with no views must not be scored at all.
     m._mint(np.array([9.0, 9.0]), None, 0.0, obj_id="empty")
     passed += check("an object with no views is not a candidate",

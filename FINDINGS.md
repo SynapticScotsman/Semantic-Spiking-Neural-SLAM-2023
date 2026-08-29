@@ -1927,13 +1927,13 @@ swap is now cheap to interpret: every conclusion above is either a relative
 comparison on one front end or a structural property (E2's self-retrieval table,
 E3 entirely), and both survive an encoder change. Only the degrees move.
 
-**2. Wiring the anchor into `ObjectCentricMap`.** E6 measures that a scene-map
-prior fixes the symmetric objects and that σ ≤ 30° suffices, but it does so by
-simulating the prior rather than reading it out of a live map. Both halves
-exist — `view_azimuth` computes the angle from poses, `localise_view` returns a
-full field — and nothing yet joins them into a `track()` that takes its
-starting belief from the scene map. **Small, and it is the last piece of the
-system rather than a new question.**
+**2. The filter itself is still experiment code.** `ObjectCentricMap.view_prior`
+and `localise_view(prior=…)` now join the two memories, so a single frame can be
+disambiguated by the scene map inside the library. What remains outside it is
+§12's `track()` — the recursive belief over a *sequence*, which lives in
+`experiments/run_view_tracking.py` and is duplicated by `run_pipeline.py`.
+Promoting it would make the pipeline of E6 a method on the map rather than a
+script. **Small, and it is packaging rather than a question.**
 
 **3. The library defaults.** `max_harmonic=8` is documented as being on the
 wrong side of the optimum and left in place so that everything measured before
@@ -1942,5 +1942,5 @@ one for a library. Changing it means re-measuring §§4–13, which is a day and
 should be done deliberately.
 
 *Provenance: every claim in this subsection is a summary of a measured result
-in E0–E4 above, and carries that result's provenance. The rotation gap is
-measured (E3); the log-polar suggestion is a proposal and nothing more.*
+in E0–E6 above, and carries that result's provenance. The rotation gap is measured (E3)
+and closed (E5).*
