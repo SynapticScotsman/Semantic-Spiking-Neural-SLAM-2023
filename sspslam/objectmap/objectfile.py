@@ -147,6 +147,31 @@ class ObjectFile:
         weights = ([v.count for v in self.views] if weight_by_count else None)
         return bundle(terms, weights=weights)
 
+    def prototype(self, weight_by_count=False):
+        """``(1/K) sum_k c_k`` -- the appearance book with no angle bound in.
+
+        The view book answers *which way am I looking at this?*.  This answers
+        *what am I looking at?*, and it is deliberately the same keys with the
+        binding left out.
+
+        Worth its own vector because the two questions have opposite
+        requirements.  Binding an angle spreads each key across the whole
+        code, so K views of one object interfere; FINDINGS.md sec.16 E0 shows
+        the view book's identification *falling* as K grows, because the
+        bundle saturates.  Bundling the keys unbound has no such pressure --
+        the terms are correlated by construction (they are the same object)
+        and reinforce instead of interfering, which is exactly the identity
+        pedestal of sec.14 used as signal rather than fought as noise.
+
+        Measured in sec.16 E1: at ``ssp_dim=151`` this identifies at 0.89
+        against the view book's 0.44, and unlike the view book it does not
+        care about dimension.  Cost is one extra vector per object.
+        """
+        if not self.views:
+            return np.zeros(self.id_vec.size)
+        weights = ([v.count for v in self.views] if weight_by_count else None)
+        return bundle(self.keys, weights=weights)
+
     def coverage(self, view_space, n_per_dim=181):
         """Fraction of the view circle within the main lobe of a stored view.
 

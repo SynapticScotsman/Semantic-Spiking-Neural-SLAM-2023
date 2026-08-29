@@ -461,6 +461,50 @@ class ObjectCentricMap:
         out.bearing = camera_bearing(obj.position, robot_pos, robot_yaw)
         return out
 
+    def identify(self, embedding, top_k=3, key=None, weight_by_count=False):
+        """*What am I looking at?*  Score the crop against every prototype.
+
+        Deliberately **not** routed through the view books.  Naming an object
+        and reading its viewpoint are opposite problems: the first wants the
+        part of the appearance that does not change as you walk round, the
+        second wants the part that does.  Asking one bundle to do both is
+        what FINDINGS.md sec.16 E0 measured failing -- identification through
+        the view book drops as K grows, because the bound terms interfere.
+
+        sec.16 E1: 0.89 here against 0.44 through the view book at
+        ``ssp_dim=151``, on ten objects with twelve views each.  The usual
+        pipeline is therefore ``identify`` to pick the instance, then
+        :meth:`localise_view` on that instance to read the side.
+
+        Returns a list of ``(obj_id, cosine)``, best first.
+        """
+        if key is None:
+            key = self.appearance.encode(embedding)
+        key = np.asarray(key, dtype=float).reshape(-1)
+        names = [o for o in self.objects if self.objects[o].n_views]
+        if not names:
+            return []
+        protos = np.stack([self.objects[n].prototype(weight_by_count)
+                           for n in names])
+        sims = cosine(key, protos)
+        order = np.argsort(sims)[::-1][:top_k]
+        return [(names[i], float(sims[i])) for i in order]
+
+    def recognise(self, embedding, n_per_dim=720, key=None):
+        """Identify, then localise on the winner.  The two-stage read-out.
+
+        Returns ``(obj_id, id_score, ViewLocalisation)``, or ``None`` if the
+        map holds no object with any views yet.
+        """
+        if key is None:
+            key = self.appearance.encode(embedding)
+        ranked = self.identify(None, top_k=1, key=key)
+        if not ranked:
+            return None
+        obj_id, score = ranked[0]
+        return obj_id, score, self.localise_view(obj_id, None, n_per_dim,
+                                                 key=key)
+
     def localise_view(self, obj_id, embedding, n_per_dim=720, key=None):
         """*I can see this thing -- which side of it am I looking at?*
 

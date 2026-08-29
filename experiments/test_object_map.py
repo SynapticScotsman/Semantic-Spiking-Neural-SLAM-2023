@@ -60,8 +60,16 @@ def section(title):
     print("=" * 68)
 
 
-def toy_map(seed=0, n_objects=6, n_sides=6, feat_dim=32):
-    """A small map written directly, with known angles and known keys."""
+def toy_map(seed=0, n_objects=6, n_sides=6, feat_dim=32, pedestal=0.0):
+    """A small map written directly, with known angles and known keys.
+
+    ``pedestal`` is the fraction of each embedding shared by every side of the
+    same object -- the identity pedestal of FINDINGS.md sec.14, here as a dial
+    rather than a measurement.  It defaults to 0, meaning every side of an
+    object is an unrelated random vector, which is what all the tests written
+    before sec.16 assume.  Real objects sit well above 0: a chair is still
+    recognisably that chair from behind.
+    """
     rng = np.random.default_rng(seed)
     m = ObjectCentricMap(feat_dim=feat_dim, ssp_dim=151, domain_dim=2,
                          bounds=[[-6, 6], [-6, 6]], length_scale=0.6,
@@ -70,11 +78,13 @@ def toy_map(seed=0, n_objects=6, n_sides=6, feat_dim=32):
 
     positions = rng.uniform(-4.5, 4.5, size=(n_objects, 2))
     angles = np.linspace(-np.pi, np.pi, n_sides, endpoint=False)
+    bases = rng.standard_normal((n_objects, feat_dim))
     truth = {}
     for i, p in enumerate(positions):
         oid = f"obj_{i:02d}"
         for phi in angles:
-            z = rng.standard_normal(feat_dim)
+            z = (np.sqrt(pedestal) * bases[i]
+                 + np.sqrt(1.0 - pedestal) * rng.standard_normal(feat_dim))
             robot = p + 3.0 * np.array([np.cos(phi), np.sin(phi)])
             m.observe(robot_pos=robot, obj_pos=p, embedding=z, obj_id=oid,
                       class_name="thing", update_position=False)
@@ -494,11 +504,107 @@ def test_view_localisation():
 
 
 # ---------------------------------------------------------------------------
-# Test 9: the 3-D view sphere
+# Test 9: the unbound prototype, and the two-stage read-out
+# ---------------------------------------------------------------------------
+
+def test_prototype():
+    section("Test 9: naming goes through the prototype, not the view book")
+    passed = total = 0
+
+    def hit_rate(m, via):
+        names, hits, n = list(m.objects), 0, 0
+        for nm in names:
+            for entry in m.objects[nm].views:
+                if via == "prototype":
+                    best = m.identify(None, top_k=1, key=entry.key)[0][0]
+                else:
+                    scores = {q: m.localise_view(q, None, key=entry.key).score
+                              for q in names}
+                    best = max(scores, key=scores.get)
+                hits += (best == nm)
+                n += 1
+        return hits / n
+
+    m0 = toy_map(n_objects=6, n_sides=10, pedestal=0.0)[0]
+    names = list(m0.objects)
+
+    # A prototype has no angle bound into it.
+    o = m0.objects[names[0]]
+    proto = o.prototype()
+    passed += check("the prototype is the keys with no angle bound in",
+                    np.allclose(proto, normalize(o.keys.mean(0))),
+                    f"|proto - mean(keys)| = "
+                    f"{np.abs(proto - normalize(o.keys.mean(0))).max():.2e}")
+    total += 1
+
+    # The prototype's advantage is CONDITIONAL on the identity pedestal, and
+    # the two ends of the dial go opposite ways.  With no pedestal the sides
+    # of an object are unrelated, so bundling them unbound averages to noise
+    # while binding keeps them separable.  With a pedestal -- which is what a
+    # real object has -- the unbound bundle reinforces and the bound one
+    # interferes.  See FINDINGS.md sec.14 and sec.16 E1.
+    rates = {}
+    for ped in (0.0, 0.3, 0.6):
+        m = toy_map(n_objects=6, n_sides=10, pedestal=ped)[0]
+        rates[ped] = (hit_rate(m, "prototype"), hit_rate(m, "view_book"))
+    detail = "  ".join(f"lambda={p:.1f}: proto {a:.2f} / book {b:.2f}"
+                       for p, (a, b) in rates.items())
+    passed += check("with no identity pedestal the view book wins",
+                    rates[0.0][0] < rates[0.0][1], detail)
+    total += 1
+    passed += check("with a realistic pedestal the prototype wins",
+                    rates[0.6][0] > rates[0.6][1],
+                    f"proto {rates[0.6][0]:.2f} vs book {rates[0.6][1]:.2f} "
+                    f"at lambda=0.6")
+    total += 1
+    passed += check("the prototype improves monotonically with the pedestal",
+                    rates[0.0][0] <= rates[0.3][0] <= rates[0.6][0],
+                    " -> ".join(f"{rates[p][0]:.2f}" for p in (0.0, 0.3, 0.6)))
+    total += 1
+
+    # The same dial that makes naming easy makes pose hard -- the pedestal is
+    # a DC floor under the view kernel, so raising it flattens the angular
+    # contrast.  That is the whole argument for keeping two vectors: one
+    # question wants the pedestal, the other wants it gone.
+    pose = {}
+    for ped in (0.0, 0.3, 0.6):
+        m = toy_map(n_objects=6, n_sides=10, pedestal=ped)[0]
+        errs = [abs(float(np.rad2deg(wrap_angle(
+                    m.localise_view(nm, None, key=e.key).phi[0] - e.phi[0]))))
+                for nm in m.objects for e in m.objects[nm].views]
+        pose[ped] = float(np.median(errs))
+    passed += check("the same pedestal that helps naming hurts pose",
+                    pose[0.0] <= pose[0.3] <= pose[0.6],
+                    "  ".join(f"lambda={p:.1f}: {pose[p]:.1f} deg"
+                              for p in (0.0, 0.3, 0.6)))
+    total += 1
+
+    # The two-stage read-out must agree with doing it by hand.
+    m = toy_map(n_objects=6, n_sides=10, pedestal=0.6)[0]
+    entry = m.objects[names[2]].views[3]
+    got = m.recognise(None, key=entry.key)
+    by_hand = m.localise_view(got[0], None, key=entry.key)
+    passed += check("recognise() names the object and reads its own book",
+                    got[0] == names[2] and np.allclose(got[2].phi, by_hand.phi),
+                    f"named {got[0]!r}, localisation identical to calling "
+                    f"localise_view({got[0]!r}) directly")
+    total += 1
+
+    # An object with no views must not be scored at all.
+    m._mint(np.array([9.0, 9.0]), None, 0.0, obj_id="empty")
+    passed += check("an object with no views is not a candidate",
+                    "empty" not in [n for n, _ in m.identify(None, top_k=99,
+                                                             key=entry.key)])
+    total += 1
+    return passed, total
+
+
+# ---------------------------------------------------------------------------
+# Test 10: the 3-D view sphere
 # ---------------------------------------------------------------------------
 
 def test_view_sphere():
-    section("Test 9: 3-D map with an (azimuth, elevation) view sphere")
+    section("Test 10: 3-D map with an (azimuth, elevation) view sphere")
     passed = total = 0
     feat_dim = 32
     rng = np.random.default_rng(0)
@@ -557,7 +663,7 @@ if __name__ == "__main__":
     total_passed = total_checks = 0
     for fn in [test_view_circle, test_scene_map, test_object_files,
                test_two_memories, test_appearance_keys, test_angles,
-               test_association, test_view_localisation,
+               test_association, test_view_localisation, test_prototype,
                test_view_sphere]:
         p, t = fn()
         total_passed += p
