@@ -19,6 +19,20 @@ length scale: ``max_harmonic = M`` gives a main lobe roughly ``2*pi/M`` wide.
 Small ``M`` means a view generalises over a wide arc (few, broad sides);
 large ``M`` means the code distinguishes fine changes of angle but needs
 more stored views to cover the circle.
+
+``max_harmonic`` is also the **capacity** setting, which is the less obvious
+half and the one that matters more in practice.  It fixes how many distinct
+frequencies the code has, and a similarity kernel built from few frequencies
+has sidelobes close to its main peak; superposing K views piles K sets of
+those sidelobes together until the peak is no longer the right one.  More
+frequencies, more room to superpose.
+
+The two pull opposite ways -- more harmonics buys capacity and costs reach --
+so there is an optimum, and FINDINGS.md sec.16 E2 measures it at ``4`` for a
+HOG front end on a turntable, with a 28 degree lobe *wider* than the
+descriptor's own 18 degree correlation length.  The default of 8 here is kept
+so that everything measured before that section still reproduces; it is not
+the recommended value.
 """
 
 import numpy as np
@@ -26,7 +40,76 @@ import numpy as np
 from ..sspspace import SSPSpace, conjsym
 from .geometry import wrap_angle
 
-__all__ = ["CircularSSPSpace", "make_view_space"]
+__all__ = ["CircularSSPSpace", "make_view_space", "residue_harmonics"]
+
+
+def residue_harmonics(moduli, n_phases, weights=None):
+    r"""Harmonic set for a **residue number system** over the view circle.
+
+    Kymn et al. (NeurIPS 2024, FINDINGS.md sec.15) represent position by its
+    residues in a co-prime modular system, one vector per module, and map the
+    modules onto grid modules.  On a circle that construction is a *choice of
+    harmonics*, which this space already supports, so no new machinery is
+    needed.
+
+    Write ``M = prod(moduli)`` and index the circle by ``x`` in ``[0, M)``
+    with ``phi = 2*pi*x/M``.  The residue ``x mod m`` is carried by the phasor
+    ``exp(2*pi*i*(x mod m)/m) = exp(i*(M/m)*phi)``.  So **module ``m`` is
+    exactly the single integer harmonic ``M/m``** ::
+
+        moduli (7, 8, 9)  ->  M = 504  ->  harmonics {72, 63, 56}
+
+    and the Chinese remainder theorem is what makes those three jointly
+    unambiguous over the whole circle, even though each alone repeats dozens
+    of times.
+
+    The point is where the dimensions go.  A dense band ``{1..16}`` spreads
+    the budget over sixteen frequencies; the set above spends it on three,
+    each with five times the redundancy, while resolving *finer* than the
+    band does -- its top harmonic is 72 against 16.  That is the capacity
+    claim, and sec.16 E2 measures whether it survives contact with a bundle
+    of correlated appearance keys.
+
+    The cost is the kernel shape.  A mean of three cosines has a unique global
+    peak, but its sidelobes sit far higher than a tapered band's, so the
+    failure mode is a jump to a wrong CRT-consistent angle rather than a
+    gradual loss of precision.  Expect worse tails, not worse medians.
+
+    Parameters
+    ----------
+    moduli : sequence of int
+        Should be pairwise co-prime; otherwise the effective period is
+        ``lcm(moduli)`` rather than the product and the code repeats.
+    n_phases : int
+        Slots to fill, i.e. ``(ssp_dim - 1) // 2``.
+    weights : sequence of float or None
+        Relative share of the slots per module.  ``None`` splits evenly,
+        which is the standard construction.
+
+    Returns
+    -------
+    np.ndarray
+        ``(n_phases, 1)`` integer harmonics, ready to pass as
+        ``CircularSSPSpace(harmonics=...)``.
+    """
+    moduli = [int(m) for m in moduli]
+    if len(moduli) < 2 or any(m < 2 for m in moduli):
+        raise ValueError("need at least two moduli, each >= 2")
+    for i, a in enumerate(moduli):
+        for b in moduli[i + 1:]:
+            if np.gcd(a, b) != 1:
+                raise ValueError(
+                    f"moduli must be pairwise co-prime; {a} and {b} share "
+                    f"a factor, so the code repeats every "
+                    f"{np.lcm.reduce(moduli)} steps instead of "
+                    f"{int(np.prod(moduli))}"
+                )
+    total = int(np.prod(moduli))
+    base = np.array([total // m for m in moduli], dtype=float).reshape(-1, 1)
+    w = (np.ones(len(moduli)) if weights is None
+         else np.asarray(weights, dtype=float))
+    counts = CircularSSPSpace._allocate(w, int(n_phases))
+    return np.repeat(base, counts, axis=0)
 
 
 class CircularSSPSpace(SSPSpace):

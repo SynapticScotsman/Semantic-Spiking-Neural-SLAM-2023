@@ -45,7 +45,7 @@ it in one vector.
 | Reading it is one FFT | You get the *whole* answer — how likely every angle is — not just a best guess. Instant. | §4 |
 | Tracking over time | Frame by frame the answer jumps around; feed it through a filter and it settles. 17° → 6°. | §12 |
 | One known starting angle | Fixes the symmetric objects completely. 83° → 2°. | §12 |
-| The whole scene in one vector | Six objects, twelve views each, 4801 floats, unbind an ID to query it. 72× smaller than the list. | §16 E0 |
+| The whole scene in one vector | Six objects, twelve views each, one vector, unbind an ID to query it. 72× smaller than a list, same accuracy. | §16 E0, E2 |
 | Two vectors per object, not one | Name the object with an unbound appearance prototype, read the angle with the view book. Identification 0.44 → 0.89 for one extra vector. | §16 E1 |
 
 ## What doesn't
@@ -69,15 +69,20 @@ deliberately. It identifies objects *worse*, by −0.15, and equally so for
 symmetric and chiral objects — the regime argument that should have rescued it
 doesn't (§16 E1). The code works exactly as designed; the design doesn't pay.
 
-**And the big one: it is not more accurate than just keeping a list.** Store the
-same views in a list, take the nearest — 10.0° against the object file's 25.5°,
-and the list *improves* with more views on file while the object file gets
-worse. What the VSA actually buys is size: the whole map, six objects and every
-view, in **one 4801-float vector** at 13.5°, against 345,672 floats for the
-list. **72× smaller, 3.5° worse.** That is the honest pitch, and it is not the
-one this document was making before §16.
+**It is not more accurate than just keeping a list — it ties one.** Store the
+same views in a list, take the nearest: 10.0°, against the object file's 9.0°,
+difference −1.0° with a confidence interval straddling zero (§16 E2). What the
+VSA buys is size, not accuracy — the whole map, six objects and every view, in
+**one vector** instead of 172,872 floats. **Twelve to seventy times smaller,
+same answer.** That is the honest pitch, and it is not the one this document
+was making before §16.
 
-## The five rules that cost us the most
+Getting even that far needed one setting fixed. At the repo's old
+`max_harmonic=8` the object file really did lose, 25.5° against 10.0°, and got
+*worse* the more views it was given. The number of distinct frequencies in the
+code is what sets how many views a bundle can hold, and 8 was too few (§16 E2).
+
+## The six rules that cost us the most
 
 1. **Frames are not samples.** 72 frames round an orbit are worth about **6**
    independent observations. I quoted `n=216, p=7.6e-9` once; the real n was
@@ -91,7 +96,12 @@ one this document was making before §16.
 4. **Run the dumb baseline first.** Everything in §§4–14 was unfalsified rather
    than validated until §16 compared it against a list and a nearest-neighbour.
    It lost. The claim had to be rewritten, not the experiment (§16 E0).
-5. **One object is not evidence.** In §16 E1 the cube was the single object
+5. **Sweep the hyperparameter before blaming the method.** §16 E0 concluded the
+   object file loses to a list. It was measured at the repo's default
+   `max_harmonic`, which E2 then showed is the single knob that controls how
+   many views a bundle holds. Setting it correctly turned a loss into a tie —
+   and E0 had swept the vector dimension over sixteen-fold without touching it.
+6. **One object is not evidence.** In §16 E1 the cube was the single object
    whose identification improved under mirroring, and it looked like a clean
    confirmation of the published account. Adding four more symmetric objects
    flipped it from +0.13 to −0.06. It had been an artefact of which distractors
@@ -669,6 +679,7 @@ python experiments/run_view_localisation.py --plot     # §4 and §5, ~8 s
 python experiments/run_object_map.py --plot            # §1, the full map
 python experiments/run_nn_baseline.py                  # §16 E0, ~6 min
 python experiments/run_mirror_stage.py --symmetric-set # §16 E1, ~9 min
+python experiments/run_residue_code.py                 # §16 E2, ~20 min
 ```
 
 Swap the front end with `--encoder dinov2` (needs torch + transformers +
@@ -1066,7 +1077,7 @@ having run them.
 |---|---|---|---|
 | **E0** | list-of-views baseline | is the object file a better estimator, or only a smaller one? | **done — it is only smaller** |
 | **E1** | mirror-symmetric intermediate (Freiwald & Tsao) | does deliberate aliasing *improve* identification, as it does in AL? | **done — refuted. It makes identification worse, in both symmetry regimes** |
-| **E2** | residue view code (Kymn 2024) | can a modular code hold K views at a fraction of the dimension? | spec below — **promoted by E0** |
+| **E2** | residue view code (Kymn 2024) | can a modular code hold K views at a fraction of the dimension? | **done — refuted. But it found the capacity knob E0 missed, and that ties E0's score** |
 | **E3** | object-vector-cell scene map (Høydal) | should the scene half be allocentric or egocentric-vector? | spec below |
 | **E4** | the K curve (Logothetis / Poggio–Edelman) | where is the knee, and does it match IT view tuning? | spec below |
 
@@ -1081,6 +1092,14 @@ conclusions survive the swap; their degrees do not.
 ---
 
 ### E0 — does unbinding actually beat a list of stored views?
+
+> **Corrected by E2.** Everything below was measured at `max_harmonic=8` and
+> `16`, the repo defaults. E2 found that `max_harmonic` is the capacity knob,
+> and at `k_max=4` the object file **ties** the list at every K rather than
+> losing to it — `vsa − nearest` = −1.0° [−6.5, +6.0] at K=12. The conclusion
+> "it is a smaller store, not a better estimator" survives; the conclusion
+> "it is *worse*" does not. Read this section for the method and the capacity
+> mechanism, and E2 for the corrected scoreline.
 
 **Short answer: at the dimension this repo has been measured at, no — it loses,
 badly.** At `d=151` with `K=12` views on file, nearest-neighbour over the same
@@ -1213,7 +1232,8 @@ good on the cube would be reading something other than pose.
 ### What this changes
 
 - **§15's gap claim stands as novelty, not as superiority.** The combination is
-  unpublished; it is not yet better. Anywhere this document implies the object
+  unpublished; it is not better, though E2 shows it is not worse either once
+  `max_harmonic` is set properly. Anywhere this document implies the object
   file is a better *estimator*, it is wrong — it is a better *store*.
 - **The honest pitch is compression and superposition.** One vector for a whole
   scene, queried by unbinding an ID, at 72× less memory than the list. That is
@@ -1392,35 +1412,152 @@ over objects → arcs → seeds with the object level restricted to each group. 
 degrees and hit rates are HOG numbers. The sign-accuracy result, the axis
 independence, and the direction of the identification effect are structural.*
 
-### E2 — residue view code
+### E2 — residue view code: **refuted, and it corrects E0**
 
-**Promoted from last place by E0.** The ranking before E0 assumed the
-descriptor's 18° half-width (§13) was the binding constraint, so a sharper code
-could not help. E0 shows the actual constraint at K ≥ 12 is bundle capacity: the
-object file's error *rises* with K while the list's falls, and it takes ~16× the
-dimension to reach parity. That is precisely the problem a residue number system
-addresses.
+**Residue coding does not transfer, and the reason corrects §16 E0's
+headline.** Residue harmonic sets land at or past chance — 87–95° median
+against 90° for guessing, with 57–78% gross failures — and no amount of fixing
+the comparison rescues them. But diagnosing *why* found the thing E0 missed:
+**bundle capacity is set by the number of distinct harmonics, and E0 never
+swept it low enough.** At `max_harmonic=4` the object file **ties a list of
+stored views at every K**, at twelve times less memory.
 
-Replace the single integer-harmonic band with residues modulo co-prime
-*m₁, m₂, m₃* over φ, following Kymn et al. (§15), whose modules map to grid
-modules in the entorhinal analogy.
+Run it: `python experiments/run_residue_code.py`.
 
-E1 raises the stakes here too: it was the other candidate fix for
-identification, and it failed. Capacity is now the only lever left on the table
-for the object file's weakest axis.
+#### A residue system is a choice of harmonics, nothing more
 
-**Report it as a capacity experiment, with resolution held fixed** — error at
-equal *floats*, against E0's `d`-sweep as the baseline curve. The question is
-whether residues reach 13.5° at `d = 1201` in a few hundred, not whether they
-beat HOG. Reporting it as accuracy would be measuring the front end and
-crediting the code.
+With moduli `mᵢ` and `M = ∏mᵢ`, index the circle by `x ∈ [0, M)` with
+`φ = 2πx/M`. The residue `x mod m` is carried by
+`exp(2πi(x mod m)/m) = exp(i(M/m)φ)`, so **module `m` is exactly the single
+integer harmonic `M/m`**:
 
-The honest risk: residue codes are efficient for *unambiguous range*, and a
-circle has no range to extend. The gain has to come from cleaner superposition,
-which is a different mechanism from the one the papers advertise, so a negative
-result here is informative and should be written up either way.
+```
+dense band  {1, 2, …, 16}     16 frequencies, top harmonic 16
+residue (7,8,9)  {56, 63, 72}   3 frequencies, top harmonic 72
+```
 
----
+Both fill the same `ssp_dim`. The residue set spends the whole budget on three
+frequencies — five times the redundancy each — and resolves four times finer,
+because the Chinese remainder theorem makes them jointly unambiguous. That was
+the capacity argument. `sspslam.objectmap.residue_harmonics` builds the set; no
+other machinery was needed.
+
+#### It fails, and it is not the comparison's fault
+
+At `d=601`, `K=12`:
+
+| code | distinct harmonics | top | lobe | median | <15° | >45° |
+|---|---|---|---|---|---|---|
+| band 8 | 8 | 8 | 16.5° | 16.3° | 0.46 | 0.23 |
+| band 16 | 16 | 16 | 9.0° | **13.5°** | 0.54 | 0.22 |
+| band 24 | 24 | 24 | 6.2° | 13.5° | 0.56 | 0.19 |
+| res 3-4-5 | 3 | 20 | 4.0° | 87.0° | 0.29 | 0.61 |
+| res 4-5-7 | 3 | 35 | 2.2° | 93.0° | 0.13 | 0.73 |
+| res 7-8-9 | 3 | 72 | 1.0° | 87.8° | 0.12 | 0.71 |
+| *list (1-NN)* | — | — | — | *10.0°* | *0.63* | *0.17* |
+
+Three ways it could have been an unfair test, all closed:
+
+1. **Not the sharpness.** §14 showed sharp kernels lose when stored views are
+   far apart, and every residue set above has a 1–4° lobe. So resolution-matched
+   ones were built too: `res 4-5` has M=20, an 18° step matching the
+   descriptor's half-width exactly, and a 13.5° lobe *wider* than band 16's.
+   It still fails, at 91.5° with 71% gross failures.
+2. **Not the readout.** Kymn reads residues with a resonator network; argmax
+   over a superposed likelihood throws the modular structure away. So the
+   resonator's fixed point was computed directly — one phase per module, then
+   CRT. It changes nothing: 87.0 → 90.0 for `res 3-4-5` at K=12, 93.0 → 88.4
+   for `res 4-5-7`. The loss is in the code, not in how it is read.
+3. **Not the descriptor.** See below.
+
+#### The mechanism: distinct harmonics are the capacity currency
+
+Query each book with a key that is **in** it. No generalisation left to do, no
+descriptor limit to hit — what remains is purely how well the code survives
+superposing K items. `d=601`, median error in degrees:
+
+| code | distinct harmonics | K=1 | K=4 | K=12 | K=24 |
+|---|---|---|---|---|---|
+| res 3-4-5 | 3 | **0.0** | 1.0 | 87.0 | 56.5 |
+| res 4-5-7 | 3 | **0.0** | 0.5 | 52.0 | 89.0 |
+| res 5-7-9 | 3 | **0.0** | 0.0 | 41.0 | 102.5 |
+| band 4 | 4 | 0.0 | 1.0 | 4.0 | 5.0 |
+| band 8 | 8 | 0.0 | 1.0 | 3.5 | 5.0 |
+| band 16 | 16 | 0.0 | 0.5 | 1.0 | 3.7 |
+| band 24 | 24 | 0.0 | 0.5 | **0.5** | **2.5** |
+
+**Every code is exact at K=1.** What separates them is how many items the
+bundle holds, and it tracks the number of distinct harmonics monotonically. A
+residue system minimises precisely that quantity — three frequencies is the
+whole design.
+
+Plainly: with only three frequencies the similarity kernel is a mean of three
+cosines, whose sidelobes sit close to the main peak. Superposing K views piles
+K sets of those sidelobes on top of each other, and once the pile clears the
+gap the peak is no longer the right one. More frequencies means lower
+sidelobes means more room to superpose.
+
+**Why it does not transfer from the published result.** Residue coding buys
+*unambiguous range per frequency*. The object file's constraint is
+*superposition SNR*. Different currency. Kymn et al. represent **one** position
+and factorise it with a resonator; we hold **K** items and read a peak off
+their sum. The residue advantage is real in their setting and inapplicable in
+ours, and no implementation detail bridges that.
+
+#### What it pays for: §16 E0's headline was a hyperparameter artefact
+
+If distinct-harmonic count sets capacity, then E0's signature failure — error
+*rising* with K — should move with `max_harmonic`. E0 swept it over {8, 16}.
+It never tried 4. Median in-gap error on the real task:
+
+| k_max | lobe | K=6 | K=12 | K=24 | K=36 |
+|---|---|---|---|---|---|
+| **4** | **28°** | **18.0°** | **9.0°** | **14.3°** | **16.5°** |
+| 8 | 16° | 20.0° | 16.5° | 22.5° | 23.5° |
+| 12 | 12° | 20.5° | 13.0° | 20.5° | 21.5° |
+| 16 | 9° | 20.0° | 11.0° | 20.0° | 21.2° |
+| 24 | 6° | 20.0° | 11.3° | 17.7° | 19.0° |
+| 48 | 3° | 20.0° | 10.5° | 16.0° | 17.0° |
+| *list (1-NN)* | — | *20.0°* | *10.0°* | *15.0°* | *15.0°* |
+
+*(d=2401; the same ordering holds at d=601 and d=151)*
+
+`k_max=4` wins at every K, and at K=12 it beats the list. Re-running E0's full
+protocol at `k_max=4`, `d=2401`:
+
+| K | decoder | median err | ID hit | map floats |
+|---|---|---|---|---|
+| 12 | nearest | 10.0° | 0.98 | 172,872 |
+| 12 | kernel | 10.0° | 0.98 | 172,872 |
+| 12 | **vsa** | **9.0°** | 0.87 | **14,406** |
+| 12 | vsa-scene | 13.5° | 0.75 | **2,401** |
+| 24 | nearest | 15.0° | 0.98 | 345,744 |
+| 24 | **vsa** | **14.3°** | 0.88 | **14,406** |
+
+Difference of medians, hierarchical bootstrap, `vsa − nearest`:
+
+| K | diff | 95% CI |
+|---|---|---|
+| 6 | −2.0° | [−6.0, +7.8] |
+| 12 | −1.0° | [−6.5, +6.0] |
+| 24 | −0.7° | [−3.5, +10.0] |
+
+**Every interval spans zero.** Not a win — a tie. But a tie at 12× less memory
+for the per-object books and 72× less for the scene vector, which is a
+different claim from the one E0 made.
+
+Note the winning lobe is **28°, wider than the descriptor's own 18°
+half-width**. §14 said reach beats precision when stored views are far apart.
+This says it more strongly: the best kernel is *broader than the correlation
+length of the thing it is matching*, because a broad kernel is also a
+low-frequency one, and low-frequency codes superpose better. Two arguments that
+looked separate — §14's reach-versus-precision and E0's capacity — are the same
+constraint seen from either end.
+
+*Provenance: measured — rendered turntable, HOG front end, 3 seeds, 30° blocked
+arcs, hierarchical bootstrap over objects → arcs → seeds. The self-retrieval
+table is descriptor-independent by construction and the harmonic-count ordering
+in it is structural. The degrees on the real task are HOG numbers.*
 
 ### E3 — object-vector-cell scene map
 
@@ -1457,17 +1594,17 @@ Rerun it at `d = 2401` so the knee being measured is the coverage knee.
 
 ### The order
 
-**E2, E4, E3**, with E0 and E1 done. E2 first because E0 promoted it from
-speculation to the direct attack on the first-order constraint, and because E1
-just removed the other candidate fix for identification. E3 last only because it
-is the largest build, not because it matters least.
+**E4, then E3**, with E0, E1 and E2 done.
 
-E1 also adds a free item ahead of all of them, because it costs one line:
-**give every object an unbound appearance prototype alongside its view book**,
-and route identification through the prototype. At `d=151` that is 0.44 → 0.89
-identification for one extra vector per object. Nothing in §§1–14 does this;
-the scene map currently identifies by the view book, which E0 showed is the
-capacity-bound path.
+Two items from E1 and E2 are already implemented rather than queued, because
+each was one line:
+
+- **An unbound appearance prototype per object** (`ObjectFile.prototype`,
+  `ObjectCentricMap.identify`, `recognise`), so naming does not go through the
+  capacity-bound view book. E1: 0.44 → 0.89 identification at `d=151`.
+- **`max_harmonic` is a capacity setting, not a resolution setting** (E2).
+  The repo default of 8 was the wrong side of the optimum; 4 is better at
+  every K tested and turns E0's loss into a tie.
 
 *Provenance: E0 and E1 measured (see their own notes). E2–E4 are
 specifications — nothing in them is a result, and none of their predicted

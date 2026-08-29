@@ -12,7 +12,8 @@ from .geometry import (angular_distance, camera_bearing, circular_mean,
                        view_azimuth, view_azimuth_elevation, wrap_angle)
 from .objectfile import ObjectFile, ViewEntry
 from .scenemap import ObjectCentricMap, PlaceQuery, ViewQuery
-from .viewspace import CircularSSPSpace, make_view_space
+from .viewspace import (CircularSSPSpace, make_view_space,
+                        residue_harmonics)
 from .vsa import (AtomVocab, VectorCodebook, bind, bundle, cosine, invert,
                   normalize, unbind, unitary)
 
@@ -24,6 +25,7 @@ __all__ = [
     "ViewQuery",
     "CircularSSPSpace",
     "make_view_space",
+    "residue_harmonics",
     "AppearanceCodec",
     "AtomVocab",
     "VectorCodebook",

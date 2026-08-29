@@ -130,6 +130,14 @@ class ObjectCentricMap:
         (azimuth and elevation); 2 requires ``domain_dim == 3``.
     max_harmonic : int
         Angular resolution of the view circle (see :mod:`.viewspace`).
+        Also, and less obviously, the **capacity** setting: it fixes how many
+        distinct frequencies the code has, and that is what decides how many
+        views a single bundle can hold.  The default of 8 is kept for
+        reproducibility but is on the wrong side of the measured optimum --
+        FINDINGS.md sec.16 E2 finds ``4`` better at every K tested, and it is
+        the difference between the object file losing to a list of stored
+        views and tying one.  Prefer 4 for new work unless you have measured
+        otherwise on your own front end.
     length_scale : float
         Length scale of the allocentric SSP, in world units.
     grid_step : float

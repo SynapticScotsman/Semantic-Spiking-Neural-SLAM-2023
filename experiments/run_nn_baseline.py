@@ -136,15 +136,16 @@ def decode_vsa(book, q, vs, n_grid=720):
 # One (seed, K) run: build every map, decode every held-out crop
 # ---------------------------------------------------------------------------
 
-def one_run(Z, obj, az, kept, held, names, K, seed):
+def one_run(Z, obj, az, kept, held, names, K, seed, d=SSP_DIM,
+            kmax=MAX_HARMONIC):
     n_obj = len(names)
     mu, V, lam = fit_basis(Z[kept])                  # kept views only
     rng = np.random.default_rng(seed)
-    W = rng.standard_normal((V.shape[0], SSP_DIM)) / np.sqrt(V.shape[0])
+    W = rng.standard_normal((V.shape[0], d)) / np.sqrt(V.shape[0])
     keys = condition(Z, mu, V, lam, W, drop=DROP)
-    vs = CircularSSPSpace(1, ssp_dim=SSP_DIM, max_harmonic=MAX_HARMONIC,
+    vs = CircularSSPSpace(1, ssp_dim=d, max_harmonic=kmax,
                           rng=np.random.default_rng(seed + 1000))
-    vocab = AtomVocab(SSP_DIM, seed=seed + 2000)
+    vocab = AtomVocab(d, seed=seed + 2000)
 
     store_keys, store_az, books = [], [], []
     for o in range(n_obj):
@@ -234,6 +235,8 @@ def main():
     ap.add_argument("--dims", type=int, nargs="+",
                     default=[151, 301, 601, 1201, 2401, 4801])
     ap.add_argument("--sweep-k", type=int, default=12)
+    ap.add_argument("--ssp-dim", type=int, default=SSP_DIM)
+    ap.add_argument("--kmax", type=int, default=MAX_HARMONIC)
     args = ap.parse_args()
 
     imgs, obj, az, names = load_turntable(n_views=args.n_views)
@@ -251,7 +254,8 @@ def main():
           f"{int(kept.sum()/n_obj)} kept / {int(held.sum()/n_obj)} held out per "
           f"object, {len(np.unique(arc_h))} arcs")
     print(f"{args.seeds} seeds (random projection, SSP phases, ID atoms all "
-          f"redrawn); chance = 90 deg\n")
+          f"redrawn); chance = 90 deg")
+    print(f"ssp_dim={args.ssp_dim}, max_harmonic={args.kmax}\n")
 
     Ks = (6, 12, 24, int(kept.sum() // n_obj))
     Ks = sorted(set(k for k in Ks if k <= kept.sum() // n_obj))
@@ -263,7 +267,8 @@ def main():
 
     keep_for_boot = {}
     for K in Ks:
-        runs = [one_run(Z, obj, az, kept, held, names, K, s)
+        runs = [one_run(Z, obj, az, kept, held, names, K, s,
+                        d=args.ssp_dim, kmax=args.kmax)
                 for s in range(args.seeds)]
         beta = runs[0][1]
         d = runs[0][2]
@@ -303,7 +308,8 @@ def main():
                   f"[{lo:+6.1f}, {hi:+6.1f}]{verdict}")
 
     print("\n[C] per object at K=12 (median in-gap error, degrees)")
-    runs = [one_run(Z, obj, az, kept, held, names, 12, s)
+    runs = [one_run(Z, obj, az, kept, held, names, 12, s,
+                    d=args.ssp_dim, kmax=args.kmax)
             for s in range(args.seeds)]
     print(f"  {'object':>9s} " + " ".join(f"{n:>10s}" for n in
                                           ("nearest", "kernel", "vsa",
