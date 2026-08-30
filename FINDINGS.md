@@ -689,7 +689,8 @@ python experiments/run_residue_code.py                 # §16 E2, ~20 min
 python experiments/run_k_curve.py --symmetric-set      # §16 E4, ~15 min
 python experiments/run_scene_frames.py                  # §16 E3, ~4 min
 python experiments/run_rotation_frames.py              # §16 E5, ~5 min
-python experiments/run_pipeline.py --symmetric-set     # §16 E6, ~12 min
+python experiments/run_pipeline.py --symmetric-set      # §16 E6, ~12 min
+python experiments/run_optical_flow.py --symmetric-set # §16 E7, ~6 min
 ```
 
 Swap the front end with `--encoder dinov2` (needs torch + transformers +
@@ -1090,10 +1091,11 @@ having run them.
 | **E2** | residue view code (Kymn 2024) | can a modular code hold K views at a fraction of the dimension? | **done — refuted. But it found the capacity knob E0 missed, and that ties E0's score** |
 | **E3** | object-vector-cell scene map (Høydal) | should the scene half be allocentric or egocentric-vector? | **done — egocentric, decisively. And motion becomes one bind** |
 | **E5** | rotation (Renner et al.), the gap E3 opened | can rotation be a bind, and does the scene map need it to be? | **done — yes it can, and no it does not** |
+| **E7** | optical flow: does the occluded part of the spin hurt? | is the damage about the surface, or about distance from a stored view? | **done — occlusion costs +2.3°, the gap costs +7.8°. It is the gap** |
 | **E6** | all of it, end to end on a walk | do the pieces compose, or merely coexist? | **done — they compose; the filter repairs naming, and the scene map fixes the symmetric objects** |
 | **E4** | the K curve (Logothetis / Poggio–Edelman) | where is the knee, and does it match IT view tuning? | **done — knee at K=12, store a side every 30°. The per-object prediction is refuted** |
 
-**Naming.** These are §16 E0–E6, the *experiments*. §0 E1–E8 are the *errata*.
+**Naming.** These are §16 E0–E7, the *experiments*. §0 E1–E8 are the *errata*.
 The document always writes the prefix; a bare "E4" in this section means the K
 curve, and in §0 means the blocked-split correction.
 
@@ -1863,7 +1865,90 @@ change.*
 
 ---
 
-### What the seven experiments jointly say
+### E7 — where round the orbit the errors actually live
+
+Two questions that sound like one. **Self-occlusion barely matters; distance
+from a stored view matters a lot** — about three times as much.
+
+Run it: `python experiments/run_optical_flow.py --symmetric-set`.
+
+#### Does the part of the spin that self-occludes degrade performance?
+
+§13 asserted the appearance manifold is "smooth over small rotations,
+discontinuous where a part appears or disappears" and never measured it. Dense
+optical flow between adjacent views gives a direct handle: a rigid turn produces
+flow that warps one frame almost onto the next, and **what the flow cannot
+explain is newly visible surface** — you can move pixels about, you cannot
+invent them. The warp residual is therefore an occlusion score per view,
+computed from the images alone, with no map and no descriptor.
+
+Both signs were plausible. Occlusion could *hurt* — the descriptor changes
+discontinuously, so interpolating across an occlusion event is extrapolating in
+disguise. Or it could *help* — a handle swinging into view is the most
+distinctive thing that happens on the whole orbit.
+
+Pooling every held-out view, with the residual z-scored within each object so a
+hard-edged object and a smooth one are on the same scale, and aliased objects
+dropped because they sit at chance whatever the flow does:
+
+| occlusion quartile | n | median error | <15° |
+|---|---|---|---|
+| smoothest | 54 | **6.5°** | 0.81 |
+| Q2 | 54 | 8.2° | 0.70 |
+| Q3 | 54 | 8.5° | 0.67 |
+| most occluded | 54 | **8.8°** | 0.76 |
+
+**It hurts, mildly.** Pooled r = +0.14; the most-occluded quartile costs about
+2.3° more than the smoothest. Not nothing, and not the story either.
+
+The per-object view is more interesting than the pooled one. `chair` — the
+object with by far the most flow (mean magnitude 0.44 against 0.03–0.21 for the
+rest) — reads 16.8° at its occlusion events against 5.2° elsewhere. Across the
+four usable objects, how much an object occludes and how much its occluded views
+cost correlate at **r = +0.97**. Four objects is a hint and not a result, and it
+is recorded as one: the suggestion is that occlusion is a *dose*, harmless until
+an object has enough of it, which would explain a weak pooled correlation
+sitting on top of one large per-object effect. Testing it needs objects chosen
+to span occlusion deliberately, the way `--symmetric-set` spans symmetry.
+
+#### Does the blocked-out part of the spin really degrade performance?
+
+**Yes, and it is graded rather than a cliff.** §0 E4 replaced interleaved
+splits with contiguous held-out arcs and the error roughly tripled, which is why
+every figure since uses them. But an arc has an inside: a query at the edge of a
+30° hole sits 5° from a stored view, one in the middle sits 15°.
+
+| distance into the hole | degrees from nearest stored view | n | median error | <15° |
+|---|---|---|---|---|
+| edge | 5° | 360 | **9.2°** | 0.63 |
+| middle | 10° | 360 | 13.5° | 0.52 |
+| centre | 15° | 360 | **17.0°** | 0.45 |
+
+**+0.78° of error per degree of distance from the nearest stored view.** The
+centre of a 30° hole is 1.8× worse than its edge, and the fraction landing
+within 15° falls from 0.63 to 0.45 across the same span.
+
+#### The two answers side by side
+
+Across its full range, self-occlusion costs **+2.3°**. Across a single 30° hole,
+distance from a stored view costs **+7.8°**. Where you are relative to what you
+have stored dominates what the surface is doing by roughly three to one.
+
+Which also says the §0 E4 correction was measuring the right thing: an
+interleaved split put every query at the 5° end of that gradient, where the
+error is 9.2°, and reported it as though it were the whole arc. The gradient is
+why the correction mattered, and it is now on the page rather than assumed.
+
+*Provenance: measured — rendered turntable, ten objects with `--symmetric-set`,
+HOG front end, `d=2401`, `max_harmonic=4`, K=12, 3 seeds, iterative
+Lucas–Kanade flow at radius 5. The dose–response across objects rests on four
+objects and is tagged a hint, not a finding. The degrees are HOG numbers; the
+sign and the roughly three-to-one ratio are the parts that should survive an
+encoder change.*
+
+---
+
+### What the eight experiments jointly say
 
 They were run to answer one question — *does an object-centric VSA map work, or
 is it a nice algebra with nothing behind it?* — and between them they answer it.
@@ -1877,7 +1962,7 @@ answer queries by unbinding rather than by search. That is the claim §15's
 literature gap can support. "More accurate" is not, and this document said so
 before E0 was run.
 
-**Four of the seven predictions failed, and the failures were more useful than
+**Five of the eight predictions failed, and the failures were more useful than
 the successes.**
 
 | | predicted | measured |
@@ -1889,6 +1974,7 @@ the successes.**
 | E3 | vector coding transfers across frames | **it does, exactly** |
 | E5 | rotation needs a rotation-equivariant code | it can have one, but does not need it — heading makes it a read-out |
 | E6 | the filter smooths viewpoint | it does, but its larger job is repairing misidentification |
+| E7 | self-occlusion is where localisation breaks | it costs 2.3°; distance from a stored view costs 7.8° |
 
 E2 is the case for running experiments you expect to fail: it refuted its own
 hypothesis *and* found the setting that turned E0's loss into a tie, which E0
